@@ -289,4 +289,4 @@ async def on_ready():
     # await tree.sync()
 
 
-client.run("MTE5MDQzMDAyNTczNzA2MDQ0Mg.GAe0_5.vrSgDFLx6Nvb01hDgR9axLg5UDUinJAcBSi0hE")
+client.run("Accidentally leaked my token :/")
