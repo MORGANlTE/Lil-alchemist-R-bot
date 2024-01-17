@@ -112,7 +112,6 @@ def get_fusion_url(fusion):
 
 
 def get_embedcolor(rarity):
-    print(rarity)
     switcher = {
         "Bronze": discord.Color.from_rgb(205, 127, 50),  # Brown
         "Silver": discord.Color.from_rgb(192, 192, 192),  # Silver
@@ -129,10 +128,7 @@ def get_image(soup):
         a_tag = figure_element.find("a")
         if a_tag and "href" in a_tag.attrs:
             image_url = a_tag["href"]
-        else:
-            print("No image URL found within the <a> tag.")
     else:
-        print("No <figure> element with class 'pi-item pi-image' found.")
         image_url = None
     return image_url
 
@@ -184,10 +180,21 @@ def get_rarity_and_form_etc(soup):
     )
 
     # Where to acquire
-    list_acquire = soup.find("div", class_="mw-parser-output").find("ul").find_all("li")
+    # Where to acquire
+    div_acquire = soup.find("div", class_="mw-parser-output")
+    list_acquire = div_acquire.find_all("ul")
     where_to_acquire = []
-    for elemnt in list_acquire:
-        where_to_acquire.append(elemnt.text.strip())
+    element = ""
+    # Check if there is only one div
+    if len(list_acquire) == 1:
+        element_list = list_acquire[0].find_all("li")
+        for el in element_list:
+            where_to_acquire.append(el.text.strip())
+    else:
+        where_to_acquire = [
+            elem.text.strip() for elem in list_acquire[0].find_all("li")
+        ]
+
     # The table with the level info
     table_level_info = soup.find("table", class_="article-table")
 
