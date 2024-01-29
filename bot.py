@@ -208,7 +208,7 @@ async def help_command(interaction):
     )
 
     embed.add_field(
-        name=":space_invader: v3.0.0",
+        name=":space_invader: v3.0.1",
         value="Added trivia, leaderboard, ... (Could be unstable? :thinking:) Have fun!",
         inline=False,
     )

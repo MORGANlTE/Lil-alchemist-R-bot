@@ -42,7 +42,7 @@ def add_gems_to_user(userid, gems, dbfile):
   cursor = conn.cursor()
   cursor.execute("SELECT id, gems FROM users WHERE userid = ?", (userid,))
   user_data = cursor.fetchone()
-
+  current = 0
   if user_data is None:
       if gems < 0:
           gems = 0
