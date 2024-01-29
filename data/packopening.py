@@ -10,13 +10,34 @@ import os
 
 async def simulate_pack_opening(name):
     if name == "Jark":
-        name = "Jark (Card)"
         cardnames = [
             "Chinchilla_(Onyx)",
             "Chinchilla_(Onyx)",
             "Chinchilla_(Onyx)",
             "Chinchilla_(Onyx)",
         ]
+    elif name == "Melmman":
+        cardnames = [
+            "Hammer_(Onyx)",
+            "Hammer_(Onyx)",
+            "Hammer_(Onyx)",
+            "Grabbers",
+        ]
+        random.shuffle(cardnames)
+    elif name == "ILoveDog":
+        cardnames = [
+            "Bat_(Onyx)",
+            "Dog",
+            "Dog",
+            "Dog",
+            "Dog",
+            "Bat_(Onyx)",
+            "Siberian Husky",
+            "Siberian Husky",
+            "Siberian Husky",
+            "Siberian Husky",
+        ]
+        random.shuffle(cardnames)
     else:
         url_name = name.replace(" ", "_")
         url = f"https://lil-alchemist.fandom.com/wiki/Special_Packs/{url_name}"

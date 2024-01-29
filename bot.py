@@ -2,19 +2,43 @@ import discord
 from discord import app_commands
 from data.data_grabber import *
 from data.packopening import *
+from data.shortcuts import *
 import discord
 import requests
 from bs4 import BeautifulSoup
 from data.trivia import *
+import os
+from dotenv import load_dotenv
 
+# Load the .env file
+load_dotenv()
+
+# Variables:
+gem_win_trivia = 10
+gem_loss_trivia = -20
+dbfile = os.getenv("DATABASE")
+
+# Check the value of the ENVIRONMENT variable
+environment = os.getenv("ENVIRONMENT")
+
+if environment == "testing":
+    guilds=[discord.Object(id=945414516391424040)]
+elif environment == "production":
+    guilds=[]
+else:
+    # Code for other environments or default behavior
+    print("Running in unknown environment")
+print(f"Running in {environment} environment")
+
+# Functions:
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
-
 @tree.command(
     name="wiki",
     description="Look up a card on the LAR wiki",
+    guilds=guilds
 )
 async def show_command(interaction, cardname: str, is_onyx: bool = False):
     await interaction.response.defer()
@@ -157,6 +181,7 @@ async def show_command(interaction, cardname: str, is_onyx: bool = False):
 @tree.command(
     name="help",
     description="Help with the commands",
+    guilds=guilds,
 )
 async def help_command(interaction):
     avatar_url = client.user.avatar.url
@@ -199,6 +224,7 @@ async def help_command(interaction):
 @tree.command(
     name="trivia",
     description="Start a trivia question",
+    guilds=guilds,
 )
 async def trivia_command(interaction):
     # Define the question and answers
@@ -225,22 +251,55 @@ async def trivia_command(interaction):
             and user.id != client.user.id
             and str(reaction.emoji) in ["1️⃣", "2️⃣", "3️⃣"]
         )
-
+    
     # Wait for a reaction to be added
     reaction, user = await client.wait_for("reaction_add", check=check)
-
     # Check if the reaction is correct
     if str(reaction.emoji) == ["1️⃣", "2️⃣", "3️⃣"][trivia.correct_answer_index]:
-        winner_message = f"Correct! {user.mention} answered correctly. The answer was `{trivia.answers[trivia.correct_answer_index]}`."
+        winner_message = f"Correct! {user.mention} answered correctly. The answer was `{trivia.answers[trivia.correct_answer_index]}`.\n{gem_win_trivia} :gem: have been added to your account."
+        # add 10 gems to the user
+        add_gems_to_user(user.id, gem_win_trivia, dbfile)
     else:
-        winner_message = f"Wrong! {user.mention} answered incorrectly. The correct answer was `{trivia.answers[trivia.correct_answer_index]}`."
+        winner_message = f"Wrong! {user.mention} answered incorrectly.\nThe correct answer was `{trivia.answers[trivia.correct_answer_index]}`.\nYou lost {gem_loss_trivia} :gem:."
+        # remove 20 gems from the user
+        add_gems_to_user(user.id, gem_loss_trivia, dbfile)
 
     await interaction.followup.send(winner_message)
+
+@tree.command(
+    name="leaderboard",
+    description="Leaderboard for the trivia",
+    guilds=guilds,
+)
+async def leaderboard_command(interaction):
+    # Define the question and answers
+    await interaction.response.defer()
+    top_users = get_top_users(dbfile)
+    
+    # Format the top users into a mentionable format
+    description = "Your score: " + str(get_users_gems(interaction.user.id, dbfile)) + " :gem:\n\n"
+    description += "**Global leaderboard:**\n"
+
+    user = top_users[0]
+    description += f"\n🥇<@{user[1]}> - {user[2]} :gem:\n\n"
+    user = top_users[1]
+    description += f"🥈<@{user[1]}> - {user[2]} :gem:\n\n"
+    user = top_users[2]
+    description += f"🥉<@{user[1]}> - {user[2]} :gem:\n\n"
+    embed = discord.Embed(
+        title="Leaderboard",
+        description=f"{description}",
+        color=discord.Color.brand_green(),
+    )
+    embed.set_thumbnail(url="https://iili.io/Jc4oxEl.png")
+    await interaction.followup.send(embed=embed)
+  
 
 
 @tree.command(
     name="packopening",
     description="Open a pack",
+    guilds=guilds,
 )
 async def packopening_command(interaction, packname: str):
     await interaction.response.defer()
@@ -277,12 +336,33 @@ async def packopening_command(interaction, packname: str):
 
 @client.event
 async def on_ready():
-    # await tree.sync(guild=discord.Object(id=945414516391424040))
+    # await sync_guilds(guilds, tree)
     print("[V] Finished setting up commands")
     print(f"[V] Logged in as {client.user} (ID: {client.user.id})")
     # remove everything from the images folder
     delete_saved_images()
     print("[V] Cleared images folder")
+    setup_packs()
+    print("[V] Setup the packs")
+    # Create the database if it doesn't exist
+    setup_database(dbfile)
+    print("[V] Db created/checked")
 
 
-client.run("")
+
+# worker example:
+
+# last_run = datetime.now().date()  # Set the last run date to the first day of the month
+
+# @tasks.loop(seconds=30)  # Loop every 60 seconds
+# async def send_message_at():
+#     global last_run
+#     now = datetime.now()
+#     target_time = time(12, 0, 0)  # Target time is 12:00:00
+#     print("trying")
+#     if now.time() >= target_time and (last_run is None or last_run < now.date()):
+#         print("done")
+#         last_run = now.date()  # Update the last run date
+
+
+client.run(os.getenv("TOKEN"))
