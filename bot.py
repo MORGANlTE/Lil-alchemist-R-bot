@@ -213,7 +213,7 @@ async def help_command(interaction):
         )
     
     embed.add_field(
-        name=":space_invader: v3.0.2",
+        name=":space_invader: v3.0.3",
         value="Fixed bugs trivia",
         inline=False,
     )

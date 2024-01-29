@@ -36,7 +36,7 @@ def get_trivia_questions():
             "What movie does the Hopeful Robot reference?",
             ["EEV-E", "WALL-E", "WALLEY"],
             "https://static.wikia.nocookie.net/lil-alchemist/images/a/a5/Hopeful_Robot.png",
-            2,
+            1,
         ),
         Question(
             "In Greek mythology, Atlas was a titan condemned to:",
