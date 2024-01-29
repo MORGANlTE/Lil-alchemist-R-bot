@@ -314,7 +314,7 @@ async def packopening_command(interaction, packname: str):
     await interaction.response.defer()
     # Simulate opening a pack and get the image URL of the card
     imageCards = await simulate_pack_opening(packname)
-
+    print(imageCards)
     if imageCards == "Not found":
         imageCards = await simulate_pack_opening(packname.capitalize())
 

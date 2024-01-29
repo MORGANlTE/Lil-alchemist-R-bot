@@ -147,10 +147,14 @@ async def simulate_pack_opening(name):
                 os.remove(card_pictures[i])
 
         return fileM
-    except:
+    except Exception as e:
+        print(e)
         return "Error occured"
 
 
 def delete_saved_images():
+    # if the images folder doesnt exist, create it
+    if not os.path.exists("./images"):
+        os.makedirs("./images")
     for filename in os.listdir("./images"):
         os.remove(f"./images/{filename}")
