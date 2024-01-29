@@ -230,11 +230,13 @@ async def trivia_command(interaction):
     # Define the question and answers
     await interaction.response.defer()
     trivia = get_trivia_questions()
+
     embed = discord.Embed(
         title=trivia.question,
         description=f"1️⃣ {trivia.answers[0]}\n\n2️⃣ {trivia.answers[1]}\n\n3️⃣ {trivia.answers[2]}",
         color=discord.Color.teal(),
     )
+
     if trivia.image_url_question:
         embed.set_thumbnail(url=trivia.image_url_question)
 
@@ -256,13 +258,11 @@ async def trivia_command(interaction):
     reaction, user = await client.wait_for("reaction_add", check=check)
     # Check if the reaction is correct
     if str(reaction.emoji) == ["1️⃣", "2️⃣", "3️⃣"][trivia.correct_answer_index]:
-        winner_message = f"Correct! {user.mention} answered correctly. The answer was `{trivia.answers[trivia.correct_answer_index]}`.\n{gem_win_trivia} :gem: have been added to your account."
-        # add 10 gems to the user
-        add_gems_to_user(user.id, gem_win_trivia, dbfile)
+        newgems = add_gems_to_user(user.id, gem_win_trivia, dbfile)
+        winner_message = f"Correct! {user.mention} answered correctly. The answer was `{trivia.answers[trivia.correct_answer_index]}`\n+{gem_win_trivia} :gem:"
     else:
-        winner_message = f"Wrong! {user.mention} answered incorrectly.\nThe correct answer was `{trivia.answers[trivia.correct_answer_index]}`.\nYou lost {gem_loss_trivia} :gem:."
-        # remove 20 gems from the user
-        add_gems_to_user(user.id, gem_loss_trivia, dbfile)
+        newgems = add_gems_to_user(user.id, gem_loss_trivia, dbfile)
+        winner_message = f"Wrong! {user.mention} answered incorrectly.\nThe correct answer was `{trivia.answers[trivia.correct_answer_index]}`.\n{gem_loss_trivia} :gem:"
 
     await interaction.followup.send(winner_message)
 
@@ -280,12 +280,9 @@ async def leaderboard_command(interaction):
     description = "Your score: " + str(get_users_gems(interaction.user.id, dbfile)) + " :gem:\n\n"
     description += "**Global leaderboard:**\n"
 
-    user = top_users[0]
-    description += f"\n🥇<@{user[1]}> - {user[2]} :gem:\n\n"
-    user = top_users[1]
-    description += f"🥈<@{user[1]}> - {user[2]} :gem:\n\n"
-    user = top_users[2]
-    description += f"🥉<@{user[1]}> - {user[2]} :gem:\n\n"
+    for i, user in enumerate(top_users):
+        description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - {user[2]} :gem:\n"
+
     embed = discord.Embed(
         title="Leaderboard",
         description=f"{description}",
@@ -293,6 +290,18 @@ async def leaderboard_command(interaction):
     )
     embed.set_thumbnail(url="https://iili.io/Jc4oxEl.png")
     await interaction.followup.send(embed=embed)
+
+def get_medal_emoji(rank):
+    if rank == 1:
+        return "🥇"
+    elif rank == 2:
+        return "🥈"
+    elif rank == 3:
+        return "🥉"
+    elif rank == 4:
+        return "🔥"
+    else:
+        return "👾"
   
 
 
@@ -305,6 +314,10 @@ async def packopening_command(interaction, packname: str):
     await interaction.response.defer()
     # Simulate opening a pack and get the image URL of the card
     imageCards = await simulate_pack_opening(packname)
+
+    if imageCards == "Not found":
+        imageCards = await simulate_pack_opening(packname.capitalize())
+
 
     if imageCards == "Not found":
         await interaction.followup.send(f"Pack `{packname}` not found", ephemeral=True)

@@ -1,6 +1,8 @@
 from random import randint
 import requests
 from bs4 import BeautifulSoup
+from shortcuts import *
+from data.essentials.data.question import Question
 
 packs = []
 
@@ -45,11 +47,15 @@ def get_trivia_questions():
     ]
     # return random question
     # 1/50 chance to return any of these questions
-    chance = randint(0, 60)
-    if chance == 0:
+    chance = randint(0, 150)
+    if chance <= 1:
         return questions[randint(0, len(questions) - 1)]
+    elif chance <= 51:
+        return generate_random_question_packs()
+    elif chance <= 100:
+        return generate_random_question_combos()
     else:
-        return generate_random_question()
+        return generate_random_question_abilities()
 
 def setup_packs():
     url = f"https://lil-alchemist.fandom.com/wiki/Special_Packs"
@@ -69,8 +75,13 @@ def setup_packs():
             for ake in akes:
                 packs.append(ake["href"].split("/")[2].replace("_Pack", "").replace("_Of_", "_of_"))
 
+def generate_random_question_combos():
+    return get_question_combos()
 
-def generate_random_question():
+def generate_random_question_abilities():
+    return get_question_ability()
+
+def generate_random_question_packs():
     # get 3 random packs
     packs_clone = packs.copy()
     # random pack 1
@@ -84,7 +95,7 @@ def generate_random_question():
     packs_clone.remove(pack3)
 
     correct_answer_int = randint(0, 2)
-    print(f"[Packopening]: {pack1}")
+    print(f"[PackTrivia]: {pack1}")
 
     # get 2 random cards from pack1
     # all cards from this pack:
@@ -130,27 +141,3 @@ def generate_random_question():
         )
     
     return question
-
-
-class Question:
-    def __init__(self, question, answers, image_url_question, correct_answer_index):
-        self.question = question
-        self.answers = answers
-        self.image_url_question = image_url_question
-        self.correct_answer_index = correct_answer_index
-
-    def __str__(self):
-        return self.question
-
-def get_image(soup):
-        figure_element = soup.find("figure", class_="pi-item pi-image")
-        if figure_element:
-            a_tag = figure_element.find("a")
-            if a_tag and "href" in a_tag.attrs:
-                image_url = a_tag["href"]
-            else:
-                print("No image URL found within the <a> tag.")
-        else:
-            print("No <figure> element with class 'pi-item pi-image' found.")
-            image_url = None
-        return image_url
