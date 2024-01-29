@@ -98,9 +98,6 @@ def get_question_combos():
   randomnr1 = randint(0, len(alldiamonds) - 1)
   randomnr2 = randint(0, len(alldiamonds) - 1)
   randomnr3 = randint(0, len(alldiamonds) - 1)
-  while randomnr1 == randomnr2 or randomnr1 == randomnr3 or randomnr2 == randomnr3:
-    randomnr2 = randint(0, len(alldiamonds) - 1)
-    randomnr3 = randint(0, len(alldiamonds) - 1)
     
   tr = alldiamonds[randomnr1]
   tr2 = alldiamonds[randomnr2]
@@ -111,7 +108,20 @@ def get_question_combos():
 
   real_result = get_result(tr)
   fake_result1 = get_result(tr2)
+  
+  # Ensure fake_result1 is not the same as real_result
+  while fake_result1 == real_result:
+    randomnr2 = randint(0, len(alldiamonds) - 1)
+    tr2 = alldiamonds[randomnr2]
+    fake_result1 = get_result(tr2)
+  
   fake_result2 = get_result(tr3)
+  
+  # Ensure fake_result2 is not the same as real_result or fake_result1
+  while fake_result2 == real_result or fake_result2 == fake_result1:
+    randomnr3 = randint(0, len(alldiamonds) - 1)
+    tr3 = alldiamonds[randomnr3]
+    fake_result2 = get_result(tr3)
 
   # add all 3 results to a list
   results = []

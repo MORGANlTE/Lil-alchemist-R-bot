@@ -202,14 +202,19 @@ async def help_command(interaction):
         inline=True,
     )
     embed.add_field(
-        name=":question: trivia (WIP)",
+        name=":question: trivia",
         value="Starts a trivia question",
         inline=False,
     )
-
     embed.add_field(
-        name=":space_invader: v3.0.1",
-        value="Added trivia, leaderboard, ... (Could be unstable? :thinking:) Have fun!",
+            name=":coin: leaderboard",
+            value="Shows your score and the global leaderboard",
+            inline=False,
+        )
+    
+    embed.add_field(
+        name=":space_invader: v3.0.2",
+        value="Fixed bugs trivia",
         inline=False,
     )
 
