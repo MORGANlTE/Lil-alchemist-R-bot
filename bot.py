@@ -208,8 +208,8 @@ async def help_command(interaction):
     )
 
     embed.add_field(
-        name=":space_invader: v2.1.1",
-        value="Made wiki command faster",
+        name=":space_invader: v3.0.0",
+        value="Added trivia, leaderboard, ... (Could be unstable? :thinking:) Have fun!",
         inline=False,
     )
 
