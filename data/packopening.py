@@ -94,10 +94,10 @@ async def simulate_pack_opening(name):
             ) = test
 
             randomnumber = random.randint(0, 100000)
-            with open(f"./test/images/{cardname}{randomnumber}.png", "wb") as f:
+            with open(f"./images/{cardname}{randomnumber}.png", "wb") as f:
                 f.write(requests.get(imgurl).content)
 
-            image = Image.open(f"./test/images/{cardname}{randomnumber}.png")
+            image = Image.open(f"./images/{cardname}{randomnumber}.png")
             resized_image = image.resize((350, 465))
 
             mask = Image.new("L", resized_image.size, 0)

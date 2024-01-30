@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "3.1.4"
+version = "3.1.5"
 versiondescription = "Fixes, readme & code cleanup"
 gem_win_trivia = 10
 gem_loss_trivia = -20

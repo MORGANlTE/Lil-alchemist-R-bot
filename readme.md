@@ -39,7 +39,7 @@ TOKEN=discordbottokenplaceholder
 
 ## 📝 Version 📝
 
-Current version: 3.1.4
+Current version: 3.1.5
 Version description: Fixes, readme & code cleanup
 
 ## 📜 License 📜
