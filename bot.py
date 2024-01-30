@@ -14,6 +14,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
+version = "3.1.4"
+versiondescription = "Fixes, readme & code cleanup"
 gem_win_trivia = 10
 gem_loss_trivia = -20
 dbfile = os.getenv("DATABASE")
@@ -199,10 +201,10 @@ async def help_command(interaction):
     embed.add_field(
         name=":question: help",
         value="Displays this help section",
-        inline=True,
+        inline=False,
     )
     embed.add_field(
-        name=":question: trivia",
+        name=":gem: trivia",
         value="Starts a trivia question",
         inline=False,
     )
@@ -213,8 +215,8 @@ async def help_command(interaction):
         )
     
     embed.add_field(
-        name=":space_invader: v3.0.3",
-        value="Fixed bugs trivia",
+        name=f":space_invader: v{version}",
+        value=f"{versiondescription}",
         inline=False,
     )
 

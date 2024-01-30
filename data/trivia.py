@@ -47,7 +47,7 @@ def get_trivia_questions():
     ]
     # return random question
     # 1/50 chance to return any of these questions
-    chance = randint(0, 150)
+    chance = randint(0, 1)
     if chance <= 1:
         return questions[randint(0, len(questions) - 1)]
     elif chance <= 51:
