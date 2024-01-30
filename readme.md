@@ -1,7 +1,5 @@
 ![Bot Image](readme/logo.png)
 
-# 🤖 Lil Alchemist R Bot 🤖
-
 Lil Alchemist R Bot is a Discord bot built with Python and discord.py.
 
 It's designed to enhance provide useful features and fun commands related to Little Alchemist Remastered.
