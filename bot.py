@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "3.2.5"
+version = "3.2.6"
 versiondescription = "Leaderboard cleanup"
 gem_win_trivia = 10
 gem_loss_trivia = -20
@@ -222,7 +222,7 @@ async def help_command(interaction):
 
     embed.set_footer(
         text="Made with love by _morganite",
-        icon_url="https://cdn.discordapp.com/avatars/405067444764540928/15dd3615a77eb37c700845983f2c88df.webp?size=128",
+        icon_url="https://iili.io/JlxAR7R.png",
     )
 
     await interaction.response.send_message(embed=embed)
@@ -295,9 +295,10 @@ async def leaderboard_command(interaction):
         description=f"{description}",
         color=discord.Color.brand_green(),
     )
+    iconurl = interaction.user.avatar.url if interaction.user.avatar else "https://iili.io/JlxRIZ7.png"
     embed.set_author(
         name=f"{interaction.user.name}'s score",
-        icon_url=interaction.user.avatar.url,
+        icon_url=iconurl
     )
     embed.set_thumbnail(url="https://iili.io/Jc4oxEl.png")
     await interaction.followup.send(embed=embed)

@@ -38,7 +38,7 @@ TOKEN=discordbottokenplaceholder
 
 ## 📝 Version 📝
 
-Current version: 3.2.5
+Current version: 3.2.6
 Version description: Leaderboard cleanup
 
 ## 📜 License 📜
