@@ -14,8 +14,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "3.1.5"
-versiondescription = "Fixes, readme & code cleanup"
+version = "3.2.5"
+versiondescription = "Leaderboard cleanup"
 gem_win_trivia = 10
 gem_loss_trivia = -20
 dbfile = os.getenv("DATABASE")
@@ -282,18 +282,22 @@ async def leaderboard_command(interaction):
     # Define the question and answers
     await interaction.response.defer()
     top_users = get_top_users(dbfile)
-    
+    gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
     # Format the top users into a mentionable format
-    description = "Your score: " + str(get_users_gems(interaction.user.id, dbfile)) + " :gem:\n\n"
+    description = "Your score: " + str(gemsAndPerc[0]) + " :gem:\n"
+    description += "You're in the top " + str(gemsAndPerc[1]) + "%\n\n"
     description += "**Global leaderboard:**\n"
 
     for i, user in enumerate(top_users):
         description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - {user[2]} :gem:\n"
 
     embed = discord.Embed(
-        title="Leaderboard",
         description=f"{description}",
         color=discord.Color.brand_green(),
+    )
+    embed.set_author(
+        name=f"{interaction.user.name}'s score",
+        icon_url=interaction.user.avatar.url,
     )
     embed.set_thumbnail(url="https://iili.io/Jc4oxEl.png")
     await interaction.followup.send(embed=embed)

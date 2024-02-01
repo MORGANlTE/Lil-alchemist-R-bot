@@ -68,17 +68,22 @@ def get_top_users(dbfile):
   conn.close()
   return top_users
 
-def get_users_gems(userid, dbfile):
+def get_users_gems_and_top_percentage(userid, dbfile):
   conn = sqlite3.connect(dbfile)
   cursor = conn.cursor()
-  cursor.execute("SELECT id, userid, gems FROM users WHERE userid = ?", (userid,))
-  user_data = cursor.fetchone()
-  conn.close()
-  if user_data is None:
-      return 0
+  cursor.execute("SELECT gems FROM users WHERE userid = ?", (userid,))
+  user_gems = cursor.fetchone()
+  if user_gems is None:
+    return 0, 0
   else:
-      return user_data[2]
-  
+    cursor.execute("SELECT COUNT(*) FROM users WHERE gems > ?", (user_gems[0],))
+    higher_users = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM users")
+    total_users = cursor.fetchone()[0]
+    top_percentage = (higher_users / total_users) * 100
+    conn.close()
+    return user_gems[0], top_percentage
+
 
 
 # Trivia Shortcuts

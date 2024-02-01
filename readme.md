@@ -9,8 +9,7 @@ It's designed to provide useful features and fun commands related to Little Alch
 - **Card Lookup**: Search for a card on the LAR wiki with the `/wiki` command.
 - **Pack Opening**: Simulate opening a pack of cards.
 - **Trivia**: Participate in trivia games and earn gems.
-- **Shortcuts**: Use handy shortcuts for common tasks.
-- **Help**: Show an overview of the currently available commands, combined with version history and current version
+- **Leaderboard**: Global score leaderboard integration.
 
 ## 🛠️ Setup 🛠️
 
@@ -39,8 +38,8 @@ TOKEN=discordbottokenplaceholder
 
 ## 📝 Version 📝
 
-Current version: 3.1.5
-Version description: Fixes, readme & code cleanup
+Current version: 3.2.5
+Version description: Leaderboard cleanup
 
 ## 📜 License 📜
 
