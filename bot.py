@@ -16,8 +16,9 @@ load_dotenv()
 # Variables:
 version = "3.2.6"
 versiondescription = "Leaderboard cleanup"
-gem_win_trivia = 10
-gem_loss_trivia = -20
+gem_win_trivia = 5
+winstreak_max = 10
+gem_loss_trivia = -10
 dbfile = os.getenv("DATABASE")
 
 # Check the value of the ENVIRONMENT variable
@@ -265,11 +266,18 @@ async def trivia_command(interaction):
     reaction, user = await client.wait_for("reaction_add", check=check)
     # Check if the reaction is correct
     if str(reaction.emoji) == ["1️⃣", "2️⃣", "3️⃣"][trivia.correct_answer_index]:
-        newgems = add_gems_to_user(user.id, gem_win_trivia, dbfile)
-        winner_message = f"Correct! {user.mention} answered correctly. The answer was `{trivia.answers[trivia.correct_answer_index]}`\n+{gem_win_trivia} :gem:"
+        streak = get_winstreak(user.id, dbfile)
+        if streak == None:
+            streak = 0
+        elif streak >= winstreak_max:
+            streak = winstreak_max
+        newgems = add_gems_to_user(user.id, (gem_win_trivia + streak), dbfile)
+        winner_message = f"✅ {user.mention} answered `{trivia.answers[trivia.correct_answer_index]}` correctly\n🔥 {streak}\n+{gem_win_trivia + streak} :gem:"
+        update_winstreak(user.id, dbfile, streak + 1)
     else:
+        update_winstreak(user.id, dbfile, 0)
         newgems = add_gems_to_user(user.id, gem_loss_trivia, dbfile)
-        winner_message = f"Wrong! {user.mention} answered incorrectly.\nThe correct answer was `{trivia.answers[trivia.correct_answer_index]}`.\n{gem_loss_trivia} :gem:"
+        winner_message = f"⛔ {user.mention} answered `{trivia.answers[trivia.correct_answer_index]}` incorrectly.\n{gem_loss_trivia} :gem:"
 
     await interaction.followup.send(winner_message)
 
@@ -285,7 +293,7 @@ async def leaderboard_command(interaction):
     gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
     # Format the top users into a mentionable format
     description = "Your score: " + str(gemsAndPerc[0]) + " :gem:\n"
-    description += "You're in the top " + str(gemsAndPerc[1]) + "%\n\n"
+    description += "You're in the top " + str(round(gemsAndPerc[1], 2)) + "%\n\n"
     description += "**Global leaderboard:**\n"
 
     for i, user in enumerate(top_users):

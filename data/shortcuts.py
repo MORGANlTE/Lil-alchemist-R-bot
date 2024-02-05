@@ -24,6 +24,7 @@ async def sync_guilds(guilds, tree):
 def setup_database(dbfile):
     conn = sqlite3.connect(dbfile)
     create_leaderboard_if_doesnt_exist(conn)
+    check_winstreak_exists_in_users(conn)
     conn.close()
 
 def create_leaderboard_if_doesnt_exist(conn):
@@ -32,10 +33,24 @@ def create_leaderboard_if_doesnt_exist(conn):
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY,
             userid TEXT,
-            gems INTEGER
+            gems INTEGER,
+            winstreak INTEGER
         )
     ''')
     conn.commit()
+
+def check_winstreak_exists_in_users(conn):
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(users)")
+    table_info = cursor.fetchall()
+    winstreak_exists = False
+    for column in table_info:
+        if column[1] == "winstreak":
+            winstreak_exists = True
+            break
+    if not winstreak_exists:
+        cursor.execute("ALTER TABLE users ADD COLUMN winstreak INTEGER")
+        conn.commit()
 
 def add_gems_to_user(userid, gems, dbfile):
   conn = sqlite3.connect(dbfile)
@@ -57,6 +72,33 @@ def add_gems_to_user(userid, gems, dbfile):
   conn.commit()
   conn.close()
   return current + gems
+
+def update_winstreak(userid, dbfile, amount):
+  conn = sqlite3.connect(dbfile)
+  cursor = conn.cursor()
+  cursor.execute("SELECT id, winstreak FROM users WHERE userid = ?", (userid,))
+  user_data = cursor.fetchone()
+  current = 0
+  if user_data is None:
+      if amount < 0:
+          amount = 0
+      cursor.execute("INSERT INTO users (userid, winstreak) VALUES (?, ?)", (userid, amount))
+  else:
+      cursor.execute("UPDATE users SET winstreak = ? WHERE userid = ?", (amount, userid))
+
+  conn.commit()
+  conn.close()
+  return current + amount
+
+def get_winstreak(userid, dbfile):
+  conn = sqlite3.connect(dbfile)
+  cursor = conn.cursor()
+  cursor.execute("SELECT winstreak FROM users WHERE userid = ?", (userid,))
+  user_winstreak = cursor.fetchone()
+  if user_winstreak is None:
+    return 0
+  else:
+    return user_winstreak[0]
 
 def get_top_users(dbfile):
   conn = sqlite3.connect(dbfile)
