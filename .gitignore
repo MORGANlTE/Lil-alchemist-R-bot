@@ -1,4 +1,3 @@
 .env
 *.db
-./data/__pycache__/*
-./data/essentials/data/__pycache__/*
+__pycache__/
