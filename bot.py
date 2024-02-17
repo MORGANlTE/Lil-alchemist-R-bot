@@ -18,7 +18,7 @@ version = "3.2.6"
 versiondescription = "Leaderboard cleanup"
 gem_win_trivia = 5
 winstreak_max = 10
-gem_loss_trivia = -10
+gem_loss_trivia = -5
 dbfile = os.getenv("DATABASE")
 
 # Check the value of the ENVIRONMENT variable
