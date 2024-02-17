@@ -105,7 +105,7 @@ def get_top_users(dbfile):
   cursor = conn.cursor()
 
   # Retrieve the top 3 users from the database
-  cursor.execute("SELECT id, userid, gems FROM users ORDER BY gems DESC LIMIT 5")
+  cursor.execute("SELECT id, userid, gems, winstreak FROM users ORDER BY gems DESC LIMIT 5")
   top_users = cursor.fetchall()
   conn.close()
   return top_users
@@ -113,24 +113,25 @@ def get_top_users(dbfile):
 def get_users_gems_and_top_percentage(userid, dbfile):
   conn = sqlite3.connect(dbfile)
   cursor = conn.cursor()
-  cursor.execute("SELECT gems FROM users WHERE userid = ?", (userid,))
+  cursor.execute("SELECT gems, winstreak FROM users WHERE userid = ?", (userid,))
   user_gems = cursor.fetchone()
   if user_gems is None:
-    return 0, 0
+    return 0, 0, 0
   else:
     cursor.execute("SELECT COUNT(*) FROM users WHERE gems > ?", (user_gems[0],))
     higher_users = cursor.fetchone()[0]
     cursor.execute("SELECT COUNT(*) FROM users")
     total_users = cursor.fetchone()[0]
     top_percentage = (higher_users / total_users) * 100
+    # get the winstreak
     conn.close()
-    return user_gems[0], top_percentage
+    return user_gems[0], top_percentage, user_gems[1]
 
 
 
 # Trivia Shortcuts
-def search_diamonds():
-  url = f"https://lil-alchemist.fandom.com/wiki/Card_Combinations/Diamond"
+def search_rarity(rarity):
+  url = f"https://lil-alchemist.fandom.com/wiki/Card_Combinations/{rarity}"
   resp = requests.get(url)
   soup = BeautifulSoup(resp.content, "html.parser")
   table = soup.find("table", class_="article-table sortable")
@@ -138,54 +139,76 @@ def search_diamonds():
   trs = table.find_all("tr")[1:]
   return trs
 
+def get_combos_from_page(soup):
+  table = soup.find("table", id="mw-customcollapsible-combosTable")
+  trs = table.find_all("tr")[1:]
+  return trs
+
 def get_question_combos():
   # select random one
-  alldiamonds = search_diamonds()
-  # generate 3 numbers, between randint(0, len(alldiamonds) - 1), that are not the same
-  randomnr1 = randint(0, len(alldiamonds) - 1)
-  randomnr2 = randint(0, len(alldiamonds) - 1)
-  randomnr3 = randint(0, len(alldiamonds) - 1)
-    
-  tr = alldiamonds[randomnr1]
-  tr2 = alldiamonds[randomnr2]
-  tr3 = alldiamonds[randomnr3]
+
+  category = randint(0, 6)
+  # more chance for diamond (cuz its harder to guess)
+
+  allcombos = []
+  if category == 0:
+    allcombos = search_rarity("Bronze")
+  elif category == 1:
+    allcombos = search_rarity("Silver")
+  elif category == 2:
+    allcombos = search_rarity("Gold")
+  else:
+    allcombos = search_rarity("Diamond")
+     
+  randomnr1 = randint(0, len(allcombos) - 1)
+
+  tr = allcombos[randomnr1]
 
   combo1 = tr.find_all("td")[0].text
   combo2 = tr.find_all("td")[1].text
 
   real_result = get_result(tr)
-  fake_result1 = get_result(tr2)
-  
-  # Ensure fake_result1 is not the same as real_result
-  while fake_result1 == real_result:
-    randomnr2 = randint(0, len(alldiamonds) - 1)
-    tr2 = alldiamonds[randomnr2]
-    fake_result1 = get_result(tr2)
-  
-  fake_result2 = get_result(tr3)
-  
-  # Ensure fake_result2 is not the same as real_result or fake_result1
-  while fake_result2 == real_result or fake_result2 == fake_result1:
-    randomnr3 = randint(0, len(alldiamonds) - 1)
-    tr3 = alldiamonds[randomnr3]
-    fake_result2 = get_result(tr3)
+  # get the page of the real result
+  url = f"https://lil-alchemist.fandom.com/wiki/{combo1.replace(' ', '_').strip()}"
+  print(url)
+  resp = requests.get(url)
+  soup = BeautifulSoup(resp.content, "html.parser")
+
+  combo1_image = get_image(soup)
+
+  cardnames = []
+  # get the cards from the list of trs
+  for tr in get_combos_from_page(soup):
+      cardnames.append(tr.find_all("td")[1].text)
+
+  # pick 2 random cards from the list
+  card1 = cardnames[randint(0, len(cardnames) - 1)]
+  card2 = cardnames[randint(0, len(cardnames) - 1)]
+
+  while card1 == combo2 or card1 == card2:
+    card1 = cardnames[randint(0, len(cardnames) - 1)]
+
+  while card2 == card1:
+    card2 = cardnames[randint(0, len(cardnames) - 1)]
+
+  print(combo1, combo2, card1, card2, real_result)
 
   # add all 3 results to a list
   results = []
-  results.append(real_result)
-  results.append(fake_result1)
-  results.append(fake_result2)
+  results.append(real_result.strip())
+  results.append(card1.strip())
+  results.append(card2.strip())
 
   shuffle(results)
-  correct_answer_index = results.index(real_result)
+  correct_answer_index = results.index(real_result.strip())
 
   question = Question(
-            f"What does {combo1} & {combo2} make?",
-            results,
-            f"https://iili.io/Jc4pJa4.png",
-            correct_answer_index,
-        )
-  
+          f"What does {combo1} & {combo2} make?",
+          results,
+          f"{combo1_image}",
+          correct_answer_index,
+      )
+
   return question
 
 def get_result(tr):
@@ -194,8 +217,9 @@ def get_result(tr):
   
 
 def get_question_ability():
-  # select random one
-  alldiamonds = search_diamonds()
+  rarity = randint(0, 3)
+  alldiamonds = search_rarity("Diamond")
+
   tr = alldiamonds[randint(0, len(alldiamonds) - 1)]
   tds = tr.find_all("td")
 

@@ -14,8 +14,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "3.2.6"
-versiondescription = "Leaderboard cleanup"
+version = "4.0.1"
+versiondescription = "Winstreaks & harder questions"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -277,12 +277,12 @@ async def trivia_command(interaction):
         elif streak >= winstreak_max:
             streak = winstreak_max
         newgems = add_gems_to_user(user.id, (gem_win_trivia + streak), dbfile)
-        winner_message = f"✅ {user.mention} answered `{trivia.answers[trivia.correct_answer_index]}` correctly\n🔥 {streak}\n+{gem_win_trivia + streak} :gem:"
+        winner_message = f"✅ {user.mention} answered `{trivia.answers[trivia.correct_answer_index]}`\n+{gem_win_trivia + streak} :gem: 🔥 {streak} "
         update_winstreak(user.id, dbfile, streak + 1)
     else:
         update_winstreak(user.id, dbfile, 0)
         newgems = add_gems_to_user(user.id, gem_loss_trivia, dbfile)
-        winner_message = f"⛔ {user.mention} answered `{trivia.answers[trivia.correct_answer_index]}` incorrectly.\n{gem_loss_trivia} :gem:"
+        winner_message = f"⛔ {user.mention} did not answer `{trivia.answers[trivia.correct_answer_index]}` {gem_loss_trivia} :gem:"
 
     await interaction.followup.send(winner_message)
 
@@ -297,12 +297,12 @@ async def leaderboard_command(interaction):
     top_users = get_top_users(dbfile)
     gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
     # Format the top users into a mentionable format
-    description = "Your score: " + str(gemsAndPerc[0]) + " :gem:\n"
+    description = f"Your score: {str(gemsAndPerc[0])} :gem: 🔥{int(gemsAndPerc[1])}\n"
     description += "You're in the top " + str(round(gemsAndPerc[1], 2)) + "%\n\n"
     description += "**Global leaderboard:**\n"
 
     for i, user in enumerate(top_users):
-        description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - {user[2]} :gem:\n"
+        description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - {user[2]} :gem: 🔥{user[3]}\n"
 
     embed = discord.Embed(
         description=f"{description}",

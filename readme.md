@@ -38,8 +38,8 @@ TOKEN=discordbottokenplaceholder
 
 ## 📝 Version 📝
 
-Current version: 3.2.6
-Version description: Leaderboard cleanup
+Current version: 4.0.1
+Version description: Winstreaks & harder questions
 
 ## 📜 License 📜
 
