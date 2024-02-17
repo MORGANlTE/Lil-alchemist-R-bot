@@ -43,18 +43,23 @@ async def simulate_pack_opening(name):
         url = f"https://lil-alchemist.fandom.com/wiki/Special_Packs/{url_name}"
         resp = requests.get(url)
         soup = BeautifulSoup(resp.content, "html.parser")
+        cardnames = []
 
         try:
-            table = soup.find_all("table", class_="pi-horizontal-group")[0]
+            div1 = soup.find_all("div", id="gallery-0")[0]
         except:
             return "Not found"
-        cost = table.find("td", {"data-source": "cost"}).get_text(strip=True)
+
 
         gallery = soup.find("div", id="gallery-0")
-        cardnames = []
-        cards = gallery.find_all("div", class_="lightbox-caption")
+        cards = gallery.find_all("a", class_="image link-internal")
         for card in cards:
-            cardnames.append(card.text.strip())
+            cardnames.append(card.get("href").replace("/wiki/", "").strip())
+
+        gallery = soup.find("div", id="gallery-1")
+        cards = gallery.find_all("a", class_="image link-internal")
+        for card in cards:
+            cardnames.append(card.get("href").replace("/wiki/", "").strip())
 
         # multiply all cards that are not ending with _(Onyx) by 4, so 3 more copies of the card are added
         for i in range(len(cardnames)):
