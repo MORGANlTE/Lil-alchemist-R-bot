@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "4.0.1"
+version = "4.0.2"
 versiondescription = "Winstreaks & harder questions"
 gem_win_trivia = 5
 winstreak_max = 10
@@ -297,7 +297,7 @@ async def leaderboard_command(interaction):
     top_users = get_top_users(dbfile)
     gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
     # Format the top users into a mentionable format
-    description = f"Your score: {str(gemsAndPerc[0])} :gem: 🔥{int(gemsAndPerc[1])}\n"
+    description = f"Your score: {str(gemsAndPerc[0])} :gem: 🔥{int(gemsAndPerc[2])}\n"
     description += "You're in the top " + str(round(gemsAndPerc[1], 2)) + "%\n\n"
     description += "**Global leaderboard:**\n"
 
