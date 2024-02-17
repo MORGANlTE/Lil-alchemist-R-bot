@@ -95,7 +95,6 @@ def generate_random_question_packs():
     packs_clone.remove(pack3)
 
     correct_answer_int = randint(0, 2)
-    print(f"[PackTrivia]: {pack1}")
 
     # get 2 random cards from pack1
     # all cards from this pack:
@@ -145,10 +144,9 @@ def generate_random_question_packs():
 
     # get the image from the first card
     question = Question(
-            f"What pack do the cards `{card1}` and `{card2}` belong to?",
+            f"What pack do the cards `{card1.replace('_', ' ')}` and `{card2.replace('_', ' ')}` belong to?",
             packs_local,
             f"{card1_image}",
             correct_answer_index,
         )
-    
     return question

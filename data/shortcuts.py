@@ -143,6 +143,7 @@ def get_question_combos():
             f"https://iili.io/Jc4pJa4.png",
             correct_answer_index,
         )
+  
   return question
 
 def get_result(tr):
@@ -205,6 +206,7 @@ def get_question_ability():
             card1_image,
             correct_answer_index,
         )
+  
   return question
 
 
