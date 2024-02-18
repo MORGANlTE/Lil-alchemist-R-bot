@@ -185,7 +185,7 @@ def get_question_combos():
   card1 = cardnames[randint(0, len(cardnames) - 1)]
   card2 = cardnames[randint(0, len(cardnames) - 1)]
 
-  while card1 == combo2 or card1 == card2:
+  while card1 == real_result or card1 == card2:
     card1 = cardnames[randint(0, len(cardnames) - 1)]
 
   while card2 == card1:
