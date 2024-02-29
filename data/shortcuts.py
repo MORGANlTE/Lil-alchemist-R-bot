@@ -25,6 +25,7 @@ def setup_database(dbfile):
     conn = sqlite3.connect(dbfile)
     create_leaderboard_if_doesnt_exist(conn)
     check_winstreak_exists_in_users(conn)
+    check_exp_exists_in_users(conn)
     conn.close()
 
 def create_leaderboard_if_doesnt_exist(conn):
@@ -52,6 +53,31 @@ def check_winstreak_exists_in_users(conn):
         cursor.execute("ALTER TABLE users ADD COLUMN winstreak INTEGER")
         conn.commit()
 
+def check_exp_exists_in_users(conn):
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(users)")
+    table_info = cursor.fetchall()
+    exp_exists = False
+    lastupdated_exists = False
+
+    for column in table_info:
+        if column[1] == "exp":
+            exp_exists = True
+            break
+        
+    for column in table_info:
+        if column[1] == "lastupdated":
+            lastupdated_exists = True
+            break
+    if not exp_exists:
+        cursor.execute("ALTER TABLE users ADD COLUMN exp INTEGER")
+        conn.commit()
+    if not lastupdated_exists: # lastupdated is the last time the user got exp
+        cursor.execute("ALTER TABLE users ADD COLUMN lastupdated TEXT")
+        conn.commit()
+
+    conn.close()
+
 def add_gems_to_user(userid, gems, dbfile):
   conn = sqlite3.connect(dbfile)
   cursor = conn.cursor()
@@ -63,8 +89,11 @@ def add_gems_to_user(userid, gems, dbfile):
           gems = 0
       cursor.execute("INSERT INTO users (userid, gems) VALUES (?, ?)", (userid, gems))
   else:
-      current = user_data[1]
-      if user_data[1] + gems < 0:
+      if user_data[1] is None:
+        current = 0
+      else:
+        current = user_data[1]
+      if current + gems < 0:
           gems = 0
           current = 0
       cursor.execute("UPDATE users SET gems = ? WHERE userid = ?", (current + gems, userid))

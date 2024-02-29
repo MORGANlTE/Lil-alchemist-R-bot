@@ -3,6 +3,7 @@ from discord import app_commands
 from data.data_grabber import *
 from data.packopening import *
 from data.shortcuts import *
+from data.exp_essentials import *
 import discord
 import requests
 from bs4 import BeautifulSoup
@@ -19,6 +20,7 @@ versiondescription = "Winstreaks & harder questions"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
+exp = 10
 dbfile = os.getenv("DATABASE")
 
 # Check the value of the ENVIRONMENT variable
@@ -273,12 +275,12 @@ async def trivia_command(interaction):
     if str(reaction.emoji) == ["1️⃣", "2️⃣", "3️⃣"][trivia.correct_answer_index]:
         streak = get_winstreak(user.id, dbfile)
         if streak == None:
-            streak = 0
+            streak = 1
         elif streak >= winstreak_max:
             streak = winstreak_max
         newgems = add_gems_to_user(user.id, (gem_win_trivia + streak), dbfile)
-        winner_message = f"✅ {user.mention} answered `{trivia.answers[trivia.correct_answer_index]}`\n+{gem_win_trivia + streak} :gem: 🔥 {streak} "
-        update_winstreak(user.id, dbfile, streak + 1)
+        winner_message = f"✅ {user.mention} answered `{trivia.answers[trivia.correct_answer_index]}`\n+{gem_win_trivia + streak} :gem: 🔥 {streak + 1} "
+        update_winstreak(user.id, dbfile, streak)
     else:
         update_winstreak(user.id, dbfile, 0)
         newgems = add_gems_to_user(user.id, gem_loss_trivia, dbfile)
@@ -386,7 +388,45 @@ async def on_ready():
     print("[V] Db created/checked")
 
 
+# Every time a message is send, give the user some experience, except for bots and also only after 1 minute, since we dont want to give experience for spamming
+@client.event
+async def on_message(message):
+    if message.author.bot:
+        return
+    if message.content.startswith("!"):
+        return
+    # Give the user some experience; but only if the user has not been given experience in the last minute
+    return_value = add_experience_to_user(message.author.id, exp, dbfile)
+    if return_value == False:
+        return
 
+    # check for levelup
+    if return_value["levelup"] == True:
+        # get the interaction
+        # you can send a levelupmessage if you want, but not needed I feel
+        return
+
+@tree.command(
+    name="profile",
+    description="Your Discord Profile",
+    guilds=guilds,
+)
+async def profile_command(interaction):
+    # Define the question and answers
+
+    gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
+    gems = gemsAndPerc[0] if gemsAndPerc[0] is not None else 0
+    winstreak = int(gemsAndPerc[2]) if gemsAndPerc[2] is not None else 0
+    exp = get_experience(interaction.user.id, dbfile) if interaction.user.id is not None else 0
+    discord_name = interaction.user.display_name
+    discord_avatar = interaction.user.avatar.url if interaction.user.avatar.url is not None else "https://iili.io/JlxRIZ7.png"
+    pic = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak)
+
+    await interaction.followup.send(
+        file=pic,
+    )
+    # remove the image
+    os.remove(f"./important_images/{discord_name}.png")
 # worker example:
 
 # last_run = datetime.now().date()  # Set the last run date to the first day of the month
