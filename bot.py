@@ -373,21 +373,6 @@ async def packopening_command(interaction, packname: str):
         )
 
 
-@client.event
-async def on_ready():
-    # await sync_guilds(guilds, tree)
-    print("[V] Finished setting up commands")
-    print(f"[V] Logged in as {client.user} (ID: {client.user.id})")
-    # remove everything from the images folder
-    delete_saved_images()
-    print("[V] Cleared images folder")
-    setup_packs()
-    print("[V] Setup the packs")
-    # Create the database if it doesn't exist
-    setup_database(dbfile)
-    print("[V] Db created/checked")
-
-
 # Every time a message is send, give the user some experience, except for bots and also only after 1 minute, since we dont want to give experience for spamming
 @client.event
 async def on_message(message):
@@ -414,6 +399,8 @@ async def on_message(message):
 async def profile_command(interaction):
     # Define the question and answers
 
+    await interaction.response.defer()
+
     gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
     gems = gemsAndPerc[0] if gemsAndPerc[0] is not None else 0
     winstreak = int(gemsAndPerc[2]) if gemsAndPerc[2] is not None else 0
@@ -427,6 +414,41 @@ async def profile_command(interaction):
     )
     # remove the image
     os.remove(f"./important_images/{discord_name}.png")
+
+
+@tree.command(
+    name="claim",
+    description="Claim your daily login!",
+    guilds=guilds,
+)
+async def claim_command(interaction):
+    # check if the user has already claimed
+    await interaction.response.defer()
+
+    return_value, text = claim_daily(interaction.user.id, dbfile)
+
+    if return_value == "User not found":
+        embed = discord.Embed(
+            title="Daily Login",
+            description="You need at least 1 msg before claiming your Daily Login!",
+            color=discord.Color.red(),
+        )
+        await interaction.followup.send(embed=embed)
+    elif return_value == False:
+        embed = discord.Embed(
+            title="Daily Login",
+            description="Next Daily Login " + str(text) + " :clock5:",
+            color=discord.Color.orange(),
+        )
+        await interaction.followup.send(embed=embed)
+    else:
+        embed = discord.Embed(
+            title="Daily Login",
+            description="You have claimed your daily login! \n\n" + str(text),
+            color=discord.Color.green(),
+        )
+        await interaction.followup.send(embed=embed)
+    
 # worker example:
 
 # last_run = datetime.now().date()  # Set the last run date to the first day of the month
@@ -440,6 +462,21 @@ async def profile_command(interaction):
 #     if now.time() >= target_time and (last_run is None or last_run < now.date()):
 #         print("done")
 #         last_run = now.date()  # Update the last run date
+
+
+@client.event
+async def on_ready():
+    # await sync_guilds(guilds, tree)
+    print("[V] Finished setting up commands")
+    print(f"[V] Logged in as {client.user} (ID: {client.user.id})")
+    # remove everything from the images folder
+    delete_saved_images()
+    print("[V] Cleared images folder")
+    setup_packs()
+    print("[V] Setup the packs")
+    # Create the database if it doesn't exist
+    setup_database(dbfile)
+    print("[V] Db created/checked")
 
 
 client.run(os.getenv("TOKEN"))

@@ -155,3 +155,44 @@ async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstrea
             filename=f"{discord_name}.png",
         )
   return fileM
+
+def claim_daily(userid, dbfile):
+  conn = sqlite3.connect(dbfile)
+  cursor = conn.cursor()
+  cursor.execute("SELECT lastlogin FROM users WHERE userid = ?", (userid,))
+  lastlogin = cursor.fetchone()
+  if lastlogin is None or lastlogin[0] is None:
+    lastlogin = 0
+  else:
+    lastlogin = float(lastlogin[0])
+
+# check if less than 23 h, calculated
+  if datetime.now().timestamp() - lastlogin < 82800:
+    conn.close()
+    time_difference = timedelta(seconds=82800 - (datetime.now().timestamp() - lastlogin))
+    hours = time_difference.seconds // 3600
+    minutes = (time_difference.seconds // 60) % 60
+    time_string = f"{hours}h {minutes}min"
+    return False, time_string
+  else:
+    getter = cursor.execute("SELECT gems, winstreak, exp FROM users WHERE userid = ?", (userid,))
+    # get the users level
+    user = getter.fetchone()
+    if user is None:
+      conn.close()
+      return "User not found", False
+    # gems should be 0 if it is null
+    gems = user[0] if user[0] is not None else 0
+    # winstreak = user[1] if user[1] is not None else 0
+    exp = user[2] if user[2] is not None else 0
+
+    standard = 200
+    # add 1 gem per level
+    standardgem_amount = standard + calculate_level(exp)
+
+    cursor.execute("UPDATE users SET gems = ? WHERE userid = ?", (gems + standardgem_amount, userid))
+    cursor.execute("UPDATE users SET lastlogin = ? WHERE userid = ?", (datetime.now().timestamp(), userid))
+
+    conn.commit()
+    conn.close()
+    return True, f"You gained **{str(standardgem_amount)}** :gem: \n"

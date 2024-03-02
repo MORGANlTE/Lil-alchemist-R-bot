@@ -59,6 +59,7 @@ def check_exp_exists_in_users(conn):
     table_info = cursor.fetchall()
     exp_exists = False
     lastupdated_exists = False
+    lastlogin_exists = False
 
     for column in table_info:
         if column[1] == "exp":
@@ -69,11 +70,20 @@ def check_exp_exists_in_users(conn):
         if column[1] == "lastupdated":
             lastupdated_exists = True
             break
+        
+    for column in table_info:
+        if column[1] == "lastlogin":
+            lastlogin_exists = True
+            break
+        
     if not exp_exists:
         cursor.execute("ALTER TABLE users ADD COLUMN exp INTEGER")
         conn.commit()
     if not lastupdated_exists: # lastupdated is the last time the user got exp
         cursor.execute("ALTER TABLE users ADD COLUMN lastupdated TEXT")
+        conn.commit()
+    if not lastlogin_exists: # lastupdated is the last time the user got exp
+        cursor.execute("ALTER TABLE users ADD COLUMN lastlogin TEXT")
         conn.commit()
 
     conn.close()
