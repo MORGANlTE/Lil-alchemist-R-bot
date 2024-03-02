@@ -144,7 +144,7 @@ def get_top_users(dbfile):
   cursor = conn.cursor()
 
   # Retrieve the top 3 users from the database
-  cursor.execute("SELECT id, userid, gems, winstreak FROM users ORDER BY gems DESC LIMIT 5")
+  cursor.execute("SELECT id, userid, gems, winstreak FROM users ORDER BY gems DESC, winstreak DESC LIMIT 5")
   top_users = cursor.fetchall()
   conn.close()
   return top_users
@@ -155,7 +155,7 @@ def get_users_gems_and_top_percentage(userid, dbfile):
   cursor.execute("SELECT gems, winstreak FROM users WHERE userid = ?", (userid,))
   user_gems = cursor.fetchone()
   if user_gems is None:
-    return 0, 0, 0
+    return 0, 100, 0
   else:
     cursor.execute("SELECT COUNT(*) FROM users WHERE gems > ?", (user_gems[0],))
     higher_users = cursor.fetchone()[0]
@@ -209,7 +209,6 @@ def get_question_combos():
   real_result = get_result(tr)
   # get the page of the real result
   url = f"https://lil-alchemist.fandom.com/wiki/{combo1.replace(' ', '_').strip()}"
-  print(url)
   resp = requests.get(url)
   soup = BeautifulSoup(resp.content, "html.parser")
 
@@ -230,7 +229,6 @@ def get_question_combos():
   while card2 == card1:
     card2 = cardnames[randint(0, len(cardnames) - 1)]
 
-  print(combo1, combo2, card1, card2, real_result)
 
   # add all 3 results to a list
   results = []

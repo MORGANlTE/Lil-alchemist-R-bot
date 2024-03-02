@@ -10,6 +10,7 @@ It's designed to provide useful features and fun commands related to Little Alch
 - **Pack Opening**: Simulate opening a pack of cards.
 - **Trivia**: Participate in trivia games and earn gems.
 - **Leaderboard**: Global score leaderboard integration.
+- **Much more**: Take a look at `/help` for all commands currently available!
 
 ## 🛠️ Setup 🛠️
 
@@ -38,8 +39,8 @@ TOKEN=discordbottokenplaceholder
 
 ## 📝 Version 📝
 
-Current version: 4.0.1
-Version description: Winstreaks & harder questions
+Current version: 5.1.2
+Version description: Added Profiles & Daily Bonus
 
 ## 📜 License 📜
 

@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "4.0.2"
-versiondescription = "Winstreaks & harder questions"
+version = "5.1.2"
+versiondescription = "Added Profiles & Daily Bonus"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -197,29 +197,44 @@ async def help_command(interaction):
         color=discord.Color.teal(),
     )
     embed.add_field(
-        name=":game_die: wiki",
-        value="Searches the latest info on the wiki",
+        name=":game_die: /wiki",
+        value="Searches the specified card on the wiki",
         inline=True,
     )
     embed.add_field(
-        name=":question: help",
-        value="Displays this help section",
-        inline=False,
+        name=":question: /help",
+        value="Displays the help page",
+        inline=True,
     )
     embed.add_field(
-        name=":gem: trivia",
+        name=":bar_chart: /profile",
+        value="Shows your profile",
+        inline=True,
+    )
+    embed.add_field(
+        name=":moneybag: /claim",
+        value="Claim your daily login",
+        inline=True,
+    )
+    embed.add_field(
+        name=":package: /packopening",
+        value="Opens a pack",
+        inline=True,
+    )
+    embed.add_field(
+        name=":gem: /trivia",
         value="Starts a trivia question",
-        inline=False,
+        inline=True,
     )
     embed.add_field(
-            name=":coin: leaderboard",
-            value="Shows your score and the global leaderboard",
-            inline=False,
-        )
+        name=":coin: /leaderboard",
+        value="Shows your score on the global leaderboard",
+        inline=True,
+    )
     
     embed.add_field(
-        name=f":space_invader: v{version}",
-        value=f"{versiondescription}",
+        name="** **",
+        value=f"v{version} - {versiondescription}\n*All copyrighted material belongs to Monumental*",
         inline=False,
     )
 
@@ -278,8 +293,10 @@ async def trivia_command(interaction):
             streak = 1
         elif streak >= winstreak_max:
             streak = winstreak_max
+        else:
+            streak += 1
         newgems = add_gems_to_user(user.id, (gem_win_trivia + streak), dbfile)
-        winner_message = f"✅ {user.mention} answered `{trivia.answers[trivia.correct_answer_index]}`\n+{gem_win_trivia + streak} :gem: 🔥 {streak + 1} "
+        winner_message = f"✅ {user.mention} answered `{trivia.answers[trivia.correct_answer_index]}`\n+{gem_win_trivia + streak} :gem: 🔥 {streak} "
         update_winstreak(user.id, dbfile, streak)
     else:
         update_winstreak(user.id, dbfile, 0)
@@ -298,6 +315,20 @@ async def leaderboard_command(interaction):
     await interaction.response.defer()
     top_users = get_top_users(dbfile)
     gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
+    # if any value in the list is None, set it to 0
+    if gemsAndPerc is None:
+        gemsAndPerc = [0, 100, 0]
+
+    # for each gem and percentage, if it is None, set it to 0
+    newlist = []
+    for i in range(len(gemsAndPerc)):
+        if gemsAndPerc[i] is None:
+            newlist.append(0)
+        else:
+            newlist.append(gemsAndPerc[i])
+
+    gemsAndPerc = newlist
+
     # Format the top users into a mentionable format
     description = f"Your score: {str(gemsAndPerc[0])} :gem: 🔥{int(gemsAndPerc[2])}\n"
     description += "You're in the top " + str(round(gemsAndPerc[1], 2)) + "%\n\n"
@@ -430,7 +461,7 @@ async def claim_command(interaction):
     if return_value == "User not found":
         embed = discord.Embed(
             title="Daily Login",
-            description="You need at least 1 msg before claiming your Daily Login!",
+            description="You need at least 1 message in this server before claiming your Daily Login!",
             color=discord.Color.red(),
         )
         await interaction.followup.send(embed=embed)
