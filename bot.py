@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.1.2"
+version = "5.1.3"
 versiondescription = "Added Profiles & Daily Bonus"
 gem_win_trivia = 5
 winstreak_max = 10

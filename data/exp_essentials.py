@@ -36,6 +36,11 @@ def add_experience_to_user(userid, exp, dbfile):
   if user_data is None:
     cursor.execute("INSERT INTO users (userid, exp) VALUES (?, ?)", (userid, exp))
   else:
+      if user_data[1] is None:
+        current = 0
+      else:
+        current = user_data[1]
+
       # if the last updated is not 30sec ago, reset the exp
       # Check if user_data_time + 30 is less than current date & time
       now = datetime.now()
@@ -46,13 +51,12 @@ def add_experience_to_user(userid, exp, dbfile):
           conn.commit()
           conn.close()
           return False
-      if int(user_data[1]) >= 41209:
+      if int(current) >= 41209:
           cursor.execute("UPDATE users SET exp = ? WHERE userid = ?", (41209, userid))
           conn.commit()
           conn.close()
           return False
       
-      current = user_data[1]
       cursor.execute("UPDATE users SET exp = ? WHERE userid = ?", (current + exp, userid))
       cursor.execute("UPDATE users SET lastupdated = ? WHERE userid = ?", (now.timestamp(), userid))
   currentlvl = calculate_level(current)
