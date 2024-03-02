@@ -25,6 +25,7 @@ def setup_database(dbfile):
     conn = sqlite3.connect(dbfile)
     create_leaderboard_if_doesnt_exist(conn)
     check_winstreak_exists_in_users(conn)
+    check_exp_exists_in_users(conn)
     conn.close()
 
 def create_leaderboard_if_doesnt_exist(conn):
@@ -52,6 +53,41 @@ def check_winstreak_exists_in_users(conn):
         cursor.execute("ALTER TABLE users ADD COLUMN winstreak INTEGER")
         conn.commit()
 
+def check_exp_exists_in_users(conn):
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(users)")
+    table_info = cursor.fetchall()
+    exp_exists = False
+    lastupdated_exists = False
+    lastlogin_exists = False
+
+    for column in table_info:
+        if column[1] == "exp":
+            exp_exists = True
+            break
+        
+    for column in table_info:
+        if column[1] == "lastupdated":
+            lastupdated_exists = True
+            break
+        
+    for column in table_info:
+        if column[1] == "lastlogin":
+            lastlogin_exists = True
+            break
+        
+    if not exp_exists:
+        cursor.execute("ALTER TABLE users ADD COLUMN exp INTEGER")
+        conn.commit()
+    if not lastupdated_exists: # lastupdated is the last time the user got exp
+        cursor.execute("ALTER TABLE users ADD COLUMN lastupdated TEXT")
+        conn.commit()
+    if not lastlogin_exists: # lastupdated is the last time the user got exp
+        cursor.execute("ALTER TABLE users ADD COLUMN lastlogin TEXT")
+        conn.commit()
+
+    conn.close()
+
 def add_gems_to_user(userid, gems, dbfile):
   conn = sqlite3.connect(dbfile)
   cursor = conn.cursor()
@@ -63,8 +99,11 @@ def add_gems_to_user(userid, gems, dbfile):
           gems = 0
       cursor.execute("INSERT INTO users (userid, gems) VALUES (?, ?)", (userid, gems))
   else:
-      current = user_data[1]
-      if user_data[1] + gems < 0:
+      if user_data[1] is None:
+        current = 0
+      else:
+        current = user_data[1]
+      if current + gems < 0:
           gems = 0
           current = 0
       cursor.execute("UPDATE users SET gems = ? WHERE userid = ?", (current + gems, userid))
@@ -105,7 +144,7 @@ def get_top_users(dbfile):
   cursor = conn.cursor()
 
   # Retrieve the top 3 users from the database
-  cursor.execute("SELECT id, userid, gems, winstreak FROM users ORDER BY gems DESC LIMIT 5")
+  cursor.execute("SELECT id, userid, gems, winstreak FROM users ORDER BY gems DESC, winstreak DESC LIMIT 5")
   top_users = cursor.fetchall()
   conn.close()
   return top_users
@@ -116,7 +155,7 @@ def get_users_gems_and_top_percentage(userid, dbfile):
   cursor.execute("SELECT gems, winstreak FROM users WHERE userid = ?", (userid,))
   user_gems = cursor.fetchone()
   if user_gems is None:
-    return 0, 0, 0
+    return 0, 100, 0
   else:
     cursor.execute("SELECT COUNT(*) FROM users WHERE gems > ?", (user_gems[0],))
     higher_users = cursor.fetchone()[0]
@@ -170,7 +209,6 @@ def get_question_combos():
   real_result = get_result(tr)
   # get the page of the real result
   url = f"https://lil-alchemist.fandom.com/wiki/{combo1.replace(' ', '_').strip()}"
-  print(url)
   resp = requests.get(url)
   soup = BeautifulSoup(resp.content, "html.parser")
 
@@ -191,7 +229,6 @@ def get_question_combos():
   while card2 == card1:
     card2 = cardnames[randint(0, len(cardnames) - 1)]
 
-  print(combo1, combo2, card1, card2, real_result)
 
   # add all 3 results to a list
   results = []

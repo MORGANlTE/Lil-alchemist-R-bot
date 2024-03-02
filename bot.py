@@ -3,6 +3,7 @@ from discord import app_commands
 from data.data_grabber import *
 from data.packopening import *
 from data.shortcuts import *
+from data.exp_essentials import *
 import discord
 import requests
 from bs4 import BeautifulSoup
@@ -14,11 +15,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "4.0.2"
-versiondescription = "Winstreaks & harder questions"
+version = "5.1.2"
+versiondescription = "Added Profiles & Daily Bonus"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
+exp = 10
 dbfile = os.getenv("DATABASE")
 
 # Check the value of the ENVIRONMENT variable
@@ -195,29 +197,44 @@ async def help_command(interaction):
         color=discord.Color.teal(),
     )
     embed.add_field(
-        name=":game_die: wiki",
-        value="Searches the latest info on the wiki",
+        name=":game_die: /wiki",
+        value="Searches the specified card on the wiki",
         inline=True,
     )
     embed.add_field(
-        name=":question: help",
-        value="Displays this help section",
-        inline=False,
+        name=":question: /help",
+        value="Displays the help page",
+        inline=True,
     )
     embed.add_field(
-        name=":gem: trivia",
+        name=":bar_chart: /profile",
+        value="Shows your profile",
+        inline=True,
+    )
+    embed.add_field(
+        name=":moneybag: /claim",
+        value="Claim your daily login",
+        inline=True,
+    )
+    embed.add_field(
+        name=":package: /packopening",
+        value="Opens a pack",
+        inline=True,
+    )
+    embed.add_field(
+        name=":gem: /trivia",
         value="Starts a trivia question",
-        inline=False,
+        inline=True,
     )
     embed.add_field(
-            name=":coin: leaderboard",
-            value="Shows your score and the global leaderboard",
-            inline=False,
-        )
+        name=":coin: /leaderboard",
+        value="Shows your score on the global leaderboard",
+        inline=True,
+    )
     
     embed.add_field(
-        name=f":space_invader: v{version}",
-        value=f"{versiondescription}",
+        name="** **",
+        value=f"v{version} - {versiondescription}\n*All copyrighted material belongs to Monumental*",
         inline=False,
     )
 
@@ -273,12 +290,14 @@ async def trivia_command(interaction):
     if str(reaction.emoji) == ["1️⃣", "2️⃣", "3️⃣"][trivia.correct_answer_index]:
         streak = get_winstreak(user.id, dbfile)
         if streak == None:
-            streak = 0
+            streak = 1
         elif streak >= winstreak_max:
             streak = winstreak_max
+        else:
+            streak += 1
         newgems = add_gems_to_user(user.id, (gem_win_trivia + streak), dbfile)
         winner_message = f"✅ {user.mention} answered `{trivia.answers[trivia.correct_answer_index]}`\n+{gem_win_trivia + streak} :gem: 🔥 {streak} "
-        update_winstreak(user.id, dbfile, streak + 1)
+        update_winstreak(user.id, dbfile, streak)
     else:
         update_winstreak(user.id, dbfile, 0)
         newgems = add_gems_to_user(user.id, gem_loss_trivia, dbfile)
@@ -296,6 +315,20 @@ async def leaderboard_command(interaction):
     await interaction.response.defer()
     top_users = get_top_users(dbfile)
     gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
+    # if any value in the list is None, set it to 0
+    if gemsAndPerc is None:
+        gemsAndPerc = [0, 100, 0]
+
+    # for each gem and percentage, if it is None, set it to 0
+    newlist = []
+    for i in range(len(gemsAndPerc)):
+        if gemsAndPerc[i] is None:
+            newlist.append(0)
+        else:
+            newlist.append(gemsAndPerc[i])
+
+    gemsAndPerc = newlist
+
     # Format the top users into a mentionable format
     description = f"Your score: {str(gemsAndPerc[0])} :gem: 🔥{int(gemsAndPerc[2])}\n"
     description += "You're in the top " + str(round(gemsAndPerc[1], 2)) + "%\n\n"
@@ -371,22 +404,82 @@ async def packopening_command(interaction, packname: str):
         )
 
 
+# Every time a message is send, give the user some experience, except for bots and also only after 1 minute, since we dont want to give experience for spamming
 @client.event
-async def on_ready():
-    # await sync_guilds(guilds, tree)
-    print("[V] Finished setting up commands")
-    print(f"[V] Logged in as {client.user} (ID: {client.user.id})")
-    # remove everything from the images folder
-    delete_saved_images()
-    print("[V] Cleared images folder")
-    setup_packs()
-    print("[V] Setup the packs")
-    # Create the database if it doesn't exist
-    setup_database(dbfile)
-    print("[V] Db created/checked")
+async def on_message(message):
+    if message.author.bot:
+        return
+    if message.content.startswith("!"):
+        return
+    # Give the user some experience; but only if the user has not been given experience in the last minute
+    return_value = add_experience_to_user(message.author.id, exp, dbfile)
+    if return_value == False:
+        return
+
+    # check for levelup
+    if return_value["levelup"] == True:
+        # get the interaction
+        # you can send a levelupmessage if you want, but not needed I feel
+        return
+
+@tree.command(
+    name="profile",
+    description="Your Discord Profile",
+    guilds=guilds,
+)
+async def profile_command(interaction):
+    # Define the question and answers
+
+    await interaction.response.defer()
+
+    gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
+    gems = gemsAndPerc[0] if gemsAndPerc[0] is not None else 0
+    winstreak = int(gemsAndPerc[2]) if gemsAndPerc[2] is not None else 0
+    exp = get_experience(interaction.user.id, dbfile) if interaction.user.id is not None else 0
+    discord_name = interaction.user.display_name
+    discord_avatar = interaction.user.avatar.url if interaction.user.avatar.url is not None else "https://iili.io/JlxRIZ7.png"
+    pic = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak)
+
+    await interaction.followup.send(
+        file=pic,
+    )
+    # remove the image
+    os.remove(f"./important_images/{discord_name}.png")
 
 
+@tree.command(
+    name="claim",
+    description="Claim your daily login!",
+    guilds=guilds,
+)
+async def claim_command(interaction):
+    # check if the user has already claimed
+    await interaction.response.defer()
 
+    return_value, text = claim_daily(interaction.user.id, dbfile)
+
+    if return_value == "User not found":
+        embed = discord.Embed(
+            title="Daily Login",
+            description="You need at least 1 message in this server before claiming your Daily Login!",
+            color=discord.Color.red(),
+        )
+        await interaction.followup.send(embed=embed)
+    elif return_value == False:
+        embed = discord.Embed(
+            title="Daily Login",
+            description="Next Daily Login " + str(text) + " :clock5:",
+            color=discord.Color.orange(),
+        )
+        await interaction.followup.send(embed=embed)
+    else:
+        embed = discord.Embed(
+            title="Daily Login",
+            description="You have claimed your daily login! \n\n" + str(text),
+            color=discord.Color.green(),
+        )
+        await interaction.followup.send(embed=embed)
+    
 # worker example:
 
 # last_run = datetime.now().date()  # Set the last run date to the first day of the month
@@ -400,6 +493,21 @@ async def on_ready():
 #     if now.time() >= target_time and (last_run is None or last_run < now.date()):
 #         print("done")
 #         last_run = now.date()  # Update the last run date
+
+
+@client.event
+async def on_ready():
+    # await sync_guilds(guilds, tree)
+    print("[V] Finished setting up commands")
+    print(f"[V] Logged in as {client.user} (ID: {client.user.id})")
+    # remove everything from the images folder
+    delete_saved_images()
+    print("[V] Cleared images folder")
+    setup_packs()
+    print("[V] Setup the packs")
+    # Create the database if it doesn't exist
+    setup_database(dbfile)
+    print("[V] Db created/checked")
 
 
 client.run(os.getenv("TOKEN"))
