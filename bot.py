@@ -25,7 +25,7 @@ dbfile = os.getenv("DATABASE")
 
 # Check the value of the ENVIRONMENT variable
 environment = os.getenv("ENVIRONMENT")
-reset_commands = os.getenv("RESET_COMMANDS") == "True"
+reset_commands = os.getenv("RESET_COMMANDS") if os.getenv("RESET_COMMANDS") is not None else True
 
 if environment == "testing":
     guilds=[discord.Object(id=945414516391424040)]
@@ -500,6 +500,7 @@ async def claim_command(interaction):
 async def on_ready():
     if reset_commands:
         await sync_guilds(guilds, tree)
+        print("[V] Synced guilds")
     print("[V] Finished setting up commands")
     print(f"[V] Logged in as {client.user} (ID: {client.user.id})")
     # remove everything from the images folder
