@@ -39,7 +39,7 @@ TOKEN=discordbottokenplaceholder
 
 ## 📝 Version 📝
 
-Current version: 5.1.2
+Current version: 5.1.3
 Version description: Added Profiles & Daily Bonus
 
 ## 📜 License 📜
