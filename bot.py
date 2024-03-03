@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.1.3"
-versiondescription = "Added Profiles & Daily Bonus"
+version = "5.1.4"
+versiondescription = "Daily Login is now ephermal"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -465,21 +465,23 @@ async def claim_command(interaction):
             description="You need at least 1 message in this server before claiming your Daily Login!",
             color=discord.Color.red(),
         )
-        await interaction.followup.send(embed=embed)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
     elif return_value == False:
         embed = discord.Embed(
             title="Daily Login",
             description="Next Daily Login " + str(text) + " :clock5:",
             color=discord.Color.orange(),
         )
-        await interaction.followup.send(embed=embed)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
     else:
         embed = discord.Embed(
             title="Daily Login",
             description="You have claimed your daily login! \n\n" + str(text),
             color=discord.Color.green(),
         )
-        await interaction.followup.send(embed=embed)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
     
 # worker example:
 
