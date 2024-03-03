@@ -455,7 +455,6 @@ async def profile_command(interaction):
 )
 async def claim_command(interaction):
     # check if the user has already claimed
-    await interaction.response.defer()
 
     return_value, text = claim_daily(interaction.user.id, dbfile)
 
