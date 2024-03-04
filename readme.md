@@ -23,8 +23,12 @@ It's designed to provide useful features and fun commands related to Little Alch
 
 ```
 ENVIRONMENT=testing
+# set to production for actual bot
 DATABASE=playerdb.db
+# database for the playerdata
 TOKEN=discordbottokenplaceholder
+# discord bot token
+RESET_COMMANDS=False
 ```
 
 4. Run the bot with `python bot.py`.

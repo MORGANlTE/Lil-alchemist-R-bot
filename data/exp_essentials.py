@@ -80,7 +80,6 @@ def get_experience(userid, dbfile):
   
 
 async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak):
-
   response = requests.get(discord_avatar)
   avatar = Image.open(io.BytesIO(response.content))
   avatar = avatar.resize((200, 200))
@@ -93,6 +92,7 @@ async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstrea
   radius = 20  # Adjust the radius to control the roundness of the corners
   draw.rounded_rectangle([(0, 0), (180, 180)], radius, fill=255)
   avatar = ImageOps.fit(avatar, mask.size, centering=(0.5, 0.5))
+  avatar = avatar.convert("RGBA")  # Convert avatar image to RGBA mode
   avatar.putalpha(mask)
   
   # put the avatar on the background

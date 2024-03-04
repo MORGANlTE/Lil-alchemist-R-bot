@@ -322,8 +322,6 @@ def get_image(soup):
             a_tag = figure_element.find("a")
             if a_tag and "href" in a_tag.attrs:
                 image_url = a_tag["href"]
-            else:
-                print("No image URL found within the <a> tag.")
         else:
             print("No <figure> element with class 'pi-item pi-image' found.")
             image_url = None
