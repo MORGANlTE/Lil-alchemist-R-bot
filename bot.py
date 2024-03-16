@@ -50,6 +50,11 @@ async def show_command(interaction, cardname: str, is_onyx: bool = False):
     await interaction.response.defer()
     # test if this url gives us a boss card or a normal card
     print("[Searching] " + cardname)
+    t = check_if_custom_name(cardname)
+    if t is not None and t is not False:
+        await interaction.followup.send(embed=t)
+        return
+
     if is_onyx:
         cardname += "_(Onyx)"
     url = f"https://lil-alchemist.fandom.com/wiki/{cardname.title().replace(' ', '_').replace('_And_', '_and_')}"

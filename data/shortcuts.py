@@ -7,6 +7,7 @@ from random import randint
 from data.essentials.data.question import Question
 from random import shuffle
 from data.data_grabber import get_rarity_and_form_etc
+from data.data_grabber import get_fusion_url, get_embedcolor
 
 # Discord.py
 async def sync_guilds(guilds, tree):
@@ -166,7 +167,218 @@ def get_users_gems_and_top_percentage(userid, dbfile):
     conn.close()
     return user_gems[0], top_percentage, user_gems[1]
 
+# Wiki shortcuts
+def check_if_custom_name(cardname):
+  # a switch for the custom names
+  custom_names = {
+      "Jark":
+        {
+          "name": "JarkTheTriad",
+          "fusion": "Orb",
+          "rarity": "Bronze",
+          "img_url": "https://cdn.discordapp.com/avatars/271483861895086081/974cb076d969ce3442deea1fa2c364a7.webp",
+          "recipes": [],
+          "combos": [
+              ("Card1", "Card2"),
+          ],
+          "description": "One of the whales of all time 🐳",
+          "suggester": "JYKarma",
+          "where_to_acquire": ["Discord Mod Team"],
+          "level_stats": {
+              "1": {"Attack": 1, "Defense": 0},
+              "2": {"Attack": 2, "Defense": 0},
+              "3": {"Attack": 2, "Defense": 1},
+              "4": {"Attack": 2, "Defense": 0},
+              "5": {"Attack": 1, "Defense": 1},
+          },
+        },
+      "Bishamon":
+        {
+          "name": "Bishamon",
+          "fusion": "Absorb",
+          "rarity": "Diamond",
+          "img_url": "https://cdn.discordapp.com/avatars/1180921997715329044/a8ae6a40e48f35713c55dee510ba68be.webp",
+          "recipes": [
+              ("Bat", "Sun"),
+              ("Bat", "Holy Water"),
+              ("Holy Water", "Sun"),
+              ("Werewolf", "Sun"),
+              ("Werewolf", "Holy Water")
+          ],
+          "combos": [],
+          "description": "French for toast",
+          "suggester": "JYKarma",
+          "where_to_acquire": ["Accursed pack"],
+          "level_stats": {
+              "1": {"Attack": 2, "Defense": 1},
+              "2": {"Attack": 2, "Defense": 2},
+              "3": {"Attack": 3, "Defense": 2},
+              "4": {"Attack": 4, "Defense": 4},
+              "5": {"Attack": 6, "Defense": 5},
+          },
+        },
+      "Winter":
+        {
+          "name": "Winter",
+          "fusion": "Protection",
+          "rarity": "Gold",
+          "img_url": "https://cdn.discordapp.com/avatars/763193678931820544/8b0ee94c052a27d9f297950d664b41b9.webp?size=128",
+          "recipes": [
+             ("Precious Ring Lore", "Precious Ring Lore"),
+             ("Holiday", "Holiday")
+          ],
+          "combos": [],
+          "description": "Defense is sometimes the greatest offense",
+          "suggester": "JYKarma",
+          "where_to_acquire": ["Mad Scientist Event", "Mad Scientist Pack", "Heroic Rare FF"],
+          "level_stats": {
+              "1": {"Attack": 5, "Defense": 3},
+              "2": {"Attack": 4, "Defense": 4},
+              "3": {"Attack": 6, "Defense": 2},
+              "4": {"Attack": 7, "Defense": 2},
+              "5": {"Attack": 8, "Defense": 0},
+          },
+        },
+      "Kavid":
+        {
+          "name": "Kavid907",
+          "fusion": "Critical Strike",
+          "rarity": "Diamond",
+          "img_url": "https://cdn.discordapp.com/avatars/828822861522534410/fb790d0c928f15d140b4ad76a19735a7.webp?size=128",
+          "recipes": [
+             ("Mind Control", "Dog"),
+             ("Madness", "Cursed"),
+             ("Dog", "Cat")
+          ],
+          "combos": [],
+          "description": "He's the master of peak",
+          "suggester": "JarkTheTriad",
+          "where_to_acquire": ["Local Supermarket"],
+          "level_stats": {
+              "1": {"Attack": 19, "Defense": 6},
+              "2": {"Attack": 23, "Defense": 10},
+              "3": {"Attack": 27, "Defense": 14},
+              "4": {"Attack": 31, "Defense": 18},
+              "5": {"Attack": 35, "Defense": 22},
+          },
+        },
+      "Tiggs":
+        {
+          "name": "Tiggs",
+          "fusion": "Counter Attack",
+          "rarity": "Diamond",
+          "img_url": "https://cdn.discordapp.com/avatars/113130461299015680/33b9f69c383d8135002e31f2037162d6.webp?size=128",
+          "recipes": [
+             ("Mastercard", "Visa card"),
+             ("Action replay", "Gameshark"),
+             ("Cheat code", "Dev")
+          ],
+          "combos": [],
+          "description": "Tiggs",
+          "suggester": "JYKarma",
+          "where_to_acquire": ["Cheat code"],
+          "level_stats": {
+              "1": {"Attack": 51, "Defense": 50},
+              "2": {"Attack": 52, "Defense": 50},
+              "3": {"Attack": 52, "Defense": 70},
+              "4": {"Attack": 55, "Defense": 70},
+              "5": {"Attack": 99, "Defense": 5},
+          },
+        },
+  }
+  cardname = cardname.capitalize()
 
+  if not cardname in custom_names:
+     return False
+  else:
+    current_custom_card = custom_names[cardname]
+    embed = discord.Embed(
+        color=get_embedcolor(current_custom_card["rarity"]),
+    )
+    fusion = current_custom_card["fusion"]
+    rarity = current_custom_card["rarity"]
+    ability_img_url = get_fusion_url(current_custom_card["fusion"])
+    img_url = current_custom_card["img_url"]
+    recipes = current_custom_card["recipes"]
+    combos = current_custom_card["combos"]
+
+    embed.set_author(
+        icon_url=ability_img_url,
+        name=fusion,
+    )
+    # add url link to wiki
+    embed.add_field(
+        name="Custom Card",
+        value=f"Suggested: `{current_custom_card['suggester']}`",
+        inline=False,
+    )
+    embed.add_field(name="Full Name", value=current_custom_card["name"], inline=True)
+    embed.add_field(name="Rarity", value=rarity, inline=True)
+    embed.add_field(name="Description", value=current_custom_card["description"],inline=False)
+    embed.set_thumbnail(url=img_url)
+    levels_left = ""
+    levels_right = ""
+    
+    for level in current_custom_card["level_stats"].items():
+        level_text = f"{level[0]}  -  {level[1]['Attack']}/{level[1]['Defense']}\n"
+        if int(level[0]) >= 4:
+            levels_right += level_text
+        else:
+            levels_left += level_text
+
+    embed.add_field(name="Levels", value=levels_left, inline=True)
+    embed.add_field(name="** **", value=levels_right, inline=True)
+    where_to_acquire = current_custom_card["where_to_acquire"]
+    embed.add_field(
+        name="Where to acquire", value=", ".join(where_to_acquire), inline=False
+    )
+    if fusion == "Orb":
+        embed.add_field(
+            name="Combos",
+            value=f"Amount of Combos: {len(combos)}",
+            inline=False,
+        )
+
+    else:
+        combos_left = []
+        combos_right = []
+        counter = 0
+        if rarity == "Onyx":
+            # filter out all non onyx combos
+            combos = [
+                combo
+                for combo in combos
+                if "(Onyx)" in combo[0] and "(Onyx)" in combo[1]
+            ]
+        else:
+            # filter out all onyx combos
+            combos = [
+                combo
+                for combo in combos
+                if not "(Onyx)" in combo[0] and not "(Onyx)" in combo[1]
+            ]
+
+        for combo in recipes:
+            if counter < (len(recipes) / 2):
+                combos_left.append(f"{counter+1}.{combo[1]} + {combo[0]}")
+            else:
+                combos_right.append(f"{counter+1}.{combo[1]} + {combo[0]}")
+            counter += 1
+
+        # if empty combos, add a "/"
+        if len(recipes) == 0:
+            embed.add_field(name="Combos", value="/", inline=True)
+            embed.add_field(name="** **", value="", inline=True)
+        else:
+            embed.add_field(name="Combos", value="\n".join(combos_left), inline=True)
+            embed.add_field(name="** **", value="\n".join(combos_right), inline=True)
+
+    # add underneath the author the rarity and form
+    embed.set_footer(
+        text=f"{cardname.title()} - {rarity} ~ ChinBot & LAR Wiki",
+        icon_url=ability_img_url,
+    )
+    return embed
 
 # Trivia Shortcuts
 def search_rarity(rarity):
