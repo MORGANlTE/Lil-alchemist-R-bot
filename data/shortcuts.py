@@ -285,6 +285,28 @@ def check_if_custom_name(cardname):
               "5": {"Attack": 99, "Defense": 5},
           },
         },
+        "Tris":
+        {
+          "name": "Tris",
+          "fusion": "Curse",
+          "rarity": "Diamond", 
+          "img_url": "https://upload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png",
+          "recipes": [
+             ("Anger", "Madness"), 
+             ("Cursed", "Madness"),
+          ],
+          "combos": [],
+          "description": "Discord MVP",
+          "suggester": "Unknown", 
+          "where_to_acquire": ["Reddit"], 
+          "level_stats": {
+              "1": {"Attack": 18, "Defense": 12}, 
+              "2": {"Attack": 21, "Defense": 15},
+              "3": {"Attack": 24, "Defense": 18},
+              "4": {"Attack": 27, "Defense": 21},
+              "5": {"Attack": 30, "Defense": 24},
+          },
+        },
   }
   cardname = cardname.capitalize()
 
