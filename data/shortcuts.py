@@ -310,7 +310,7 @@ def check_if_custom_name(cardname):
         "Melmman":
         {
           "name": "Melmman",
-          "fusion": "Crushing blow",
+          "fusion": "Crushing Blow",
           "rarity": "Gold", 
           "img_url": "https://cdn.discordapp.com/avatars/511322291972341800/a0b0525586f044799d9b3f360b33673c?size=1024", 
           "combos": [],
