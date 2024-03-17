@@ -307,6 +307,28 @@ def check_if_custom_name(cardname):
               "5": {"Attack": 30, "Defense": 24},
           },
         },
+        "Melmman":
+        {
+          "name": "Melmman",
+          "fusion": "Crushing blow",
+          "rarity": "Gold", 
+          "img_url": "https://cdn.discordapp.com/avatars/511322291972341800/a0b0525586f044799d9b3f360b33673c?size=1024", 
+          "combos": [],
+          "recipes": [
+              ("Leader", "Frog"), 
+              ("Human", "Frog"),
+          ],
+          "description": "Leader of Melmmen tribe",
+          "suggester": "Dirigent", 
+          "where_to_acquire": ["Local pond"], 
+          "level_stats": {
+              "1": {"Attack": 1, "Defense": 5}, 
+              "2": {"Attack": 2, "Defense": 8},
+              "3": {"Attack": 2, "Defense": 11},
+              "4": {"Attack": 2, "Defense": 16},
+              "5": {"Attack": 3, "Defense": 19},
+          },
+        },
   }
   cardname = cardname.capitalize()
 
