@@ -164,9 +164,11 @@ custom_names = {
           "rarity": "Silver", 
           "img_url": "https://i.postimg.cc/hGPBYKsw-/IMG-5075.jpg", 
           "combos": [
-              ("Void", "Hammer"), 
           ],
-          "recipes": [],
+          "recipes": [
+              ("Void", "Hammer"), 
+
+          ],
           "description": "Because Jark wouldn\'t stop talking about it",
           "suggester": "Dirigent", 
           "where_to_acquire": ["Secret rare"], 
@@ -184,7 +186,7 @@ custom_names = {
           "fusion": "Curse",
           "rarity": "Diamond", 
           "img_url": "https://i.ibb.co/z2jvj5d/whale.jpg", 
-          "combos": [
+          "recipes": [
               ("Sun", "Sun"),
               ("Bat", "Bat"),
               ("Holy Water", "Holy Water"),
@@ -195,7 +197,7 @@ custom_names = {
               ("War", "War"),
               ("Royal Game", "Royal Game"),
           ],
-          "recipes": [],
+          "combos": [],
           "description": "You\'ve met a terrible fate haven\t you?",
           "suggester": "JYKarma", 
           "where_to_acquire": ["Obtained automatically when you get the OCC on the 14th of any pack"], 
@@ -213,9 +215,7 @@ custom_names = {
           "fusion": "Protection",
           "rarity": "Bronze", 
           "img_url": "https://i.ibb.co/TYh5CTr/M.png", 
-          "combos": [
-              
-          ],
+          "combos": [],
           "recipes": [],
           "description": "You've been reading my code I see x) \nLovely.",
           "suggester": "Morganite", 
