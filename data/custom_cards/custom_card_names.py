@@ -183,7 +183,7 @@ custom_names = {
           "name": "League of Whales",
           "fusion": "Curse",
           "rarity": "Diamond", 
-          "img_url": "https://static.wikia.nocookie.net/lil-alchemist/images/e/ed/Narwhal.png", 
+          "img_url": "https://i.ibb.co/z2jvj5d/whale.jpg", 
           "combos": [
               ("Sun", "Sun"),
               ("Bat", "Bat"),
