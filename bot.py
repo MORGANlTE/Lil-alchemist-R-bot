@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.1.5"
-versiondescription = "Fixed bug with avatar from user not showing up"
+version = "5.2.0"
+versiondescription = "Code cleanup & additions"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
