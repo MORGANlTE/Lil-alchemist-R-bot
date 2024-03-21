@@ -241,13 +241,13 @@ def check_if_custom_name(cardname):
                 if not "(Onyx)" in combo[0] and not "(Onyx)" in combo[1]
             ]
 
-        for combo in recipes:
+        for recipe in recipes:
             if counter < (len(recipes) / 2):
-                combos_left.append(f"{counter+1}.{combo[1]} + {combo[0]}")
+                combos_left.append(f"{counter+1}.{recipe[1]} + {recipe[0]}")
             else:
-                combos_right.append(f"{counter+1}.{combo[1]} + {combo[0]}")
+                combos_right.append(f"{counter+1}.{recipe[1]} + {recipe[0]}")
             counter += 1
-
+        
         # if empty combos, add a "/"
         if len(recipes) == 0:
             embed.add_field(name="Combos", value="/", inline=True)

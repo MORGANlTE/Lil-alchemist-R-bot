@@ -163,11 +163,9 @@ custom_names = {
           "fusion": "Crushing Blow",
           "rarity": "Silver", 
           "img_url": "https://i.postimg.cc/hGPBYKsw-/IMG-5075.jpg", 
-          "combos": [
-          ],
+          "combos": [],
           "recipes": [
               ("Void", "Hammer"), 
-
           ],
           "description": "Because Jark wouldn\'t stop talking about it",
           "suggester": "Dirigent", 
