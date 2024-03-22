@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.2.3"
-versiondescription = "Shouldve fixed the issue with the trivia 🦾"
+version = "5.2.4"
+versiondescription = "Shouldve fixed the bugs with trivia 🦾"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5

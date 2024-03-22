@@ -105,7 +105,7 @@ def generate_random_question_packs():
     try:
         div1 = soup.find_all("div", id="gallery-0")[0]
     except:
-        return "Not found"
+        return get_trivia_questions()
 
 
     gallery = soup.find("div", id="gallery-0")
