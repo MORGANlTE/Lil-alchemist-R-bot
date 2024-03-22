@@ -10,22 +10,6 @@ import io
 from datetime import datetime, timedelta
 import random
 
-def calculate_level(exp):
-    return math.ceil((-3 + math.sqrt(exp)) / 2)
-
-def how_much_exp(level):
-    return (2*(level-1) +3)**2
-
-def chin_avatar_calculator(level):
-    modulus = level // 10
-    if modulus > 16:
-        modulus = 16
-
-    if modulus <= 0:
-        modulus = 0
-    return str(modulus) + ".png"
-       
-    
 
 def add_experience_to_user(userid, exp, dbfile):
   conn = sqlite3.connect(dbfile)
@@ -54,13 +38,11 @@ def add_experience_to_user(userid, exp, dbfile):
       
       cursor.execute("UPDATE users SET exp = ? WHERE userid = ?", (current + exp, userid))
       cursor.execute("UPDATE users SET lastupdated = ? WHERE userid = ?", (now.timestamp(), userid))
-  currentlvl = calculate_level(current)
-  newlvl = calculate_level(current + exp)
 
   conn.commit()
   conn.close()
 
-  return {"exptotal": current + exp, "levelup": currentlvl!=newlvl} # did we level up or nah?
+  return {"exptotal": current + exp} # did we level up or nah?
 
 def get_experience(userid, dbfile):
   conn = sqlite3.connect(dbfile)
