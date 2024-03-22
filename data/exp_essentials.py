@@ -21,8 +21,8 @@ def chin_avatar_calculator(level):
     if level >= 100:
         return "16.png"
     modulus = level // 5
-    if modulus > 16:
-        modulus = 16
+    if modulus > 15:
+        modulus = 15
 
     if modulus <= 0:
         modulus = 0
