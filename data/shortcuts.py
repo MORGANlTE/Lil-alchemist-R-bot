@@ -314,16 +314,13 @@ def get_question_combos():
   for tr in get_combos_from_page(soup):
       cardnames.append(tr.find_all("td")[1].text)
 
-  # pick 2 random cards from the list
-  card1 = cardnames[randint(0, len(cardnames) - 1)]
-  card2 = cardnames[randint(0, len(cardnames) - 1)]
-
-  while card1 == real_result or card1 == card2:
-    card1 = cardnames[randint(0, len(cardnames) - 1)]
-
-  while card2 == card1 or card2 == real_result:
-    card2 = cardnames[randint(0, len(cardnames) - 1)]
-
+  # make a set of the cardnames
+  cardnames = set(cardnames)
+  # remove the real result from the set
+  cardnames.discard(real_result.strip())
+  # get 2 random cards from the set
+  card1 = cardnames.pop()
+  card2 = cardnames.pop()
 
   # add all 3 results to a list
   results = []
