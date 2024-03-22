@@ -17,12 +17,17 @@ def how_much_exp(level):
     return (2*(level-1) +3)**2
 
 def chin_avatar_calculator(level):
-    modulus = level // 10
+    # final img
+    if level >= 100:
+        return "16.png"
+    modulus = level // 5
     if modulus > 16:
         modulus = 16
 
     if modulus <= 0:
         modulus = 0
+    
+    
     return str(modulus) + ".png"
        
     

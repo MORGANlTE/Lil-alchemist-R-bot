@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import random
 
 
-def add_experience_to_user(userid, exp, dbfile):
+def check_inventory_from_user(userid, dbfile):
   conn = sqlite3.connect(dbfile)
   cursor = conn.cursor()
   cursor.execute("SELECT id, exp, lastupdated FROM users WHERE userid = ?", (userid,))
