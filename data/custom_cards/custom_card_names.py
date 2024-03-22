@@ -196,7 +196,7 @@ custom_names = {
               ("Royal Game", "Royal Game"),
           ],
           "combos": [],
-          "description": "You\'ve met a terrible fate haven\t you?",
+          "description": "You\'ve met a terrible fate haven\'t you?",
           "suggester": "JYKarma", 
           "where_to_acquire": ["Obtained automatically when you get the OCC on the 14th of any pack"], 
           "level_stats": {
