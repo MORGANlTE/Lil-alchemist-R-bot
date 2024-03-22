@@ -18,8 +18,8 @@ def how_much_exp(level):
 
 def chin_avatar_calculator(level):
     modulus = level // 5
-    if modulus > 17:
-        modulus = 17
+    if modulus > 16:
+        modulus = 16
 
     if modulus <= 0:
         modulus = 0
@@ -48,11 +48,6 @@ def add_experience_to_user(userid, exp, dbfile):
       if user_data[2] is not None:
         date_from_db_plus_5_seconds = (datetime.fromtimestamp(float(user_data[2])) + timedelta(seconds=5)).timestamp()
       if (date_from_db_plus_5_seconds > now.timestamp()):
-          conn.commit()
-          conn.close()
-          return False
-      if int(current) >= 41209:
-          cursor.execute("UPDATE users SET exp = ? WHERE userid = ?", (41209, userid))
           conn.commit()
           conn.close()
           return False

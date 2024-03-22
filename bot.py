@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.2.0"
-versiondescription = "Code cleanup & additions"
+version = "5.2.1"
+versiondescription = "Fixing pf bug & removed level cap"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
