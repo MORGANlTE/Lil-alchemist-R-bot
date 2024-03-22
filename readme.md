@@ -40,11 +40,13 @@ RESET_COMMANDS=False
 - `/trivia`: Asks a trivia question. Answer correctly and gain some points. Answer wrongly and you will lose a lot!
 - `/leaderboard`: Shows the trivia leaderboard
 - `/help`: Shows an overview of all the available commands together with their description. Also shows version and update notes.
+- `/profile`: Shows your profile with the current level you're on. Every 5 levels = a new image, level 100 = surprise?
+- `/claim`: Claim your daily amount of gems. Is increased with the current level you're on, to give more experienced players a boost.
 
 ## 📝 Version 📝
 
-Current version: 5.1.3
-Version description: Added Profiles & Daily Bonus
+Current version: 5.2.3
+Version description: Shouldve fixed the issue with the trivia 🦾
 
 ## 📜 License 📜
 
