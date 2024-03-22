@@ -321,7 +321,7 @@ def get_question_combos():
   while card1 == real_result or card1 == card2:
     card1 = cardnames[randint(0, len(cardnames) - 1)]
 
-  while card2 == card1:
+  while card2 == card1 or card2 == real_result:
     card2 = cardnames[randint(0, len(cardnames) - 1)]
 
 
