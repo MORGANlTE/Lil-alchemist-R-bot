@@ -229,11 +229,11 @@ custom_names = {
         "Bonk":
          {
           "name": "bonk",
-          "fusion": "Crushing Blow",
+          "fusion": "Orb",
           "rarity": "Gold", 
           "img_url": "https://i.ibb.co/Yy5N5Gj/bo.jpg", 
-          "combos": [],
-          "recipes": [("bonk = Tombstone", "Anything")],
+          "combos": [x for x in range(1, 100)],
+          "recipes": [],
           "description": "doge bonks u *bonk*",
           "suggester": "JYKarma", 
           "where_to_acquire": ["get bonked for what you just said that put Spider-dude in hospital"], 
