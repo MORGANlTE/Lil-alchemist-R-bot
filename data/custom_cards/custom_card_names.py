@@ -226,6 +226,25 @@ custom_names = {
               "5": {"Attack": 0, "Defense": 0},
           },
         },
+        "Bonk":
+         {
+          "name": "bonk",
+          "fusion": "Crushing Blow",
+          "rarity": "Gold", 
+          "img_url": "https://i.ibb.co/Yy5N5Gj/bo.jpg", 
+          "combos": [],
+          "recipes": [("bonk = Tombstone", "Anything")],
+          "description": "doge bonks u *bonk*",
+          "suggester": "JYKarma", 
+          "where_to_acquire": ["get bonked for what you just said that put Spider-dude in hospital"], 
+          "level_stats": {
+              "1": {"Attack": 10, "Defense": 10}, 
+              "2": {"Attack": 15, "Defense": 12},
+              "3": {"Attack": 17, "Defense": 13},
+              "4": {"Attack": 20, "Defense": 15},
+              "5": {"Attack": 20, "Defense": 20},
+          },
+        },
 
 
 }
