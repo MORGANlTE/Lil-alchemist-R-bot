@@ -17,27 +17,7 @@ def check_inventory_from_user(userid, dbfile):
   cursor.execute("SELECT id, exp, lastupdated FROM users WHERE userid = ?", (userid,))
   user_data = cursor.fetchone()
   current = 0
-  if user_data is None:
-    cursor.execute("INSERT INTO users (userid, exp) VALUES (?, ?)", (userid, exp))
-  else:
-      if user_data[1] is None:
-        current = 0
-      else:
-        current = user_data[1]
-
-      # if the last updated is not 30sec ago, reset the exp
-      # Check if user_data_time + 30 is less than current date & time
-      now = datetime.now()
-      date_from_db_plus_5_seconds = 0
-      if user_data[2] is not None:
-        date_from_db_plus_5_seconds = (datetime.fromtimestamp(float(user_data[2])) + timedelta(seconds=5)).timestamp()
-      if (date_from_db_plus_5_seconds > now.timestamp()):
-          conn.commit()
-          conn.close()
-          return False
-      
-      cursor.execute("UPDATE users SET exp = ? WHERE userid = ?", (current + exp, userid))
-      cursor.execute("UPDATE users SET lastupdated = ? WHERE userid = ?", (now.timestamp(), userid))
+  
 
   conn.commit()
   conn.close()

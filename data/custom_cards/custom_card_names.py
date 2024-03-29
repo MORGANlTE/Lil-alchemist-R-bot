@@ -245,6 +245,28 @@ custom_names = {
               "5": {"Attack": 20, "Defense": 20},
           },
         },
+        "Spaghetti":
+        {
+          "name": "Spaghetti",
+          "fusion": "Orb",
+          "rarity": "Gold", 
+          "img_url": "https://i.postimg.cc/mBgdkThr/IMG-5307.jpg", 
+          "recipes": [
+          ],
+          "combos": [
+              ("Food", "Italy"), 
+          ],
+          "description": "Congratulatory meal for Crucifix for getting rank 1 on reset 26.3.2024",
+          "suggester": "Dirigent", 
+          "where_to_acquire": ["Aaron9189s kitchen"], 
+          "level_stats": {
+              "1": {"Attack": 4, "Defense": 4}, 
+              "2": {"Attack": 7, "Defense": 6},
+              "3": {"Attack": 10, "Defense": 8},
+              "4": {"Attack": 13, "Defense": 10},
+              "5": {"Attack": 16, "Defense": 12},
+          },
+        },
 
 
 }
