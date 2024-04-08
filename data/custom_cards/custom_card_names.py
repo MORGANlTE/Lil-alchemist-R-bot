@@ -267,6 +267,51 @@ custom_names = {
               "5": {"Attack": 16, "Defense": 12},
           },
         },
+        "Strauchi":
+        {
+          "name": "Strauchi",
+          "fusion": "Critical Strike",
+          "rarity": "Diamond", 
+          "img_url": "https://cdn.discordapp.com/avatars/726756999043481610/b6a4f09cc957b5d3409fefde245cfd55?size=1024",
+          "combos": [],
+          "recipes": [
+              ("Credit card", "Metal"), 
+          ],
+          "description": "Metallic whale",
+          "suggester": "Dirigent", 
+          "where_to_acquire": ["Moshpit at Electric Callboy concert"], 
+          "level_stats": {
+              "1": {"Attack": 24, "Defense": 4}, 
+              "2": {"Attack": 27, "Defense": 6},
+              "3": {"Attack": 30, "Defense": 8},
+              "4": {"Attack": 33, "Defense": 10},
+              "5": {"Attack": 36, "Defense": 12},
+          },
+        },
+        "Etiggs":
+        {
+          "name": "Evil Tiggs",
+          "fusion": "Curse",
+          "rarity": "Diamond", 
+          "img_url": "https://i.postimg.cc/d1RWMjd7/IMG-5431.png", 
+          "combos": [],
+          "recipes": [
+              ("Tiggs", "Cursed"), 
+              ("Tiggs", "Madness"), 
+              ("Tiggs", "Anger"), 
+          ],
+          "description": "Evil side of Tiggs hidden inside of multiple locked boxes underground",
+          "suggester": "Dirigent", 
+          "where_to_acquire": ["Test Tiggses limits way too much"], 
+          "level_stats": {
+              "1": {"Attack": 55, "Defense": 4}, 
+              "2": {"Attack": 65, "Defense": 6},
+              "3": {"Attack": 85, "Defense": 8},
+              "4": {"Attack": 95, "Defense": 10},
+              "5": {"Attack": 99, "Defense": 99},
+          },
+        },
+
 
 
 }
