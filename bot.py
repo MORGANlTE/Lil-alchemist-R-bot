@@ -441,7 +441,7 @@ async def profile_command(interaction):
 
     gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
     gems = gemsAndPerc[0] if gemsAndPerc[0] is not None else 0
-    winstreak = int(gemsAndPerc[2]) if gemsAndPerc[2] is not None else 0
+    winstreak = int(gemsAndPerc[1]) if gemsAndPerc[1] is not None else 0
     exp = get_experience(interaction.user.id, dbfile) if interaction.user.id is not None else 0
     discord_name = interaction.user.display_name
     discord_avatar = interaction.user.avatar.url if interaction.user.avatar is not None else "https://i.ibb.co/nbdqnSL/2.png"
