@@ -200,3 +200,13 @@ def claim_daily(userid, dbfile):
     conn.commit()
     conn.close()
     return True, f"You gained **{str(standardgem_amount)}** :gem: \n"
+  
+def get_highest_exp(dbfile):
+  conn = sqlite3.connect(dbfile)
+  cursor = conn.cursor()
+  cursor.execute("SELECT id, userid, gems, winstreak, exp FROM users ORDER BY exp DESC LIMIT 5")
+  users = cursor.fetchall()
+  conn.close()
+  if users is None:
+    return None
+  return users

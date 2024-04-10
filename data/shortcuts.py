@@ -146,7 +146,7 @@ def get_top_users(dbfile):
   cursor = conn.cursor()
 
   # Retrieve the top 3 users from the database
-  cursor.execute("SELECT id, userid, gems, winstreak FROM users ORDER BY gems DESC, winstreak DESC LIMIT 5")
+  cursor.execute("SELECT id, userid, gems, winstreak, exp FROM users ORDER BY exp DESC, gems, winstreak DESC LIMIT 5")
   top_users = cursor.fetchall()
   conn.close()
   return top_users
@@ -154,19 +154,20 @@ def get_top_users(dbfile):
 def get_users_gems_and_top_percentage(userid, dbfile):
   conn = sqlite3.connect(dbfile)
   cursor = conn.cursor()
-  cursor.execute("SELECT gems, winstreak FROM users WHERE userid = ?", (userid,))
+  cursor.execute("SELECT gems, winstreak, exp FROM users WHERE userid = ?", (userid,))
   user_gems = cursor.fetchone()
-  if user_gems is None:
-    return 0, 100, 0
-  else:
-    cursor.execute("SELECT COUNT(*) FROM users WHERE gems > ?", (user_gems[0],))
-    higher_users = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM users")
-    total_users = cursor.fetchone()[0]
-    top_percentage = (higher_users / total_users) * 100
-    # get the winstreak
-    conn.close()
-    return user_gems[0], top_percentage, user_gems[1]
+  conn.close()
+  return user_gems[0], user_gems[1], user_gems[2]
+
+def get_levels(userid, dbfile):
+  conn = sqlite3.connect(dbfile)
+  cursor = conn.cursor()
+  cursor.execute("SELECT exp FROM users WHERE userid = ?", (userid,))
+  user_exp = cursor.fetchone()
+  conn.close()
+  if user_exp is None:
+    return 0
+  return user_exp[0]
 
 # Wiki shortcuts
 def check_if_custom_name(cardname):

@@ -313,17 +313,18 @@ async def trivia_command(interaction):
 
 @tree.command(
     name="leaderboard",
-    description="Leaderboard for the trivia",
+    description="Leaderboard for the server",
     guilds=guilds,
 )
 async def leaderboard_command(interaction):
     # Define the question and answers
     await interaction.response.defer()
+    print(get_highest_exp(dbfile))
     top_users = get_top_users(dbfile)
     gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
     # if any value in the list is None, set it to 0
     if gemsAndPerc is None:
-        gemsAndPerc = [0, 100, 0]
+        gemsAndPerc = [0, 0]
 
     # for each gem and percentage, if it is None, set it to 0
     newlist = []
@@ -336,12 +337,12 @@ async def leaderboard_command(interaction):
     gemsAndPerc = newlist
 
     # Format the top users into a mentionable format
-    description = f"Your score: {str(gemsAndPerc[0])} :gem: 🔥{int(gemsAndPerc[2])}\n"
-    description += "You're in the top " + str(round(gemsAndPerc[1], 2)) + "%\n\n"
+    description = f"Your level: {calculate_level(int(gemsAndPerc[2]))} | {int(gemsAndPerc[2])} Exp | "
+    description += f":gem: {str(gemsAndPerc[0])} | 🔥{int(gemsAndPerc[1])}\n\n"
     description += "**Global leaderboard:**\n"
 
     for i, user in enumerate(top_users):
-        description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - {user[2]} :gem: 🔥{user[3]}\n"
+        description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - Lvl {calculate_level(user[4])} | {user[4]} Exp | :gem: {user[2]} \n"
 
     embed = discord.Embed(
         description=f"{description}",
