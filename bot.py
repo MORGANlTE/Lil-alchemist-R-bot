@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.2.4"
-versiondescription = "Shouldve fixed the bugs with trivia 🦾"
+version = "5.3.0"
+versiondescription = "Animated GIF added to the packopenings"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -377,6 +377,17 @@ def get_medal_emoji(rank):
 )
 async def packopening_command(interaction, packname: str):
     await interaction.response.defer()
+
+    gif = discord.File(
+            f"./opening.gif",
+            filename=f"opening.gif",
+        )
+
+    waiting = await interaction.followup.send(
+        f"{interaction.user.mention} opening `{packname}` Pack",
+        file=gif,
+    )
+
     # Simulate opening a pack and get the image URL of the card
     imageCards = await simulate_pack_opening(packname)
     if imageCards == "Not found":
@@ -394,21 +405,19 @@ async def packopening_command(interaction, packname: str):
     # random number between 1 and 4, if 4 send the embed
     randomNumber = random.randint(1, 4)
 
-    if randomNumber == 4:
-        # create the embed
-        embed = discord.Embed(
-            description=f"You found 10 <:fragment:1196793443612098560>",
-            color=discord.Color.teal(),
-        )
-        await interaction.followup.send(
-            f"{interaction.user.mention} opened `{packname}` Pack",
-            embed=embed,
-            file=imageCards,
-        )
-    else:
-        await interaction.followup.send(
-            f"{interaction.user.mention} opened `{packname}` Pack", file=imageCards
-        )
+    embed = discord.Embed(
+        description=f"You found 10 <:fragment:1196793443612098560>",
+        color=discord.Color.teal(),
+    )
+
+    await waiting.delete()
+
+    await interaction.followup.send(
+        f"{interaction.user.mention} opened `{packname}` Pack",
+        file=imageCards,
+        embed=embed if randomNumber == 4 else None,
+    )
+
 
 
 # Every time a message is send, give the user some experience, except for bots and also only after 1 minute, since we dont want to give experience for spamming
