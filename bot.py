@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.3.0"
-versiondescription = "Animated GIF added to the packopenings"
+version = "5.4.0"
+versiondescription = "Two leaderboard types"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -316,11 +316,16 @@ async def trivia_command(interaction):
     description="Leaderboard for the server",
     guilds=guilds,
 )
-async def leaderboard_command(interaction):
+@app_commands.describe(option="Choose what type of leaderboard you want")
+@app_commands.choices(option=[
+        app_commands.Choice(name="Level leaderboard 🫰", value="Lvl"),
+        app_commands.Choice(name="Trivia leaderboard 💎", value="Gems")
+    ])
+async def leaderboard_command(interaction, option: app_commands.Choice[str]):
+    category = True if option.value == "Gems" else False
     # Define the question and answers
     await interaction.response.defer()
-    print(get_highest_exp(dbfile))
-    top_users = get_top_users(dbfile)
+    top_users = get_top_users(dbfile, category)
     gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
     # if any value in the list is None, set it to 0
     if gemsAndPerc is None:
@@ -337,9 +342,9 @@ async def leaderboard_command(interaction):
     gemsAndPerc = newlist
 
     # Format the top users into a mentionable format
-    description = f"Your level: {calculate_level(int(gemsAndPerc[2]))} | {int(gemsAndPerc[2])} Exp | "
+    description = f"Level: {calculate_level(int(gemsAndPerc[2]))} | {int(gemsAndPerc[2])} Exp | "
     description += f":gem: {str(gemsAndPerc[0])} | 🔥{int(gemsAndPerc[1])}\n\n"
-    description += "**Global leaderboard:**\n"
+    description += f"**Global {':gem: ' if category else ':crown: '}leaderboard:**\n"
 
     for i, user in enumerate(top_users):
         description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - Lvl {calculate_level(user[4])} | {user[4]} Exp | :gem: {user[2]} \n"

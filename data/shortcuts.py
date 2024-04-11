@@ -141,12 +141,14 @@ def get_winstreak(userid, dbfile):
   else:
     return user_winstreak[0]
 
-def get_top_users(dbfile):
+def get_top_users(dbfile, sortedByGems):
   conn = sqlite3.connect(dbfile)
   cursor = conn.cursor()
-
   # Retrieve the top 3 users from the database
-  cursor.execute("SELECT id, userid, gems, winstreak, exp FROM users ORDER BY exp DESC, gems, winstreak DESC LIMIT 5")
+  if sortedByGems:
+    cursor.execute("SELECT id, userid, COALESCE(gems, 0), winstreak, exp FROM users ORDER BY COALESCE(gems, 0) DESC, winstreak DESC, exp DESC LIMIT 5")
+  else:
+    cursor.execute("SELECT id, userid, COALESCE(gems, 0), winstreak, exp FROM users ORDER BY exp DESC, COALESCE(gems, 0), winstreak DESC LIMIT 5")
   top_users = cursor.fetchall()
   conn.close()
   return top_users

@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 5.3.0
-Version description: Animated GIF added to the packopenings
+Current version: 5.4.0
+Version description: Two leaderboard types
 
 ## 📜 License 📜
 
