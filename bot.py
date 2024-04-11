@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.4.0"
-versiondescription = "Two leaderboard types"
+version = "5.4.2"
+versiondescription = "Added more visual indicators to gem/level leaderboards"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -347,7 +347,10 @@ async def leaderboard_command(interaction, option: app_commands.Choice[str]):
     description += f"**Global {':gem: ' if category else ':crown: '}leaderboard:**\n"
 
     for i, user in enumerate(top_users):
-        description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - Lvl {calculate_level(user[4])} | {user[4]} Exp | :gem: {user[2]} \n"
+        if category:
+            description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - :gem: {user[2]} | 🔥 {user[3]}\n"
+        else:
+            description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - 👑 Lvl {calculate_level(user[4])} | {user[4]} Exp\n"
 
     embed = discord.Embed(
         description=f"{description}",
@@ -358,7 +361,10 @@ async def leaderboard_command(interaction, option: app_commands.Choice[str]):
         name=f"{interaction.user.name}'s score",
         icon_url=iconurl
     )
-    embed.set_thumbnail(url="https://iili.io/Jc4oxEl.png")
+    if category:
+        embed.set_thumbnail(url="https://cdn-icons-png.flaticon.com/512/2850/2850979.png")
+    else:
+        embed.set_thumbnail(url="https://iili.io/Jc4oxEl.png")
     await interaction.followup.send(embed=embed)
 
 def get_medal_emoji(rank):
