@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 5.4.2
-Version description: Added more visual indicators to gem/level leaderboards
+Current version: 5.4.3
+Version description: Optimizations for images
 
 ## 📜 License 📜
 

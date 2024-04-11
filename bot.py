@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.4.2"
-versiondescription = "Added more visual indicators to gem/level leaderboards"
+version = "5.4.3"
+versiondescription = "Optimizations for images"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -395,7 +395,7 @@ async def packopening_command(interaction, packname: str):
         )
 
     waiting = await interaction.followup.send(
-        f"{interaction.user.mention} opening `{packname}` Pack",
+        f"{interaction.user.mention} waiting for `{packname}` Pack...",
         file=gif,
     )
 
@@ -428,6 +428,10 @@ async def packopening_command(interaction, packname: str):
         file=imageCards,
         embed=embed if randomNumber == 4 else None,
     )
+    
+    # remove the image
+
+    os.remove(f"./images/{imageCards.filename}")
 
 
 

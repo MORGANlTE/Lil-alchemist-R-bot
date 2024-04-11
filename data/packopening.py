@@ -6,7 +6,7 @@ import PIL
 from PIL import Image, ImageDraw, ImageFont
 import random
 import os
-
+import concurrent.futures
 
 async def simulate_pack_opening(name):
     if name == "Jark":
@@ -75,57 +75,60 @@ async def simulate_pack_opening(name):
     card_pictures = []
 
     counter = 1
+    def download_and_process_image(cardname):
+        url = f"https://lil-alchemist.fandom.com/wiki/{cardname.replace(' ', '_').replace('_The_', '_the_')}"
+
+        resp = requests.get(url)
+        soup = BeautifulSoup(resp.content, "html.parser")
+        test = parseinfo(soup, cardname)
+
+        (
+            imgurl,
+            description,
+            base_attack,
+            base_defense,
+            base_power,
+            rarity,
+            form,
+            fusion,
+            where_to_acquire,
+            recipes,
+            combos,
+            level_stats,
+        ) = test
+
+        randomnumber = random.randint(0, 100000)
+        with open(f"./images/{cardname}{randomnumber}.png", "wb") as f:
+            f.write(requests.get(imgurl).content)
+
+        image = Image.open(f"./images/{cardname}{randomnumber}.png")
+        resized_image = image.resize((350, 465))
+
+        mask = Image.new("L", resized_image.size, 0)
+        draw = ImageDraw.Draw(mask)
+        draw.rounded_rectangle(
+            [(0, 0), resized_image.size], 25, fill=255, outline=0
+        )
+
+        result = Image.new("RGBA", resized_image.size)
+        result.paste(resized_image, (0, 0), mask=mask)
+
+        draw = ImageDraw.Draw(result)
+        draw.rounded_rectangle(
+            [(0, 0), resized_image.size], 25, outline=(0, 0, 0), width=3
+        )
+
+        if not os.path.exists("./images"):
+            os.makedirs("./images")
+
+        result.save(f"./images/{cardname}{randomnumber}.png")
+
+        return f"./images/{cardname}{randomnumber}.png"
+
     try:
-        for cardname in cardnames:
-            url = f"https://lil-alchemist.fandom.com/wiki/{cardname.replace(' ', '_').replace('_The_', '_the_')}"
-
-            resp = requests.get(url)
-            soup = BeautifulSoup(resp.content, "html.parser")
-            test = parseinfo(soup, cardname)
-
-            (
-                imgurl,
-                description,
-                base_attack,
-                base_defense,
-                base_power,
-                rarity,
-                form,
-                fusion,
-                where_to_acquire,
-                recipes,
-                combos,
-                level_stats,
-            ) = test
-
-            randomnumber = random.randint(0, 100000)
-            with open(f"./images/{cardname}{randomnumber}.png", "wb") as f:
-                f.write(requests.get(imgurl).content)
-
-            image = Image.open(f"./images/{cardname}{randomnumber}.png")
-            resized_image = image.resize((350, 465))
-
-            mask = Image.new("L", resized_image.size, 0)
-            draw = ImageDraw.Draw(mask)
-            draw.rounded_rectangle(
-                [(0, 0), resized_image.size], 25, fill=255, outline=0
-            )
-
-            result = Image.new("RGBA", resized_image.size)
-            result.paste(resized_image, (0, 0), mask=mask)
-
-            draw = ImageDraw.Draw(result)
-            draw.rounded_rectangle(
-                [(0, 0), resized_image.size], 25, outline=(0, 0, 0), width=3
-            )
-
-            if not os.path.exists("./images"):
-                os.makedirs("./images")
-
-            result.save(f"./images/{cardname}{randomnumber}.png")
-            counter += 1
-
-            card_pictures.append(f"./images/{cardname}{randomnumber}.png")
+        card_pictures = []
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            card_pictures = list(executor.map(download_and_process_image, cardnames))
 
         new_im = Image.new("RGBA", (350 * 4 + 30 * 3, 465), (0, 0, 0, 0))
         x_offset = 0
@@ -147,9 +150,8 @@ async def simulate_pack_opening(name):
             filename=f"{name}{randomnumberForResult}.png",
         )
 
-        if counter > 4:
-            for i in range(len(card_pictures) - 1):
-                os.remove(card_pictures[i])
+        for i in range(len(card_pictures)):
+            os.remove(card_pictures[i])
 
         return fileM
     except Exception as e:
