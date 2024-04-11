@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 5.2.4
-Version description: Shouldve fixed the bugs with the trivia 🦾
+Current version: 5.3.0
+Version description: Animated GIF added to the packopenings
 
 ## 📜 License 📜
 
