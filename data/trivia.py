@@ -150,3 +150,23 @@ def generate_random_question_packs():
             correct_answer_index,
         )
     return question
+
+
+async def generate_embed_trivia(interaction):
+    trivia = get_trivia_questions()
+
+    if(trivia == "Not found"):
+        await interaction.followup.send("Trivia question error, try again", ephemeral=True)
+        return
+
+    print("[Trivia] " + str(trivia.question).strip() + " " + str(trivia.answers[0]).strip() + " - " + str(trivia.answers[1]).strip() + " - " + str(trivia.answers[2]).strip())
+    embed = discord.Embed(
+        title=trivia.question,
+        description=f"1️⃣ {trivia.answers[0]}\n\n2️⃣ {trivia.answers[1]}\n\n3️⃣ {trivia.answers[2]}",
+        color=discord.Color.teal(),
+    )
+
+    if trivia.image_url_question:
+        embed.set_thumbnail(url=trivia.image_url_question)
+
+    return embed, trivia

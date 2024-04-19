@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 5.4.4
-Version description: Bugfix
+Current version: 5.5.0
+Version description: Trivia rework
 
 ## 📜 License 📜
 

@@ -1,5 +1,6 @@
 import discord
-from discord import app_commands
+from discord import app_commands, ButtonStyle, SelectOption
+from discord.ui import Button, View, Select
 from data.data_grabber import *
 from data.packopening import *
 from data.shortcuts import *
@@ -11,12 +12,13 @@ from data.trivia import *
 import os
 from dotenv import load_dotenv
 
+
 # Load the .env file
 load_dotenv()
 
 # Variables:
-version = "5.4.4"
-versiondescription = "Bugfix"
+version = "5.5.0"
+versiondescription = "Trivia rework"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -259,57 +261,75 @@ async def help_command(interaction):
 )
 async def trivia_command(interaction):
     # Define the question and answers
-    await interaction.response.defer()
-    trivia = get_trivia_questions()
 
-    if(trivia == "Not found"):
-        await interaction.followup.send("Trivia question error, try again", ephemeral=True)
-        return
+    class TriviaSelect(discord.ui.Select):
+            def __init__(self, options, trivia, dbfile, embed, message):
+                super().__init__(placeholder='Choose your answer...', options=options)
+                self.trivia = trivia
+                self.dbfile = dbfile
+                self.embed = embed
+                self.message = message
+
+            async def callback(self, interaction: discord.Interaction):
+                await interaction.response.defer()
+                label = self.values[0]
+                user_id = interaction.user.id
+                streak = get_winstreak(user_id, self.dbfile)
+                if streak == None:
+                    streak = 1
+                elif streak >= winstreak_max:
+                    streak = winstreak_max
+                else:
+                    streak += 1
+                print(streak)
+
+                # check if the user was wrong or right
+                if self.trivia.answers.index(label) != self.trivia.correct_answer_index:
+                    return_message = f"⛔ {interaction.user.mention} did not answer `{self.trivia.answers[self.trivia.correct_answer_index]}` {gem_loss_trivia} :gem:"
+                    update_winstreak(user_id, dbfile, 0)
+                else:
+                    print(gem_win_trivia)
+                    print(streak)
+                    print(f"streak: {gem_win_trivia + streak}")
+                    return_message = f"✅ {interaction.user.mention} answered `{self.trivia.answers[self.trivia.correct_answer_index]}`\n+{gem_win_trivia + streak} :gem: 🔥 {streak}"
+                    update_winstreak(user_id, dbfile, streak)
+                newgems = add_gems_to_user(user_id, (gem_win_trivia + streak), dbfile)
+                print(newgems)
+
+                # add the message to the embed
+                self.embed.add_field(name="Answer", value=return_message, inline=False)
+
+                # we edit the embed again, with a new question
+                embed, trivia = await generate_embed_trivia(interaction)
+                self.options = [discord.SelectOption(label=answer) for answer in trivia.answers]
+                self.trivia = trivia
+                embed.add_field(name="Last question", value=return_message, inline=False)
+                self.embed = embed
+                # put the new embed
+                await self.message.edit(embed=embed, view=self.view)
+                    
+    r = await interaction.response.send_message("** **")
+    message = await interaction.channel.send("Loading trivia question...")
+    embed, trivia = await generate_embed_trivia(interaction)
+    print(trivia.answers)
+    emojis = ["1️⃣", "2️⃣", "3️⃣"]
+    options = [discord.SelectOption(label=answer, emoji=emojis[i]) for i,answer in enumerate(trivia.answers)]
+    select = TriviaSelect(options, trivia, dbfile, embed=embed, message=message)
+    view = discord.ui.View(timeout=None)
+    view.add_item(select)
+
+    await message.edit(embed=embed, view=view, content="")
+
+    # edit_only = False
+    # last_message = await interaction.channel.history(limit=1).flatten()
+    # if last_message[0].id != interaction.message.id:
+    #     edit_only = True
+
+    # we let the user select an answer, now we check if the answer is correct
+    # get the answer:
+    # message = await interaction.followup.send(embed=embed, view=view)
+
     
-    print("[Trivia] " + str(trivia.question).strip() + " " + str(trivia.answers[0]).strip() + " - " + str(trivia.answers[1]).strip() + " - " + str(trivia.answers[2]).strip())
-    embed = discord.Embed(
-        title=trivia.question,
-        description=f"1️⃣ {trivia.answers[0]}\n\n2️⃣ {trivia.answers[1]}\n\n3️⃣ {trivia.answers[2]}",
-        color=discord.Color.teal(),
-    )
-
-    if trivia.image_url_question:
-        embed.set_thumbnail(url=trivia.image_url_question)
-
-    await interaction.followup.send(embed=embed)
-
-    message = await interaction.original_response()
-    await message.add_reaction("1️⃣")
-    await message.add_reaction("2️⃣")
-    await message.add_reaction("3️⃣")
-
-    def check(reaction, user):
-        return (
-            reaction.message.id == message.id
-            and user.id != client.user.id
-            and str(reaction.emoji) in ["1️⃣", "2️⃣", "3️⃣"]
-        )
-    
-    # Wait for a reaction to be added
-    reaction, user = await client.wait_for("reaction_add", check=check)
-    # Check if the reaction is correct
-    if str(reaction.emoji) == ["1️⃣", "2️⃣", "3️⃣"][trivia.correct_answer_index]:
-        streak = get_winstreak(user.id, dbfile)
-        if streak == None:
-            streak = 1
-        elif streak >= winstreak_max:
-            streak = winstreak_max
-        else:
-            streak += 1
-        newgems = add_gems_to_user(user.id, (gem_win_trivia + streak), dbfile)
-        winner_message = f"✅ {user.mention} answered `{trivia.answers[trivia.correct_answer_index]}`\n+{gem_win_trivia + streak} :gem: 🔥 {streak} "
-        update_winstreak(user.id, dbfile, streak)
-    else:
-        update_winstreak(user.id, dbfile, 0)
-        newgems = add_gems_to_user(user.id, gem_loss_trivia, dbfile)
-        winner_message = f"⛔ {user.mention} did not answer `{trivia.answers[trivia.correct_answer_index]}` {gem_loss_trivia} :gem:"
-
-    await interaction.followup.send(winner_message)
 
 @tree.command(
     name="leaderboard",
