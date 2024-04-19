@@ -437,7 +437,6 @@ async def packopening_command(interaction, packname: str):
         color=discord.Color.teal(),
     )
 
-    await waiting.delete()
 
     await interaction.followup.send(
         f"{interaction.user.mention} opened `{packname}` Pack",
@@ -445,6 +444,7 @@ async def packopening_command(interaction, packname: str):
         embed=embed if randomNumber == 4 else None,
     )
     
+    await waiting.delete()
     # remove the image
 
     os.remove(f"./images/{imageCards.filename}")
