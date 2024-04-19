@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.4.3"
-versiondescription = "Optimizations for images"
+version = "5.4.4"
+versiondescription = "Bugfix"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -401,17 +401,19 @@ async def packopening_command(interaction, packname: str):
 
     # Simulate opening a pack and get the image URL of the card
     imageCards = await simulate_pack_opening(packname)
+
+
     if imageCards == "Not found":
         imageCards = await simulate_pack_opening(packname.capitalize())
 
+    await waiting.delete()
 
     if imageCards == "Not found":
         await interaction.followup.send(f"Pack `{packname}` not found", ephemeral=True)
         return
     if imageCards == "Error occured":
         await interaction.followup.send(
-            f"An error occured while opening pack `{packname}`", ephemeral=True
-        )
+            f"An error occured while opening pack `{packname}`", ephemeral=True)
         return
     # random number between 1 and 4, if 4 send the embed
     randomNumber = random.randint(1, 4)

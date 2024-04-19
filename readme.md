@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 5.4.3
-Version description: Optimizations for images
+Current version: 5.4.4
+Version description: Bugfix
 
 ## 📜 License 📜
 
