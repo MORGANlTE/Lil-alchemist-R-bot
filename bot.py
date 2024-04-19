@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.5.0"
+version = "5.5.1"
 versiondescription = "Trivia rework"
 gem_win_trivia = 5
 winstreak_max = 10
@@ -281,20 +281,15 @@ async def trivia_command(interaction):
                     streak = winstreak_max
                 else:
                     streak += 1
-                print(streak)
 
                 # check if the user was wrong or right
                 if self.trivia.answers.index(label) != self.trivia.correct_answer_index:
                     return_message = f"⛔ {interaction.user.mention} did not answer `{self.trivia.answers[self.trivia.correct_answer_index]}` {gem_loss_trivia} :gem:"
                     update_winstreak(user_id, dbfile, 0)
                 else:
-                    print(gem_win_trivia)
-                    print(streak)
-                    print(f"streak: {gem_win_trivia + streak}")
                     return_message = f"✅ {interaction.user.mention} answered `{self.trivia.answers[self.trivia.correct_answer_index]}`\n+{gem_win_trivia + streak} :gem: 🔥 {streak}"
                     update_winstreak(user_id, dbfile, streak)
                 newgems = add_gems_to_user(user_id, (gem_win_trivia + streak), dbfile)
-                print(newgems)
 
                 # add the message to the embed
                 self.embed.add_field(name="Answer", value=return_message, inline=False)
@@ -311,7 +306,6 @@ async def trivia_command(interaction):
     r = await interaction.response.send_message("** **")
     message = await interaction.channel.send("Loading trivia question...")
     embed, trivia = await generate_embed_trivia(interaction)
-    print(trivia.answers)
     emojis = ["1️⃣", "2️⃣", "3️⃣"]
     options = [discord.SelectOption(label=answer, emoji=emojis[i]) for i,answer in enumerate(trivia.answers)]
     select = TriviaSelect(options, trivia, dbfile, embed=embed, message=message)
