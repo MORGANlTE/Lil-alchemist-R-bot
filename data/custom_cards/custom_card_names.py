@@ -250,7 +250,7 @@ custom_names = {
           "name": "Spaghetti",
           "fusion": "Orb",
           "rarity": "Gold", 
-          "img_url": "https://i.postimg.cc/mBgdkThr/IMG-5307.jpg", 
+          "img_url": "https://i.postimg.cc/sDbP0dYF/IMG-5207.jpg", 
           "recipes": [
           ],
           "combos": [
