@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 5.5.1
-Version description: Trivia rework
+Current version: 5.6.0
+Version description: Top 3 for profiles
 
 ## 📜 License 📜
 

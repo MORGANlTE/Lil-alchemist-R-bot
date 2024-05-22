@@ -153,6 +153,15 @@ def get_top_users(dbfile, sortedByGems):
   conn.close()
   return top_users
 
+
+def get_top_users_top_3(dbfile):
+  conn = sqlite3.connect(dbfile)
+  cursor = conn.cursor()
+  cursor.execute("SELECT userid FROM users ORDER BY exp DESC, COALESCE(gems, 0), winstreak DESC LIMIT 3")
+  top_users = cursor.fetchall()
+  conn.close()
+  return top_users
+
 def get_users_gems_and_top_percentage(userid, dbfile):
   conn = sqlite3.connect(dbfile)
   cursor = conn.cursor()

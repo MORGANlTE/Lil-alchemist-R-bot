@@ -79,7 +79,7 @@ def get_experience(userid, dbfile):
     return user_exp[0]
   
 
-async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak):
+async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, userid, top3):
   response = requests.get(discord_avatar)
   avatar = Image.open(io.BytesIO(response.content))
   avatar = avatar.resize((200, 200))
@@ -144,7 +144,17 @@ async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstrea
 
   chin_avatar = chin_avatar_calculator(calculate_level(exp))
   chin = Image.open(images + "Chins/" + chin_avatar)
-
+  # if the user is the highest on the leaderboard, make them top1.png, else top2.png or top3.png
+  userid = str(userid)
+  print(top3)
+  print(userid)
+  if(userid == top3[0][0]):
+    chin = Image.open(images + "Chins/top1.png")
+  elif(userid == top3[1][0]):
+    chin = Image.open(images + "Chins/top2.png")
+  elif(userid == top3[2][0]):
+    chin = Image.open(images + "Chins/top3.png")
+  
   aspect_ratio = chin.width / chin.height
   new_height = int(200 / aspect_ratio)
   chin = chin.resize((200, new_height))
