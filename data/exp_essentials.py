@@ -146,8 +146,6 @@ async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstrea
   chin = Image.open(images + "Chins/" + chin_avatar)
   # if the user is the highest on the leaderboard, make them top1.png, else top2.png or top3.png
   userid = str(userid)
-  print(top3)
-  print(userid)
   if(userid == top3[0][0]):
     chin = Image.open(images + "Chins/top1.png")
   elif(userid == top3[1][0]):

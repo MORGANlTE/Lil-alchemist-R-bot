@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.6.0"
+version = "5.6.1"
 versiondescription = "Top 3 for profiles"
 gem_win_trivia = 5
 winstreak_max = 10
