@@ -17,8 +17,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.6.1"
-versiondescription = "Top 3 for profiles"
+version = "5.7.0"
+versiondescription = "Profile ranks"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -485,7 +485,7 @@ async def profile_command(interaction):
     exp = get_experience(interaction.user.id, dbfile) if interaction.user.id is not None else 0
     discord_name = interaction.user.display_name
     discord_avatar = interaction.user.avatar.url if interaction.user.avatar is not None else "https://i.ibb.co/nbdqnSL/2.png"
-    pic = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, interaction.user.id, top3)
+    pic = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, interaction.user.id, top3, gemsAndPerc[3])
 
     await interaction.followup.send(
         file=pic,

@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 5.6.0
-Version description: Top 3 for profiles
+Current version: 5.7.0
+Version description: Profile ranks
 
 ## 📜 License 📜
 

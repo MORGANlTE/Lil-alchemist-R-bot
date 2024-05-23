@@ -79,7 +79,10 @@ def get_experience(userid, dbfile):
     return user_exp[0]
   
 
-async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, userid, top3):
+async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, userid, top3, leaderboard_rank_user):
+  if leaderboard_rank_user is None:
+    leaderboard_rank_user = 0
+
   response = requests.get(discord_avatar)
   avatar = Image.open(io.BytesIO(response.content))
   avatar = avatar.resize((200, 200))
@@ -113,7 +116,8 @@ async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstrea
   draw = ImageDraw.Draw(background)
   draw.text((200, 15), discord_name, (255, 255, 255), font=titlefont)
   draw.text((240, 150), str(winstreak), (255, 255, 255), font=font)
-  draw.text((340, 150), str(gems), (255, 255, 255), font=font)
+  draw.text((320, 150), str(gems), (255, 255, 255), font=font)
+  draw.text((520, 150), "#" + str(leaderboard_rank_user), (255, 255, 255), font=font)
 
   # draw a fire next to the winstreak
   fire = Image.open(images+"Fire.png")
@@ -123,7 +127,12 @@ async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstrea
   # draw a diamond next to the gems
   diamond = Image.open(images+"Diamond.png")
   diamond = diamond.resize((40, 40))
-  background.paste(diamond, (300, 142), diamond)
+  background.paste(diamond, (280, 142), diamond)
+
+  # draw a trophy next to the leaderboard rank
+  trophy = Image.open(images+"trophy.png")
+  trophy = trophy.resize((40, 40))
+  background.paste(trophy, (480, 142), trophy)
 
   # make a progress bar, with the percentage of the exp
   try:

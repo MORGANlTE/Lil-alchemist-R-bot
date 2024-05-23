@@ -167,8 +167,15 @@ def get_users_gems_and_top_percentage(userid, dbfile):
   cursor = conn.cursor()
   cursor.execute("SELECT gems, winstreak, exp FROM users WHERE userid = ?", (userid,))
   user_gems = cursor.fetchone()
+  if user_gems[2] is None:
+    user_gems = (user_gems[0], user_gems[1], 0)
+     
+  cursor.execute("SELECT COUNT(*) FROM users WHERE exp > ?", (user_gems[2],))
+  user_rank = cursor.fetchone()[0] + 1
+
+  # return the users current rank
   conn.close()
-  return user_gems[0], user_gems[1], user_gems[2]
+  return user_gems[0], user_gems[1], user_gems[2], str(user_rank)
 
 def get_levels(userid, dbfile):
   conn = sqlite3.connect(dbfile)
