@@ -210,7 +210,7 @@ custom_names = {
         "Morganite":
          {
           "name": "M",
-          "fusion": "Protection",
+          "fusion": "Plunder",
           "rarity": "Bronze", 
           "img_url": "https://i.ibb.co/TYh5CTr/M.png", 
           "combos": [],

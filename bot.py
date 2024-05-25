@@ -17,8 +17,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.7.0"
-versiondescription = "Profile ranks"
+version = "5.8.0"
+versiondescription = "Support for Pillage & Plunder"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5

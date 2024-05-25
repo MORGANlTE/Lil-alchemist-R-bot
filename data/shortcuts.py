@@ -395,7 +395,7 @@ def get_question_ability():
     ) = get_rarity_and_form_etc(soup)
   # get the ability/fusion is done
   # now we need to add all others
-  list_of_abilities = ["Crushing Blow","Protection", "Counter Attack", "Absorb", "Critical Strike", "Curse"]
+  list_of_abilities = ["Crushing Blow","Protection", "Counter Attack", "Absorb", "Critical Strike", "Curse", "Pillage", "Plunder"]
   # remove the ability from the list
   list_of_abilities.remove(fusion)
 

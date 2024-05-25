@@ -107,6 +107,10 @@ def get_fusion_url(fusion):
         return "https://static.wikia.nocookie.net/lil-alchemist/images/0/00/Weaken.png"
     elif fusion == "Curse":
         return "https://static.wikia.nocookie.net/lil-alchemist/images/8/85/Curse.png"
+    elif fusion == "Pillage":
+        return "https://static.wikia.nocookie.net/lil-alchemist/images/1/1e/Pillage.png"
+    elif fusion == "Plunder":
+        return "https://static.wikia.nocookie.net/lil-alchemist/images/4/46/Plunder.png"
     else:
         return "https://static.wikia.nocookie.net/lil-alchemist/images/9/96/Orb.png"
 
