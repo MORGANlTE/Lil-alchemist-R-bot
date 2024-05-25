@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 5.7.0
-Version description: Profile ranks
+Current version: 5.8.0
+Version description: Support for Pillage & Plunder
 
 ## 📜 License 📜
 
