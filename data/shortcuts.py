@@ -167,6 +167,8 @@ def get_users_gems_and_top_percentage(userid, dbfile):
   cursor = conn.cursor()
   cursor.execute("SELECT gems, winstreak, exp FROM users WHERE userid = ?", (userid,))
   user_gems = cursor.fetchone()
+  if(user_gems is None):
+    return 0, 0, 0, "-1"
   if user_gems[2] is None:
     user_gems = (user_gems[0], user_gems[1], 0)
      
@@ -175,6 +177,7 @@ def get_users_gems_and_top_percentage(userid, dbfile):
 
   # return the users current rank
   conn.close()
+  #       gems,       winstreak,       exp,            rank 
   return user_gems[0], user_gems[1], user_gems[2], str(user_rank)
 
 def get_levels(userid, dbfile):

@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 5.8.0
-Version description: Support for Pillage & Plunder
+Current version: 5.8.1
+Version description: Supported unknown profiles
 
 ## 📜 License 📜
 
