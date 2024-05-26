@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 5.8.1
-Version description: Supported unknown profiles
+Current version: 5.8.2
+Version description: Bugfix
 
 ## 📜 License 📜
 

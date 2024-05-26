@@ -17,8 +17,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.8.1"
-versiondescription = "Supported unknown profiles"
+version = "5.8.2"
+versiondescription = "Bugfix"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -444,7 +444,6 @@ async def packopening_command(interaction, packname: str):
         embed=embed if randomNumber == 4 else None,
     )
     
-    await waiting.delete()
     # remove the image
 
     os.remove(f"./images/{imageCards.filename}")
