@@ -357,11 +357,13 @@ async def leaderboard_command(interaction, option: app_commands.Choice[str]):
     gemsAndPerc = newlist
 
     # Format the top users into a mentionable format
-    description = ""
+    description = "**Your score**\n"
     if not category:
-        description += f"You are #{str(gemsAndPerc[3])}\n"
-    description += f"{int(gemsAndPerc[2])} Exp - "
-    description += f":gem: {str(gemsAndPerc[0])} - 🔥{int(gemsAndPerc[1])}"
+        description += f"#{str(gemsAndPerc[3])}"
+        description += f" - {int(gemsAndPerc[2])} Exp"
+    else:
+        description += f":gem: {str(gemsAndPerc[0])} - 🔥{int(gemsAndPerc[1])}"
+        
     description += f"\n\n**Global {':gem: ' if category else ':crown: '}leaderboard:**\n"
 
     for i, user in enumerate(top_users):
