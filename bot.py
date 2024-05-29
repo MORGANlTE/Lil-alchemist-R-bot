@@ -17,8 +17,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.9.1"
-versiondescription = "Logs"
+version = "5.9.2"
+versiondescription = "Leaderboard update"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -333,8 +333,8 @@ async def trivia_command(interaction):
 )
 @app_commands.describe(option="Choose what type of leaderboard you want")
 @app_commands.choices(option=[
-        app_commands.Choice(name="Level leaderboard 🫰", value="Lvl"),
-        app_commands.Choice(name="Trivia leaderboard 💎", value="Gems")
+        app_commands.Choice(name="🎉Level", value="Lvl"),
+        app_commands.Choice(name="💎Gems", value="Gems")
     ])
 async def leaderboard_command(interaction, option: app_commands.Choice[str]):
     category = True if option.value == "Gems" else False
@@ -357,9 +357,12 @@ async def leaderboard_command(interaction, option: app_commands.Choice[str]):
     gemsAndPerc = newlist
 
     # Format the top users into a mentionable format
-    description = f"Level: {calculate_level(int(gemsAndPerc[2]))} | {int(gemsAndPerc[2])} Exp | "
-    description += f":gem: {str(gemsAndPerc[0])} | 🔥{int(gemsAndPerc[1])}\n\n"
-    description += f"**Global {':gem: ' if category else ':crown: '}leaderboard:**\n"
+    description = ""
+    if not category:
+        description += f"You are #{str(gemsAndPerc[3])}\n"
+    description += f"{int(gemsAndPerc[2])} Exp - "
+    description += f":gem: {str(gemsAndPerc[0])} - 🔥{int(gemsAndPerc[1])}"
+    description += f"\n\n**Global {':gem: ' if category else ':crown: '}leaderboard:**\n"
 
     for i, user in enumerate(top_users):
         if category:
