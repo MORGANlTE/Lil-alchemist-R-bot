@@ -17,12 +17,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.8.2"
-versiondescription = "Bugfix"
+version = "5.9.0"
+versiondescription = "Overwrite support for exp/gems"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
 exp = 10
+M_user_ids = [405067444764540928, 715932352311984201]
 dbfile = os.getenv("DATABASE")
 
 # Check the value of the ENVIRONMENT variable
@@ -525,6 +526,30 @@ async def claim_command(interaction):
             color=discord.Color.green(),
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@tree.command(
+    name="addstuff",
+    description="Just a command for M",
+    guilds=guilds,
+)
+@app_commands.describe(option="Choose what type of stuff")
+@app_commands.choices(option=[
+        app_commands.Choice(name="📞Exp", value="Lvl"),
+        app_commands.Choice(name="💎Gems", value="Gems")
+    ])
+async def addstuff_command(interaction, option: app_commands.Choice[str], amount: int, user_id: str):
+    if interaction.user.id not in M_user_ids:
+        await interaction.response.send_message("You are not allowed to use this command\nhttps://tenor.com/view/cat-screaming-sleeping-no-nein-gif-18647031", ephemeral=True)
+        return
+    else:
+        if option.value == "Gems":
+            newamount = add_gems_to_user(user_id, amount, dbfile)
+        else:
+            t = add_experience_to_user(user_id, amount, dbfile)
+            newamount = t["exptotal"]
+        await interaction.response.send_message(f"Added {amount} {option.value} to {user_id}\nNew total: {newamount} Exp", ephemeral=True)
+
 
     
 # worker example:

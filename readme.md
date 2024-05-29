@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 5.8.2
-Version description: Bugfix
+Current version: 5.9.0
+Version description: Overwrite support for exp/gems
 
 ## 📜 License 📜
 
