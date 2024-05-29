@@ -17,8 +17,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "5.9.0"
-versiondescription = "Overwrite support for exp/gems"
+version = "5.9.1"
+versiondescription = "Logs"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -548,6 +548,7 @@ async def addstuff_command(interaction, option: app_commands.Choice[str], amount
         else:
             t = add_experience_to_user(user_id, amount, dbfile)
             newamount = t["exptotal"]
+        print(f"Added {amount} {option.value} to {user_id} - New total: {newamount}")
         await interaction.response.send_message(f"Added {amount} {option.value} to {user_id}\nNew total: {newamount} Exp", ephemeral=True)
 
 
