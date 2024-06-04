@@ -18,7 +18,7 @@ from data.Apro.Aprogergely import imageeditor
 load_dotenv()
 
 # Variables:
-version = "6.0.0"
+version = "6.0.1"
 versiondescription = "Generate command - generate custom cards - Credits to Aprogergely"
 gem_win_trivia = 5
 winstreak_max = 10

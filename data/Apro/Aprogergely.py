@@ -8,7 +8,6 @@ import discord
 
 def imageeditor(cardname, rarity, level, attack, defense, isFinalForm, offset_x, offset_y, resize_factor_override, imgurl, image_location):
     # Save the image locally
-
     r = requests.get(imgurl)
     with open(f"{image_location}{cardname}.png", "wb") as f:
         f.write(r.content)
@@ -95,6 +94,7 @@ def imageeditor(cardname, rarity, level, attack, defense, isFinalForm, offset_x,
     draw = ImageDraw.Draw(result)
 
     # Specify the font and size
+    assert os.path.isfile(image_location+"GrilledCheeseBTNCnBold.ttf"), "Font file is missing:" + image_location+"GrilledCheeseBTNCnBold.ttf"
     font = ImageFont.truetype(image_location+"GrilledCheeseBTNCnBold.ttf", size=100)
 
     # Adding text
