@@ -11,14 +11,15 @@ from bs4 import BeautifulSoup
 from data.trivia import *
 import os
 from dotenv import load_dotenv
+from data.Apro.Aprogergely import imageeditor
 
 
 # Load the .env file
 load_dotenv()
 
 # Variables:
-version = "5.9.2"
-versiondescription = "Leaderboard update"
+version = "6.0.0"
+versiondescription = "Generate command - generate custom cards - Credits to Aprogergely"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -240,7 +241,11 @@ async def help_command(interaction):
         value="Shows your score on the global leaderboard",
         inline=True,
     )
-    
+    embed.add_field(
+        name=":coral: /generate",
+        value="Make a custom card - Thx Aprogergely!",
+        inline=True,
+    )
     embed.add_field(
         name="** **",
         value=f"v{version} - {versiondescription}\n*All copyrighted material belongs to Monumental*",
@@ -571,6 +576,36 @@ async def addstuff_command(interaction, option: app_commands.Choice[str], amount
 #     if now.time() >= target_time and (last_run is None or last_run < now.date()):
 #         print("done")
 #         last_run = now.date()  # Update the last run date
+
+@tree.command(
+    name="generate",
+    description="Generate a card - huge thanks to Aprogergely",
+    guilds=guilds,
+)
+@app_commands.describe(option="Choose rarity")
+@app_commands.choices(option=[
+        app_commands.Choice(name="Bronze", value="Bronze"),
+        app_commands.Choice(name="Silver", value="Silver"),
+        app_commands.Choice(name="Gold", value="Gold"),
+        app_commands.Choice(name="Diamond", value="Diamond"),
+        app_commands.Choice(name="Onyx", value="Onyx")
+    ])
+async def generate_command(interaction, option:app_commands.Choice[str], name:str, atk: str, dfc:str, img_url: str, is_final_form:bool):
+
+    await interaction.response.defer()
+    filepath = "./data/Apro/"
+    # save the image in the images folder
+    print(name, atk, dfc, img_url, is_final_form)
+    imageCards = imageeditor(image_location=filepath, cardname=name, rarity=option.value, attack=atk, defense=dfc, isFinalForm=is_final_form, level="1", imgurl=img_url, offset_x=0, offset_y=0, resize_factor_override=100)
+
+    await interaction.followup.send(
+        f"{interaction.user.mention} generated `{name}`",
+        file=imageCards,
+    )
+    
+    print("Generated card " + name)
+
+    os.remove(f"{imageCards.filename}")
 
 
 @client.event
