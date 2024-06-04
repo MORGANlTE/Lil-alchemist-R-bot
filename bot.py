@@ -591,7 +591,7 @@ async def addstuff_command(interaction, option: app_commands.Choice[str], amount
         app_commands.Choice(name="Onyx", value="Onyx")
     ])
 async def generate_command(interaction, option:app_commands.Choice[str], name:str, atk: str, dfc:str, img_url: str, is_final_form:bool):
-    await interaction.reply(f"Sadly still under construction (font issues)")
+    await interaction.response.send_message(f"Sadly still under construction (font issues)")
     # await interaction.response.defer()
     # filepath = "./data/Apro/"
     # # save the image in the images folder
