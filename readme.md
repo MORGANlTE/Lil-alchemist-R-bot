@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 6.0.0
-Version description: Generate command - generate custom cards - Credits to Aprogergely
+Current version: 6.0.2
+Version description: Temp fix
 
 ## 📜 License 📜
 
