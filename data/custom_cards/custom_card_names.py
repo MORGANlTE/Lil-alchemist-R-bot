@@ -311,7 +311,29 @@ custom_names = {
               "5": {"Attack": 99, "Defense": 99},
           },
         },
-
+        "Chinbot":
+        {
+          "name": "ChinBot",
+          "fusion": "Curse",
+          "rarity": "Diamond", 
+          "img_url": "https://media.discordapp.net/attachments/945414516391424043/1249066746334416977/data_Apro_ChinBotDiamond126.png?ex=6665f38e&is=6664a20e&hm=5b108ffa89d187605fbb312be86b9ce7731eae21d18eff55fa379110423c92ae&=&format=webp&quality=lossless&width=483&height=644", 
+          "combos": [],
+          "recipes": [
+              ("Chinchilla", "Love"), 
+              ("Chinchilla", "Robot"), 
+              ("Robot", "Adventure"), 
+          ],
+          "description": "Well well well, if it isn't the consequences of your own actions",
+          "suggester": "M", 
+          "where_to_acquire": ["Complete some Discord challenges perhaps"], 
+          "level_stats": {
+              "1": {"Attack": 12, "Defense": 6}, 
+              "2": {"Attack": 16, "Defense": 10},
+              "3": {"Attack": 20, "Defense": 14},
+              "4": {"Attack": 24, "Defense": 18},
+              "5": {"Attack": 28, "Defense": 22},
+          },
+        },
 
 
 }
