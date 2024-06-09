@@ -18,8 +18,8 @@ from data.Apro.Aprogergely import imageeditor
 load_dotenv()
 
 # Variables:
-version = "6.0.2"
-versiondescription = "Temp fix"
+version = "6.1.0"
+versiondescription = "Generate images"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -595,7 +595,6 @@ async def generate_command(interaction, option:app_commands.Choice[str], name:st
     await interaction.response.defer()
     filepath = "./data/Apro/"
     # save the image in the images folder
-    print(name, atk, dfc, img_url, is_final_form)
     imageCards = imageeditor(image_location=filepath, cardname=name, rarity=option.value, attack=atk, defense=dfc, isFinalForm=is_final_form, level="1", imgurl=img_url, offset_x=0, offset_y=0, resize_factor_override=100)
 
     await interaction.followup.send(

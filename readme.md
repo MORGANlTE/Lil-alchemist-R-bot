@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 6.0.2
-Version description: Temp fix
+Current version: 6.1.0
+Version description: Generate images
 
 ## 📜 License 📜
 
