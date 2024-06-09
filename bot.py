@@ -591,21 +591,21 @@ async def addstuff_command(interaction, option: app_commands.Choice[str], amount
         app_commands.Choice(name="Onyx", value="Onyx")
     ])
 async def generate_command(interaction, option:app_commands.Choice[str], name:str, atk: str, dfc:str, img_url: str, is_final_form:bool):
-    await interaction.response.send_message(f"Sadly still under construction (font issues)")
-    # await interaction.response.defer()
-    # filepath = "./data/Apro/"
-    # # save the image in the images folder
-    # print(name, atk, dfc, img_url, is_final_form)
-    # imageCards = imageeditor(image_location=filepath, cardname=name, rarity=option.value, attack=atk, defense=dfc, isFinalForm=is_final_form, level="1", imgurl=img_url, offset_x=0, offset_y=0, resize_factor_override=100)
+    # await interaction.response.send_message(f"Sadly still under construction (font issues)")
+    await interaction.response.defer()
+    filepath = "./data/Apro/"
+    # save the image in the images folder
+    print(name, atk, dfc, img_url, is_final_form)
+    imageCards = imageeditor(image_location=filepath, cardname=name, rarity=option.value, attack=atk, defense=dfc, isFinalForm=is_final_form, level="1", imgurl=img_url, offset_x=0, offset_y=0, resize_factor_override=100)
 
-    # await interaction.followup.send(
-    #     f"{interaction.user.mention} generated `{name}`",
-    #     file=imageCards,
-    # )
+    await interaction.followup.send(
+        f"{interaction.user.mention} generated `{name}`",
+        file=imageCards,
+    )
     
-    # print("Generated card " + name)
+    print("Generated card " + name)
 
-    # os.remove(f"{imageCards.filename}")
+    os.remove(f"{imageCards.filename}")
 
 
 @client.event

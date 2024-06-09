@@ -6,6 +6,7 @@ import requests
 import os
 import discord
 
+
 def imageeditor(cardname, rarity, level, attack, defense, isFinalForm, offset_x, offset_y, resize_factor_override, imgurl, image_location):
     # Save the image locally
     r = requests.get(imgurl)
@@ -94,8 +95,8 @@ def imageeditor(cardname, rarity, level, attack, defense, isFinalForm, offset_x,
     draw = ImageDraw.Draw(result)
 
     # Specify the font and size
-    assert os.path.isfile(image_location+"GrilledCheeseBTNCnBold.ttf"), "Font file is missing:" + image_location+"GrilledCheeseBTNCnBold.ttf"
-    font = ImageFont.truetype(image_location+"GrilledCheeseBTNCnBold.ttf", size=100)
+    assert os.path.isfile("/home/morganite/.fonts/"+"GrilledCheeseBTNCnBold.ttf"), "Font file is missing:" + "home/morganite/.fonts/"+"GrilledCheeseBTNCnBold.ttf"
+    font = ImageFont.truetype("/home/morganite/.fonts/"+"GrilledCheeseBTNCnBold.ttf", size=100)
 
     # Adding text
     text_width = draw.textlength(cardname.replace("_", " "), font)
