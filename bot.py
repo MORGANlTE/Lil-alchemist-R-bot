@@ -42,6 +42,7 @@ print(f"Running in {environment} environment")
 
 # Functions:
 intents = discord.Intents.default()
+intents.messages = True
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
@@ -605,6 +606,9 @@ async def generate_command(interaction, option:app_commands.Choice[str], name:st
     print("Generated card " + name)
 
     os.remove(f"{imageCards.filename}")
+
+
+
 
 
 @client.event
