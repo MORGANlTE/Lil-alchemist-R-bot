@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 6.1.0
-Version description: Generate images
+Current version: 7.0.0
+Version description: Added an option to view packs
 
 ## 📜 License 📜
 

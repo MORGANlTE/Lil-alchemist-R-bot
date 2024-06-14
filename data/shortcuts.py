@@ -9,6 +9,7 @@ from random import shuffle
 from data.data_grabber import get_rarity_and_form_etc
 from data.data_grabber import get_fusion_url, get_embedcolor
 from data.custom_cards.custom_card_names import custom_names
+import re
 
 # Discord.py
 async def sync_guilds(guilds, tree):
@@ -426,6 +427,44 @@ def get_question_ability():
   
   return question
 
+# Packview shortcuts
+
+def get_pack_contents(pack):
+    url_name = pack.replace(" ", "_")
+    url = f"https://lil-alchemist.fandom.com/wiki/Special_Packs/{url_name}"
+    resp = requests.get(url)
+    soup = BeautifulSoup(resp.content, "html.parser")
+    return_cards = []
+
+    try:
+        div1 = soup.find_all("div", id="gallery-0")[0]
+    except:
+        return "Not found"
+    
+    aside = soup.find("aside").find("a").get("href").replace("/wiki/", "").strip()
+
+    def loop_and_add_cards(cards):
+       for card in cards:
+        # find the img inside the card
+        img = card.find("img")
+        
+        # name, stats, fusion
+        return_cards.append([
+           card.get("href").replace("/wiki/", "").strip(),
+           img.get("alt"),
+           fusion_to_emote(get_filename_from_url(img.get('data-caption')))
+        ])
+
+    gallery = soup.find("div", id="gallery-0")
+    cards = gallery.find_all("a", class_="image link-internal")
+    loop_and_add_cards(cards)
+
+    gallery = soup.find("div", id="gallery-1")
+    cards = gallery.find_all("a", class_="image link-internal")
+    loop_and_add_cards(cards)
+    
+
+    return {"cards":return_cards, "img": aside}
 
 
 # Beautifulsoup shortcuts
@@ -440,3 +479,60 @@ def get_image(soup):
             print("No <figure> element with class 'pi-item pi-image' found.")
             image_url = None
         return image_url
+
+# Discord emotes shortcuts
+def fusion_to_emote(fusion):
+  fusion = fusion.replace("_", " ").strip().capitalize()
+
+  if fusion == "Pierce":
+      return "<:pierce:1251260068415012965>"
+  elif fusion == "Crushing blow":
+      return "<:cb:1251258459715014687>"
+  elif fusion == "Block":
+      return "<:block:1251258423765504112>"
+  elif fusion == "Protection":
+     return "<:pr:1251258185805987930>"
+  elif fusion == "Reflect":
+      return "<:reflect:1251258557236645929>"
+  elif fusion == "Counter attack":
+      return "<:ca:1251258446716600411>"
+  elif fusion == "Siphon":
+      return "<:siphon:1251258574156333166>"
+  elif fusion == "Absorb":
+      return "<:ab:1251258370305032365>"
+  elif fusion == "Amplify":
+      return "<:amplify:1251258389443645471>"
+  elif fusion == "Criticalstrike":
+     return "<:cs:1251258476517130263> "
+  elif fusion == "Weaken":
+     return "<:weaken:1251258603390767285>"
+  elif fusion == "Curse":
+      return "<:cu:1251258490026987532>"
+  elif fusion == "Pillage":
+      return "<:pillage:1251259075405283418>"
+  elif fusion == "Plunder":
+      return "<:plunder:1251259077452103751>"
+  elif fusion == "Orb":
+     return "<:orb:1251259896997871788>"
+  
+
+  else:
+      return fusion
+  
+def get_filename_from_url(url):
+  match = re.search(r"(?<=images/).+?\.png", url)
+  if match:
+    return match.group().split("/")[-1].replace(".png", "")
+  else:
+    return None
+  
+def find_closest_pack(user_input, word_list):
+  # "borrowed" this code from Google Gemini
+  if user_input.strip() == "Darkness":
+     return "The Dark"
+  distances = []
+  for item in word_list:
+    # Calculate the Levenshtein distance to measure edit distance between strings
+    distance = sum(a != b for a, b in zip(user_input, item))
+    distances.append(distance)
+  return word_list[distances.index(min(distances))]

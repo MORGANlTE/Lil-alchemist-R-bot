@@ -18,8 +18,8 @@ from data.Apro.Aprogergely import imageeditor
 load_dotenv()
 
 # Variables:
-version = "6.1.0"
-versiondescription = "Generate images"
+version = "7.0.0"
+versiondescription = "Added an option to view packs"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -607,6 +607,35 @@ async def generate_command(interaction, option:app_commands.Choice[str], name:st
 
     os.remove(f"{imageCards.filename}")
 
+
+@tree.command(
+    name="packview",
+    description="What in the pack? Only one way to find out.",
+    guilds=guilds,
+)
+async def generate_command(interaction, packname:str):
+    if len(packname) < 2:
+        await interaction.response.send_message(f"There are no pack names this short man, what r u doing 😅", ephemeral=True)
+        return
+    packcontent = get_pack_contents(packname)
+
+    if packcontent == "Not found":
+        closestpack = find_closest_pack(packname, get_packs())
+        await interaction.response.send_message(f"Pack `{packname}` not found\nDid you mean `{closestpack}`?", ephemeral=True)
+        return
+    
+    embed = discord.Embed(
+        title=f"{packname} Pack",
+        color=discord.Color.dark_magenta(),
+    )
+    for row in packcontent["cards"]:
+        embed.add_field(name=row[0].replace("_", " ").replace("%27s", "'"), value=row[1] + " " + row[2], inline=True)
+
+    embed.set_thumbnail(url=packcontent["img"])
+
+    
+
+    await interaction.response.send_message(embed=embed)
 
 
 

@@ -6,6 +6,9 @@ from data.essentials.data.question import Question
 
 packs = []
 
+def get_packs():
+    return packs
+
 def get_trivia_questions():
     questions = [
         Question(
@@ -73,7 +76,11 @@ def setup_packs():
         if i % 2 != 0:
             akes = tr.find_all("a")
             for ake in akes:
-                packs.append(ake["href"].split("/")[2].replace("_Pack", "").replace("_Of_", "_of_"))
+                if ake["href"].split("/")[2].replace("_Pack", "").replace("_Of_", "_of_") == "Darkness":
+                    t = "The_Dark"
+                else:
+                    t = ake["href"].split("/")[2].replace("_Pack", "").replace("_Of_", "_of_")
+                packs.append(t)
 
 def generate_random_question_combos():
     return get_question_combos()
