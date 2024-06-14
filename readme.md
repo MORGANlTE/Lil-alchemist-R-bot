@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 7.0.0
-Version description: Added an option to view packs
+Current version: 7.1.1
+Version description: Updated help page
 
 ## 📜 License 📜
 

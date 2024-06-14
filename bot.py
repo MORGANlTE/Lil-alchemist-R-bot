@@ -18,8 +18,8 @@ from data.Apro.Aprogergely import imageeditor
 load_dotenv()
 
 # Variables:
-version = "7.0.1"
-versiondescription = "Added an option to view packs"
+version = "7.1.1"
+versiondescription = "Updated help page"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -207,9 +207,22 @@ async def help_command(interaction):
         description="Here are the available commands:",
         color=discord.Color.teal(),
     )
+
+    embed.add_field(
+        name="Informational",
+        value="** **",
+        inline="False",
+    )
+    
+
     embed.add_field(
         name=":game_die: /wiki",
         value="Searches the specified card on the wiki",
+        inline=True,
+    )
+    embed.add_field(
+        name=":flower_playing_cards: /packview",
+        value="Shows the contents of a pack",
         inline=True,
     )
     embed.add_field(
@@ -217,11 +230,42 @@ async def help_command(interaction):
         value="Displays the help page",
         inline=True,
     )
+
+    # empty row here:
+    embed.add_field(
+        name="** **",
+        value="** **",
+        inline=False,
+    )
+    embed.add_field(
+        name="\nServer related",
+        value="** **",
+        inline="False",
+    )
+    
+    embed.add_field(
+        name=":coin: /leaderboard",
+        value="Shows your score on the global leaderboard",
+        inline=True,
+    )
     embed.add_field(
         name=":bar_chart: /profile",
         value="Shows your profile",
         inline=True,
     )
+    
+    # empty row here:
+    embed.add_field(
+        name="** **",
+        value="** **",
+        inline=False,
+    )
+    embed.add_field(
+        name="\nFun",
+        value="** **",
+        inline="False",
+    )
+
     embed.add_field(
         name=":moneybag: /claim",
         value="Claim your daily login",
@@ -234,22 +278,17 @@ async def help_command(interaction):
     )
     embed.add_field(
         name=":gem: /trivia",
-        value="Starts a trivia question",
-        inline=True,
-    )
-    embed.add_field(
-        name=":coin: /leaderboard",
-        value="Shows your score on the global leaderboard",
+        value="Some fun trivia to try out",
         inline=True,
     )
     embed.add_field(
         name=":coral: /generate",
-        value="Make a custom card - Thx Aprogergely!",
+        value="Make a custom card classical LA style! - Thx Aprogergely!",
         inline=True,
     )
     embed.add_field(
         name="** **",
-        value=f"v{version} - {versiondescription}\n*All copyrighted material belongs to Monumental*",
+        value=f"<:newMBot0:1251265938142007486> v{version} - {versiondescription}\n*All copyrighted material belongs to Monumental*",
         inline=False,
     )
 
