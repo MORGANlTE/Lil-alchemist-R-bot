@@ -18,7 +18,7 @@ from data.Apro.Aprogergely import imageeditor
 load_dotenv()
 
 # Variables:
-version = "7.0.0"
+version = "7.0.1"
 versiondescription = "Added an option to view packs"
 gem_win_trivia = 5
 winstreak_max = 10
@@ -629,7 +629,7 @@ async def generate_command(interaction, packname:str):
         color=discord.Color.dark_magenta(),
     )
     for row in packcontent["cards"]:
-        embed.add_field(name=row[0].replace("_", " ").replace("%27s", "'"), value=row[1] + " " + row[2], inline=True)
+        embed.add_field(name=row[0].replace("_", " ").replace("%27s", "'"), value=row[2] + " " + row[1], inline=True)
 
     embed.set_thumbnail(url=packcontent["img"])
 
