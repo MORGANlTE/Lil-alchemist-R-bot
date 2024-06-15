@@ -246,7 +246,7 @@ async def help_command(interaction):
     
     embed.add_field(
         name=":coin: /leaderboard",
-        value="Shows your score on the global leaderboard",
+        value="Shows the global leaderboard",
         inline=True,
     )
     embed.add_field(
