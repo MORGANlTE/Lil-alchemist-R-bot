@@ -669,7 +669,7 @@ async def generate_command(interaction, packname:str):
         color=discord.Color.dark_magenta(),
     )
     for row in packcontent["cards"]:
-        embed.add_field(name=row[0].replace("_", " ").replace("%27s", "'"), value=row[2] + " " + row[1], inline=True)
+        embed.add_field(name=row[0].replace("_", " ").replace("%27s", "'").replace("%26", "&"), value=row[2] + " " + row[1], inline=True)
     
     # check if valid url
 
