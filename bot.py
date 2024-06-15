@@ -19,7 +19,7 @@ import re
 load_dotenv()
 
 # Variables:
-version = "7.1.2"
+version = "7.1.3"
 versiondescription = "Fix for packview"
 gem_win_trivia = 5
 winstreak_max = 10
