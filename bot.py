@@ -12,14 +12,15 @@ from data.trivia import *
 import os
 from dotenv import load_dotenv
 from data.Apro.Aprogergely import imageeditor
+import re
 
 
 # Load the .env file
 load_dotenv()
 
 # Variables:
-version = "7.1.1"
-versiondescription = "Updated help page"
+version = "7.1.2"
+versiondescription = "Fix for packview"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -669,8 +670,11 @@ async def generate_command(interaction, packname:str):
     )
     for row in packcontent["cards"]:
         embed.add_field(name=row[0].replace("_", " ").replace("%27s", "'"), value=row[2] + " " + row[1], inline=True)
+    
+    # check if valid url
 
-    embed.set_thumbnail(url=packcontent["img"])
+    if re.match(r"(http|https)://.*\.(?:png|jpg|jpeg|gif|png)", packcontent["img"]):
+        embed.set_thumbnail(url=packcontent["img"])
 
     
 
