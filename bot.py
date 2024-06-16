@@ -19,8 +19,8 @@ import re
 load_dotenv()
 
 # Variables:
-version = "7.1.3"
-versiondescription = "Fix for packview"
+version = "7.2.3"
+versiondescription = "Packopening now checks packnames similar"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -454,7 +454,12 @@ def get_medal_emoji(rank):
 )
 async def packopening_command(interaction, packname: str):
     await interaction.response.defer()
+    packname = packname.strip()
 
+    if len(packname) < 2:
+        await interaction.response.send_message(f"There are no pack names this short man, what r u doing 😅", ephemeral=True)
+        return
+    
     gif = discord.File(
             f"./opening.gif",
             filename=f"opening.gif",
@@ -475,11 +480,12 @@ async def packopening_command(interaction, packname: str):
     await waiting.delete()
 
     if imageCards == "Not found":
-        await interaction.followup.send(f"Pack `{packname}` not found", ephemeral=True)
+        closestpack = find_closest_pack(packname.replace(" ", "_"), get_packs())
+        await interaction.followup.send(f"Pack `{packname}` not found\nDid you mean `{closestpack.replace('_', ' ')}`?", ephemeral=True)
         return
     if imageCards == "Error occured":
         await interaction.followup.send(
-            f"An error occured while opening pack `{packname}`", ephemeral=True)
+            f"An error occured while opening pack `{packname}`, please check console")
         return
     # random number between 1 and 4, if 4 send the embed
     randomNumber = random.randint(1, 4)
