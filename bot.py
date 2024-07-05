@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from data.trivia import *
 import os
 from dotenv import load_dotenv
+import json
 
 
 # Load the .env file
@@ -477,14 +478,15 @@ async def profile_command(interaction):
     # Define the question and answers
 
     await interaction.response.defer()
-    top3 = get_top_users_top_3(dbfile)
+    # top3 = get_top_users_top_3(dbfile)
     gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
     gems = gemsAndPerc[0] if gemsAndPerc[0] is not None else 0
     winstreak = int(gemsAndPerc[1]) if gemsAndPerc[1] is not None else 0
     exp = get_experience(interaction.user.id, dbfile) if interaction.user.id is not None else 0
     discord_name = interaction.user.display_name
     discord_avatar = interaction.user.avatar.url if interaction.user.avatar is not None else "https://i.ibb.co/nbdqnSL/2.png"
-    pic = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, interaction.user.id, top3, gemsAndPerc[3])
+    custom_pfp = get_custom_pfp(interaction.user.id, dbfile) + ".png"
+    pic = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, gemsAndPerc[3], custom_pfp)
 
     await interaction.followup.send(
         file=pic,
@@ -492,6 +494,54 @@ async def profile_command(interaction):
     # remove the image
     os.remove(f"./important_images/{discord_name}.png")
 
+@tree.command(
+    name="setprofile",
+    description="Edit your Discord Profile",
+    guilds=guilds,
+)
+async def setprofile_command(interaction):
+    # Define the question and answers
+
+    # await interaction.response.defer()
+    # top3 = get_top_users_top_3(dbfile)
+    pfps = get_pfps(interaction.user.id, dbfile)
+    
+    print(pfps)
+    pfps = json.loads(pfps)
+
+
+    class PfpSelect(discord.ui.Select):
+            def __init__(self, options, pfps, dbfile):
+                super().__init__(placeholder='Choose your new pfp...', options=options)
+                self.pfps = pfps
+                self.dbfile = dbfile
+
+            async def callback(self, interaction: discord.Interaction):
+                await interaction.response.defer()
+                pfpid = self.values[0]
+                user_id = interaction.user.id
+                
+                # set the pfp
+                set_custom_pfp(user_id, pfpid, dbfile)
+
+                # give feedback to user
+                await interaction.followup.send(
+                    f"Profile picture set to {get_description_pfp(self.values[0])}",
+                    ephemeral=True
+                )
+
+    # return a select with all the pfps
+    options = [SelectOption(label=get_description_pfp(pfps[i]), value=pfps[i]) for i in range(len(pfps))]
+    select = PfpSelect(options, pfps, dbfile)
+
+    view = discord.ui.View(timeout=None)
+    view.add_item(select)
+
+    
+
+    await interaction.response.send_message(
+        "Choose your profile picture",
+        view=view, ephemeral=True)
 
 @tree.command(
     name="claim",
