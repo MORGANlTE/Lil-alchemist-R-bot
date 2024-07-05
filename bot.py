@@ -564,7 +564,6 @@ async def setprofile_command(interaction):
     # top3 = get_top_users_top_3(dbfile)
     pfps = get_pfps(interaction.user.id, dbfile)
     
-    print(pfps)
     pfps = json.loads(pfps)
 
 
