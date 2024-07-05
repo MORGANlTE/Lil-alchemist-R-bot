@@ -590,6 +590,6 @@ def get_description_pfp(pfp_id):
       13: "lvl 65 - Bionic Chinchilla",
       14: "lvl 70 - Bone Chin",
       15: "lvl 75 - Forest Chinchillas",
-      16: "lvl 99+ - Mecha Chinzilla"
+      16: "lvl 100 - Mecha Chinzilla"
   }
   return pfps[int(pfp_id)]
