@@ -1,14 +1,12 @@
 import sqlite3
-import time
 import os
 import math
 import discord
-import PIL
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 import requests
 import io
 from datetime import datetime, timedelta
-import random
+import json
 
 def calculate_level(exp):
     return math.ceil((-3 + math.sqrt(exp)) / 2)
@@ -19,7 +17,7 @@ def how_much_exp(level):
 def chin_avatar_calculator(level):
     # final img
     if level >= 100:
-        return "16.png"
+        return 16
     modulus = level // 5
     if modulus > 15:
         modulus = 15
@@ -28,7 +26,7 @@ def chin_avatar_calculator(level):
         modulus = 0
     
     
-    return str(modulus) + ".png"
+    return modulus
        
     
 
@@ -62,6 +60,9 @@ def add_experience_to_user(userid, exp, dbfile):
   currentlvl = calculate_level(current)
   newlvl = calculate_level(current + exp)
 
+    # add the users pfps for the levels
+  add_user_pfps_for_levels(userid, currentlvl, newlvl, conn)
+
   conn.commit()
   conn.close()
 
@@ -78,8 +79,37 @@ def get_experience(userid, dbfile):
   else:
     return user_exp[0]
   
+def get_custom_pfp(userid, dbfile):
+  conn = sqlite3.connect(dbfile)
+  cursor = conn.cursor()
+  cursor.execute("SELECT current_pfp FROM users WHERE userid = ?", (userid,))
+  user_pfp = cursor.fetchone()
+  conn.close()
+  if user_pfp[0] is None:
+    return "0"
+  else:
+    return user_pfp[0]
+  
+def get_pfps(userid, dbfile):
+  conn = sqlite3.connect(dbfile)
+  cursor = conn.cursor()
+  cursor.execute("SELECT pfps FROM users WHERE userid = ?", (userid,))
+  pfps = cursor.fetchone()
+  conn.close()
+  if pfps[0] is None:
+    return '["0"]'
+  else:
+    return pfps[0]
+  
+def set_custom_pfp(userid, pfp, dbfile):
+  conn = sqlite3.connect(dbfile)
+  cursor = conn.cursor()
+  cursor.execute("UPDATE users SET current_pfp = ? WHERE userid = ?", (pfp, userid))
+  conn.commit()
+  conn.close()
+  
 
-async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, userid, top3, leaderboard_rank_user):
+async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, leaderboard_rank_user, pfpchin):
   if leaderboard_rank_user is None:
     leaderboard_rank_user = 0
 
@@ -147,20 +177,18 @@ async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstrea
   draw.rectangle([200, 110, 600, 130], fill=(255, 255, 255))
   draw.rectangle([200, 110, 200 + 400*percentage_towards_next_level, 130], fill=normal_color)
 
-  # pick a random chin from the images in this folder
-
   # we want the Chin based on the users level
 
-  chin_avatar = chin_avatar_calculator(calculate_level(exp))
-  chin = Image.open(images + "Chins/" + chin_avatar)
+  # chin_avatar_calculator(calculate_level(exp))
+  chin = Image.open(images + "Chins/" + pfpchin)
   # if the user is the highest on the leaderboard, make them top1.png, else top2.png or top3.png
-  userid = str(userid)
-  if(userid == top3[0][0]):
-    chin = Image.open(images + "Chins/top1.png")
-  elif(userid == top3[1][0]):
-    chin = Image.open(images + "Chins/top2.png")
-  elif(userid == top3[2][0]):
-    chin = Image.open(images + "Chins/top3.png")
+  # userid = str(userid)
+  # if(userid == top3[0][0]):
+  #   chin = Image.open(images + "Chins/top1.png")
+  # elif(userid == top3[1][0]):
+  #   chin = Image.open(images + "Chins/top2.png")
+  # elif(userid == top3[2][0]):
+  #   chin = Image.open(images + "Chins/top3.png")
   
   aspect_ratio = chin.width / chin.height
   new_height = int(200 / aspect_ratio)
@@ -227,3 +255,32 @@ def get_highest_exp(dbfile):
   if users is None:
     return None
   return users
+
+def add_user_pfps_for_levels(userid, currentlvl, newlvl, db_connection):
+  # get user pfps
+  
+  cursor = db_connection.cursor()
+  cursor.execute("SELECT pfps FROM users WHERE userid = ?", (userid,))
+  pfps = cursor.fetchone()[0]
+  oldpfps = pfps
+
+  # check if we unlocked a new pfp
+  currentlvlchin = chin_avatar_calculator(newlvl)
+  if pfps is None:
+    pfps = '["0"]'
+  # make the list a set json
+  pfps = json.loads(pfps)
+  for i in range(currentlvlchin):
+    if str(i+1) not in pfps:
+      pfps.append(str(i+1))
+
+  # order the list
+  pfps = sorted(pfps, key=lambda x: int(x))
+
+  if pfps == oldpfps: # no updates needed
+    return
+    
+  # set the new pfps
+  cursor.execute("UPDATE users SET pfps = ? WHERE userid = ?", (json.dumps(pfps), userid))
+  db_connection.commit()
+

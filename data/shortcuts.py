@@ -29,6 +29,7 @@ def setup_database(dbfile):
     create_leaderboard_if_doesnt_exist(conn)
     check_winstreak_exists_in_users(conn)
     check_exp_exists_in_users(conn)
+    check_profilepictures_exist_in_users(conn)
     conn.close()
 
 def create_leaderboard_if_doesnt_exist(conn):
@@ -67,17 +68,12 @@ def check_exp_exists_in_users(conn):
     for column in table_info:
         if column[1] == "exp":
             exp_exists = True
-            break
-        
-    for column in table_info:
         if column[1] == "lastupdated":
             lastupdated_exists = True
-            break
-        
-    for column in table_info:
         if column[1] == "lastlogin":
             lastlogin_exists = True
-            break
+        if exp_exists and lastupdated_exists and lastlogin_exists:
+            break        
         
     if not exp_exists:
         cursor.execute("ALTER TABLE users ADD COLUMN exp INTEGER")
@@ -89,7 +85,26 @@ def check_exp_exists_in_users(conn):
         cursor.execute("ALTER TABLE users ADD COLUMN lastlogin TEXT")
         conn.commit()
 
-    conn.close()
+def check_profilepictures_exist_in_users(conn):
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(users)")
+    table_info = cursor.fetchall()
+    pfp_list_exists = False
+    current_pfp_exists = False
+    for column in table_info:
+        if column[1] == "pfps":
+            pfp_list_exists = True
+        if column[1] == "current_pfp":
+            current_pfp_exists = True
+        if pfp_list_exists and current_pfp_exists:
+            break
+
+    if not pfp_list_exists:
+        cursor.execute("ALTER TABLE users ADD COLUMN pfps TEXT")
+        conn.commit()
+    if not current_pfp_exists:
+        cursor.execute("ALTER TABLE users ADD COLUMN current_pfp TEXT")
+        conn.commit()
 
 def add_gems_to_user(userid, gems, dbfile):
   conn = sqlite3.connect(dbfile)
@@ -536,3 +551,45 @@ def find_closest_pack(user_input, word_list):
     distance = sum(a != b for a, b in zip(user_input, item))
     distances.append(distance)
   return word_list[distances.index(min(distances))]
+
+# pfp shortcuts
+def get_description_pfp(pfp_id):
+  # pfps = {
+  #     0: "Zombiechin",
+  #     1: "Chinchilla - free",
+  #     2: "Pilgrim Chin - lvl 5",
+  #     3: "Chinzilla - lvl 10",
+  #     4: "Aviator Chin - lvl 15",
+  #     5: "Chinchilla Knight - lvl 20",
+  #     6: "Wonderchin - lvl 25",
+  #     7: "Chinchillalope - lvl 30",
+  #     8: "Chin Cousteau - lvl 35",
+  #     9: "Chinchilla Raider - lvl 40",
+  #     10: "Candy King Chin - lvl 45",
+  #     11: "Mozart Chin - lvl 50",
+  #     12: "Chin Trooper - lvl 55",
+  #     13: "Bionic Chinchilla - lvl 60",
+  #     14: "Bone Chin - lvl 65",
+  #     15: "Forest Chinchillas - lvl 70",
+  #     16: "🎉 Mecha Chinzilla - lvl 100"
+  #  }
+  pfps = {
+      0: "Free - Zombiechin",
+      1: "lvl 5 - Chinchilla",
+      2: "lvl 10 - Pilgrim Chin",
+      3: "lvl 15 - Chinzilla",
+      4: "lvl 20 - Aviator Chin",
+      5: "lvl 25 - Chinchilla Knight",
+      6: "lvl 30 - Wonderchin",
+      7: "lvl 35 - Chinchillalope",
+      8: "lvl 40 - Chin Cousteau",
+      9: "lvl 45 - Chinchilla Raider",
+      10: "lvl 50 - Candy King Chin",
+      11: "lvl 55 - Mozart Chin",
+      12: "lvl 60 - Chin Trooper",
+      13: "lvl 65 - Bionic Chinchilla",
+      14: "lvl 70 - Bone Chin",
+      15: "lvl 75 - Forest Chinchillas",
+      16: "lvl 99+ - Mecha Chinzilla"
+  }
+  return pfps[int(pfp_id)]
