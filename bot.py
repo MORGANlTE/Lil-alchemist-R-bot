@@ -4,6 +4,7 @@ from discord.ui import Button, View, Select
 from data.data_grabber import *
 from data.packopening import *
 from data.shortcuts import *
+import datetime
 from data.exp_essentials import *
 import discord
 import requests
@@ -19,8 +20,8 @@ import re
 load_dotenv()
 
 # Variables:
-version = "7.2.4"
-versiondescription = "Updated generate command"
+version = "7.3.1"
+versiondescription = "Added goblin command"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -685,6 +686,81 @@ async def generate_command(interaction, packname:str):
 
     if re.match(r"(http|https)://.*\.(?:png|jpg|jpeg|gif|png)", packcontent["img"]):
         embed.set_thumbnail(url=packcontent["img"])
+
+    
+
+    await interaction.response.send_message(embed=embed)
+
+@tree.command(
+    name="goblin",
+    description="When does my goblin spawn?",
+    guilds=guilds,
+)
+async def goblin_command(interaction, goblintime: str = None):
+    """
+    You can check out here when the goblin spawns and what rewards you can get from it.
+
+    Args:
+        goblintime (str, optional): MM-DD-YYYY The date you want to check the goblin for. Standard is today.
+    """
+    try:
+        if goblintime is None:
+            gtime = datetime.now()
+        else:
+            gtime = datetime.strptime(goblintime, "%m-%d-%Y")
+    except:
+        await interaction.response.send_message("Please provide a valid date in the format MM-DD-YYYY", ephemeral=True)
+        return
+
+    embed = discord.Embed(
+        title=f"Goblins overview",
+        color=discord.Color.brand_red(),
+    )
+    
+    goblins = {
+        "gobgold": {
+            "name": "Gold goblin",
+            "emoji": "<:gobgold:1258839564936675348>",
+            "spawn_days": 12,
+            "health": 60,
+            "rewards": ["500 <:coin:1258877467842576415>", "50 <:gem:1258877082734297108> ", "1 <:gff:1258876866249625620> upgrade boost/1 random 2-orb <:gff:1258876866249625620>"]
+        },
+        "gobdiamond": {
+            "name": "Diamond goblin",
+            "emoji": "<:gobdiamond:1258839525401165887>",
+            "spawn_days": 28,
+            "health": 72,
+            "rewards": ["1000 <:coin:1258877467842576415>", "100 <:gem:1258877082734297108> ", "5 fragments <:fragment:1196793443612098560>", "1 <:dff:1258876920574116000> upgrade boost/1 random portal event <:dff:1258876920574116000>"]
+        },
+        "gobking": {
+            "name": "Goblin king",
+            "emoji": "<:gobking:1258839599938142269>",
+            "spawn_days": 54,
+            "health": 84,
+            "rewards": ["2000 <:coin:1258877467842576415>", "500 <:gem:1258877082734297108> ", "10 fragments <:fragment:1196793443612098560>", "1 non-event/PREMIUM <:gcc:1258877882571427880> & 1 <:occ:1258878153913274449>"]
+        }
+    }
+
+    # convert datetime to day
+    for goblin in goblins:
+        # add the amount of days to the date in gtime, convert to string
+
+        spawntime = (gtime + timedelta(days=goblins[goblin]["spawn_days"])).strftime("%m-%d-%Y")
+        rewardstext = "\n".join(goblins[goblin]["rewards"])
+        embed.add_field(
+            name=str(goblins[goblin]["name"]) + " " + str(goblins[goblin]['emoji']),
+            value=f"{spawntime}\n{goblins[goblin]['health']} HP\n\
+            \nRewards:\n{rewardstext}",
+            inline=True
+        )
+
+    embed.add_field(
+        name="** **",
+        value="<:newMBot0:1251265938142007486> Goblin info (mm-dd-yyyy) - Shoutout to <@511322291972341800>",
+        inline=False,
+    )
+
+
 
     
 

@@ -45,8 +45,8 @@ RESET_COMMANDS=False
 
 ## 📝 Version 📝
 
-Current version: 7.1.1
-Version description: Updated help page
+Current version: 7.3.1
+Version description: Added goblin command
 
 ## 📜 License 📜
 
