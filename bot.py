@@ -20,8 +20,8 @@ import re
 load_dotenv()
 
 # Variables:
-version = "7.3.1"
-versiondescription = "Added goblin command"
+version = "7.3.2"
+versiondescription = "Updated goblin command"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -230,6 +230,11 @@ async def help_command(interaction):
     embed.add_field(
         name=":question: /help",
         value="Displays the help page",
+        inline=True,
+    )
+    embed.add_field(
+        name="<:gobking:1258839599938142269> /goblin",
+        value="Shows the next goblin spawn",
         inline=True,
     )
 
@@ -696,7 +701,13 @@ async def generate_command(interaction, packname:str):
     description="When does my goblin spawn?",
     guilds=guilds,
 )
-async def goblin_command(interaction, goblintime: str = None):
+@app_commands.describe(goblin="Choose Goblin")
+@app_commands.choices(goblin=[
+        app_commands.Choice(name="Gold", value="gobgold"),
+        app_commands.Choice(name="Diamond", value="gobdia"),
+        app_commands.Choice(name="Goblin king", value="gobking")
+    ])
+async def goblin_command(interaction, goblin:app_commands.Choice[str], goblintime: str = None):
     """
     You can check out here when the goblin spawns and what rewards you can get from it.
 
@@ -725,7 +736,7 @@ async def goblin_command(interaction, goblintime: str = None):
             "health": 60,
             "rewards": ["500 <:coin:1258877467842576415>", "50 <:gem:1258877082734297108> ", "1 <:gff:1258876866249625620> upgrade boost/1 random 2-orb <:gff:1258876866249625620>"]
         },
-        "gobdiamond": {
+        "gobdia": {
             "name": "Diamond goblin",
             "emoji": "<:gobdiamond:1258839525401165887>",
             "spawn_days": 28,
@@ -737,34 +748,36 @@ async def goblin_command(interaction, goblintime: str = None):
             "emoji": "<:gobking:1258839599938142269>",
             "spawn_days": 54,
             "health": 84,
-            "rewards": ["2000 <:coin:1258877467842576415>", "500 <:gem:1258877082734297108> ", "10 fragments <:fragment:1196793443612098560>", "1 non-event/PREMIUM <:gcc:1258877882571427880> & 1 <:occ:1258878153913274449>"]
+            "rewards": ["2000 <:coin:1258877467842576415>", "500 <:gem:1258877082734297108> ", "10 fragments <:fragment:1196793443612098560>", "1 non-event Premium <:gcc:1258877882571427880>/1 <:occ:1258878153913274449>"]
         }
     }
 
-    # convert datetime to day
-    for goblin in goblins:
-        # add the amount of days to the date in gtime, convert to string
+    goblin = goblin.value
 
-        spawntime = (gtime + timedelta(days=goblins[goblin]["spawn_days"])).strftime("%m-%d-%Y")
-        rewardstext = "\n".join(goblins[goblin]["rewards"])
-        embed.add_field(
-            name=str(goblins[goblin]["name"]) + " " + str(goblins[goblin]['emoji']),
-            value=f"{spawntime}\n{goblins[goblin]['health']} HP\n\
-            \nRewards:\n{rewardstext}",
-            inline=True
-        )
+    spawntime = (gtime + timedelta(days=goblins[goblin]["spawn_days"])).strftime("%m-%d-%Y")
+    rewardstext = "\n".join(goblins[goblin]["rewards"])
+    embed.add_field(
+        name=str(goblins[goblin]["name"]) + " " + str(goblins[goblin]['emoji']),
+        value=f"{spawntime}\n{goblins[goblin]['health']} HP\n",
+        inline=False
+    )
+    embed.add_field(
+        name="Rewards",
+        value=rewardstext,
+        inline=False
+    )
 
     embed.add_field(
         name="** **",
-        value="<:newMBot0:1251265938142007486> Goblin info (mm-dd-yyyy) - Shoutout to <@511322291972341800>",
+        value="<:newMBot0:1251265938142007486> Goblin info - :heart: <@511322291972341800> for the data",
         inline=False,
     )
 
 
 
     
-
-    await interaction.response.send_message(embed=embed)
+    # send ephemeral message
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 
