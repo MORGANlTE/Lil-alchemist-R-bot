@@ -26,7 +26,8 @@ gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
 exp = 10
-M_user_ids = [405067444764540928, 715932352311984201, 436146993530667009]
+# get userids from .env file
+M_user_ids = os.getenv("M_USER_IDS").split(",")
 dbfile = os.getenv("DATABASE")
 
 # Check the value of the ENVIRONMENT variable
