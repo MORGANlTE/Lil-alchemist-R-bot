@@ -29,6 +29,7 @@ DATABASE=playerdb.db
 TOKEN=discordbottokenplaceholder
 # discord bot token
 RESET_COMMANDS=False
+M_USER_IDS = id1, id2, ...
 ```
 
 4. Run the bot with `python bot.py`.
