@@ -26,7 +26,9 @@ gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
 exp = 10
-M_user_ids = [405067444764540928, 715932352311984201]
+# get userids from .env file
+M_user_ids = os.getenv("M_USER_IDS").split(", ")
+print(M_user_ids)
 dbfile = os.getenv("DATABASE")
 
 # Check the value of the ENVIRONMENT variable
@@ -732,6 +734,8 @@ async def goblin_command(interaction, goblin:app_commands.Choice[str], goblintim
         "gobgold": {
             "name": "Gold goblin",
             "emoji": "<:gobgold:1258839564936675348>",
+            "spawn_daysC": 1,
+            "spawnC": 10,
             "spawn_days": 12,
             "health": 60,
             "rewards": ["500 <:coin:1258877467842576415>", "50 <:gem:1258877082734297108> ", "1 <:gff:1258876866249625620> upgrade boost/1 random 2-orb <:gff:1258876866249625620>"]
@@ -739,6 +743,8 @@ async def goblin_command(interaction, goblin:app_commands.Choice[str], goblintim
         "gobdia": {
             "name": "Diamond goblin",
             "emoji": "<:gobdiamond:1258839525401165887>",
+            "spawn_daysC": 1,
+            "spawnC": 4,
             "spawn_days": 28,
             "health": 72,
             "rewards": ["1000 <:coin:1258877467842576415>", "100 <:gem:1258877082734297108> ", "5 fragments <:fragment:1196793443612098560>", "1 <:dff:1258876920574116000> upgrade boost/1 random portal event <:dff:1258876920574116000>"]
@@ -746,19 +752,22 @@ async def goblin_command(interaction, goblin:app_commands.Choice[str], goblintim
         "gobking": {
             "name": "Goblin king",
             "emoji": "<:gobking:1258839599938142269>",
+            "spawn_daysC": 25, 
+            "spawnC": 1, 
             "spawn_days": 54,
             "health": 84,
             "rewards": ["2000 <:coin:1258877467842576415>", "500 <:gem:1258877082734297108> ", "10 fragments <:fragment:1196793443612098560>", "1 non-event Premium <:gcc:1258877882571427880>/1 <:occ:1258878153913274449>"]
         }
     }
 
-    goblin = goblin.value
-
+    goblin = goblin.value 
+    
+    spawntimeC = (gtime + timedelta(days=goblins[goblin]["spawn_daysC"])).strftime("%m-%d-%Y")
     spawntime = (gtime + timedelta(days=goblins[goblin]["spawn_days"])).strftime("%m-%d-%Y")
     rewardstext = "\n".join(goblins[goblin]["rewards"])
     embed.add_field(
         name=str(goblins[goblin]["name"]) + " " + str(goblins[goblin]['emoji']),
-        value=f"{spawntime}\n{goblins[goblin]['health']} HP\n",
+        value=f"{spawntime}\n{goblins[goblin]['health']} HP\n{str(goblins[goblin]['spawnC'])}% chance starting day {spawntimeC}\n",
         inline=False
     )
     embed.add_field(
