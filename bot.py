@@ -27,7 +27,8 @@ winstreak_max = 10
 gem_loss_trivia = -5
 exp = 10
 # get userids from .env file
-M_user_ids = os.getenv("M_USER_IDS").split(",")
+M_user_ids = os.getenv("M_USER_IDS").split(", ")
+print(M_user_ids)
 dbfile = os.getenv("DATABASE")
 
 # Check the value of the ENVIRONMENT variable
@@ -766,8 +767,7 @@ async def goblin_command(interaction, goblin:app_commands.Choice[str], goblintim
     rewardstext = "\n".join(goblins[goblin]["rewards"])
     embed.add_field(
         name=str(goblins[goblin]["name"]) + " " + str(goblins[goblin]['emoji']),
-        value=f"{spawntime}\n{goblins[goblin]['health']} HP\n",
-        value=f"{spawnC}% chance starting day {spawntimeC}\n",
+        value=f"{spawntime}\n{goblins[goblin]['health']} HP\n{str(goblins[goblin]['spawnC'])}% chance starting day {spawntimeC}\n",
         inline=False
     )
     embed.add_field(
