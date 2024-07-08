@@ -20,7 +20,7 @@ import re
 load_dotenv()
 
 # Variables:
-version = "7.3.2"
+version = "7.3.3"
 versiondescription = "Updated goblin command"
 gem_win_trivia = 5
 winstreak_max = 10
@@ -764,10 +764,14 @@ async def goblin_command(interaction, goblin:app_commands.Choice[str], goblintim
     
     spawntimeC = (gtime + timedelta(days=goblins[goblin]["spawn_daysC"])).strftime("%m-%d-%Y")
     spawntime = (gtime + timedelta(days=goblins[goblin]["spawn_days"])).strftime("%m-%d-%Y")
+    # convert spawntime to unix timestamp
+    spawn_timestamp = int(datetime.strptime(spawntime, "%m-%d-%Y").timestamp())
+    spawnC_timestamp = int(datetime.strptime(spawntimeC, "%m-%d-%Y").timestamp())
+
     rewardstext = "\n".join(goblins[goblin]["rewards"])
     embed.add_field(
         name=str(goblins[goblin]["name"]) + " " + str(goblins[goblin]['emoji']),
-        value=f"{spawntime}\n{goblins[goblin]['health']} HP\n{str(goblins[goblin]['spawnC'])}% chance starting day {spawntimeC}\n",
+        value=f"<t:{spawn_timestamp}:D>\n{goblins[goblin]['health']} HP\n{str(goblins[goblin]['spawnC'])}% chance starting day <t:{spawnC_timestamp}:D>\n",
         inline=False
     )
     embed.add_field(

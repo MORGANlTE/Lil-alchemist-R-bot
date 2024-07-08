@@ -47,7 +47,7 @@ M_USER_IDS = id1, id2, ...
 
 ## 📝 Version 📝
 
-Current version: 7.3.2
+Current version: 7.3.3
 Version description: Updated goblin command
 
 ## 📜 License 📜
