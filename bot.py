@@ -798,16 +798,20 @@ async def goblin_command(interaction, goblin:app_commands.Choice[str], goblintim
     guilds=guilds,
 )
 
-async def support_command    
+async def support_command(interaction):
 
 #just a support command, becouse dynobot doesn't work in half the channels
-
-    embed.add_field(
+    embed = discord.Embed(
+        title="Support",
+        description="How to contact support",
+        color=discord.Color.teal(),
+    )
+   embed.add_field(
         name="** **",
         value="Hey there, magical adventurer! 🧙‍♂️ Need a hand in the mystical world of Little Alchemist Remastered? 🌟 Just shoot an email over to support@littlealchemist.io with your Player ID, Player Name, and spill the beans about the puzzling enigma you've stumbled upon. 🕵️‍♂️ We're all ears (and wands)! Don't forget to spice it up with images or videos—let's make this adventure one for the scrolls! 📜✨",
         inline=False,
     )
-
+await interaction.response.send_message(embed=embed)
 
 @client.event
 async def on_ready():
