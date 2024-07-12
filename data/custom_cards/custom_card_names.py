@@ -339,7 +339,7 @@ custom_names = {
           "name": "Flying Spaghetti Monster",
           "fusion": "Curse",
           "rarity": "Diamond", 
-          "img_url": "https://i.postimg.cc/G3szhQ7S/IMG-6348.png", 
+          "img_url": "https://i.postimg.cc/sXJWvMWx/IMG-6350.jpg", 
           "combos": [
               
           ],
