@@ -334,19 +334,21 @@ custom_names = {
               "5": {"Attack": 28, "Defense": 22},
           },
         },
-      "Flying Spaghetti Monster":
+      "Flying spaghetti monster":
         {
           "name": "Flying Spaghetti Monster",
           "fusion": "Curse",
           "rarity": "Diamond", 
-          "img_url": “https://i.postimg.cc/G3szhQ7S/IMG-6348.png", 
+          "img_url": "https://i.postimg.cc/G3szhQ7S/IMG-6348.png", 
           "combos": [
-              ("Spaghetti", "Monster"), 
+              
+          ],
+          "recipes": [
+            ("Spaghetti", "Monster"), 
               ("Spaghetti", "Wings"), 
               ("Spaghetti", "Angel"), 
-
           ],
-          "description" “The one and only true god ”
+          "description": "The one and only true god",
           "suggester": "Tris", 
           "where_to_acquire": ["Currently locked in Crucifix’s closet"], 
           "level_stats": {
