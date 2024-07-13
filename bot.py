@@ -706,8 +706,7 @@ async def generate_command(interaction, packname:str):
     if re.match(r"(http|https)://.*\.(?:png|jpg|jpeg|gif|png)", packcontent["img"]):
         embed.set_thumbnail(url=packcontent["img"])
 
-    
-
+    print("[PackLookup] " + packname)
     await interaction.response.send_message(embed=embed)
 
 @tree.command(
