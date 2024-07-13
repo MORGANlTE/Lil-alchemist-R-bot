@@ -262,6 +262,11 @@ async def help_command(interaction):
         value="Shows your profile",
         inline=True,
     )
+    embed.add_field(
+        name=":sos: /support",
+        value="How to contact support for Monumental",
+        inline=True,
+    )
     
     # empty row here:
     embed.add_field(
@@ -297,7 +302,7 @@ async def help_command(interaction):
     )
     embed.add_field(
         name="** **",
-        value=f"<:newMBot0:1251265938142007486> v{version} - {versiondescription}\n*All copyrighted material belongs to Monumental*",
+        value=f"<:newMBot0:1251265938142007486> v{version} - {versiondescription}\n*All copyrighted material belongs to [Monumental](https://monumental.io/)*",
         inline=False,
     )
 
@@ -686,6 +691,13 @@ async def generate_command(interaction, packname:str):
         title=f"{packname} Pack",
         color=discord.Color.dark_magenta(),
     )
+    # link to the wiki
+    embed.add_field(
+        name="Wiki Page",
+        value=f"[Click here to visit the wiki page](https://lil-alchemist.fandom.com/wiki/Special_Packs/{packname.replace(' ', '_')})",
+        inline=False,
+    )
+
     for row in packcontent["cards"]:
         embed.add_field(name=row[0].replace("_", " ").replace("%27s", "'").replace("%26", "&"), value=row[2] + " " + row[1], inline=True)
     
@@ -803,15 +815,25 @@ async def support_command(interaction):
 #just a support command, becouse dynobot doesn't work in half the channels
     embed = discord.Embed(
         title="Support",
-        description="How to contact support",
         color=discord.Color.teal(),
     )
-   embed.add_field(
+    embed.add_field(
         name="** **",
-        value="Hey there, magical adventurer! 🧙‍♂️ Need a hand in the mystical world of Little Alchemist Remastered? 🌟 Just shoot an email over to support@littlealchemist.io with your Player ID, Player Name, and spill the beans about the puzzling enigma you've stumbled upon. 🕵️‍♂️ We're all ears (and wands)! Don't forget to spice it up with images or videos—let's make this adventure one for the scrolls! 📜✨",
+        value="""
+        Hey there, magical adventurer! 🧙‍♂️ Need a hand in the mystical world of Little Alchemist Remastered?
+        \n🌟 Just shoot an email over to `support@littlealchemist.io` with your Player ID, Player Name, and spill the beans about the puzzling enigma you've stumbled upon. 
+        \n🕵️‍♂️ We're all ears (and wands)! Don't forget to spice it up with images or videos—let's make this adventure one for the scrolls! 📜✨
+        \n👑 When it comes to questions about gameplay, remember, our Discord community is your enchanted haven! 
+        \n🔮 Join the fun, share your wisdom, and get answers from fellow adventurers. 
+        \n🗡️🛡️ Let's keep the magic alive, and may your gaming journey be filled with epic adventures and laughter! 🌟🤗✨""",
         inline=False,
     )
-await interaction.response.send_message(embed=embed)
+    embed.add_field(
+        name="** **",
+        value="*<:newMBot0:1251265938142007486> ChinBot is not in any way affiliated with [Monumental](https://monumental.io/)*",
+    )
+
+    await interaction.response.send_message(embed=embed)
 
 @client.event
 async def on_ready():
