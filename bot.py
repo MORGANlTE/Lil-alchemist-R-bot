@@ -204,7 +204,6 @@ async def show_command(interaction, cardname: str, is_onyx: bool = False):
 )
 async def show_arena(interaction, ):
     await interaction.response.defer()
-    print((math.factorial(5) // math.factorial(3)) + 6)
     add_pfp(interaction.user.id, str((math.factorial(5) // math.factorial(3)) + 6) , dbfile)
     # Set start time 
     starttime = datetime(2024, 7, 9, 9, 0, 0, 0)
