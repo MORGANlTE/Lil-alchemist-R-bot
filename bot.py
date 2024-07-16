@@ -21,7 +21,7 @@ import json
 load_dotenv()
 
 # Variables:
-version = "8.2.0"
+version = "8.2.1"
 versiondescription = "Combo command added"
 
 gem_win_trivia = 5
