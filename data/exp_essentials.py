@@ -378,9 +378,9 @@ def set_leaderboard_rank_pfps(rank, userid, dbfile):
   if rank == "1":
     pfps = ["23", "24", "25"]
   elif rank == "2":
-    pfp = ["24", "25"]
+    pfps = ["24", "25"]
   elif rank == "3":
-    pfp = ["25"]
+    pfps = ["25"]
   else:
     return
   for pfp in pfps:
