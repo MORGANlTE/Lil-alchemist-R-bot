@@ -373,6 +373,8 @@ def buy_pfp(pfpid, user_id, dbfile):
         price = list(price)[0]
         # get the users gems
         user_gems = get_users_gems_and_top_percentage(user_id, dbfile)[0]
+        if user_gems is None:
+            user_gems = 0
         if user_gems < price:
             return False, "You do not have enough gems to buy this pfp"
 
