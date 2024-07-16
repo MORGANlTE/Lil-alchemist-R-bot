@@ -275,11 +275,7 @@ async def combo_command(interaction, card1: str, card2: str):
         return
     
     url = f"https://lil-alchemist.fandom.com/wiki/{result.replace(' ', '_')}"
-    embed.add_field(
-        name="Wiki Page",
-        value=f"[Click here to visit the wiki page]({url})",
-        inline=False,
-    )
+
     # get the card info page from the resulting combo
     try:
         resp = requests.get(url)
@@ -322,7 +318,11 @@ async def combo_command(interaction, card1: str, card2: str):
         icon_url=get_fusion_url(fusion),
         name=f"{fusion}",
     )
-
+    embed.add_field(
+        name="Wiki Page",
+        value=f"[Click here to visit the wiki page]({url})",
+        inline=False,
+    )
     embed.add_field(name="Full Name", value=result.title(), inline=True)
     embed.add_field(name="Rarity", value=rarity, inline=True)
     embed.add_field(name="Description", value=description, inline=False)
