@@ -60,7 +60,7 @@ def add_experience_to_user(userid, exp, dbfile):
       cursor.execute("UPDATE users SET lastupdated = ? WHERE userid = ?", (now.timestamp(), userid))
   currentlvl = calculate_level(current)
   newlvl = calculate_level(current + exp)
-
+  print("adding exp to user, trying pfp")
     # add the users pfps for the levels
   add_user_pfps_for_levels(userid, currentlvl, newlvl, conn)
 
@@ -270,9 +270,8 @@ def get_user_pfps_db(userid, db_connection):
 
 def add_user_pfps_for_levels(userid, currentlvl, newlvl, db_connection):
   # get user pfps
-  
   pfps = get_user_pfps_db(userid, db_connection)
-  oldpfps = pfps
+  oldpfps = pfps.copy()
 
   # check if we unlocked a new pfp
   currentlvlchin = chin_avatar_calculator(newlvl)
@@ -281,6 +280,7 @@ def add_user_pfps_for_levels(userid, currentlvl, newlvl, db_connection):
   # make the list a set json
   if type(pfps) == str:
     pfps = json.loads(pfps)
+  print(pfps, "pfps")
   for i in range(currentlvlchin):
     if str(i+1) not in pfps:
       pfps.append(str(i+1))
@@ -292,7 +292,6 @@ def add_user_pfps_for_levels(userid, currentlvl, newlvl, db_connection):
     return
 
   cursor = db_connection.cursor()
-    
   # set the new pfps
   cursor.execute("UPDATE users SET pfps = ? WHERE userid = ?", (json.dumps(pfps), userid))
   db_connection.commit()

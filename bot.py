@@ -20,8 +20,8 @@ import json
 load_dotenv()
 
 # Variables:
-version = "7.2.4"
-versiondescription = "Updated generate command"
+version = "8.0.1"
+versiondescription = "Fixed db bugs"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -652,9 +652,11 @@ async def addstuff_command(interaction, option: app_commands.Choice[str], amount
             newamount = add_gems_to_user(user_id, amount, dbfile)
         else:
             t = add_experience_to_user(user_id, amount, dbfile)
+            if t == False:
+                await interaction.response.send_message("Too fast", ephemeral=True)
+                return
             newamount = t["exptotal"]
 
-            print(newamount)
         print(f"Added {amount} {option.value} to {user_id} - New total: {newamount}")
         await interaction.response.send_message(f"Added {amount} {option.value} to {user_id} / <@{user_id}>\nNew total: {newamount} {option.value}", ephemeral=True)
 
