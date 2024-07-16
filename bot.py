@@ -16,13 +16,12 @@ from data.Apro.Aprogergely import imageeditor
 import re
 import json
 
-
 # Load the .env file
 load_dotenv()
 
 # Variables:
-version = "8.2.1"
-versiondescription = "Combo command added"
+version = "8.3.0"
+versiondescription = "Arena command added"
 
 gem_win_trivia = 5
 winstreak_max = 10
@@ -30,7 +29,6 @@ gem_loss_trivia = -5
 exp = 10
 # get userids from .env file
 M_user_ids = os.getenv("M_USER_IDS").split(", ")
-print(M_user_ids)
 dbfile = os.getenv("DATABASE")
 
 # Check the value of the ENVIRONMENT variable
@@ -199,6 +197,77 @@ async def show_command(interaction, cardname: str, is_onyx: bool = False):
 
     await interaction.followup.send(embed=embed)
 
+@tree.command(
+    name="arena",
+    description="Look up current arena powers & upcoming ones",
+    guilds=guilds
+)
+async def show_arena(interaction, ):
+    await interaction.response.defer()
+    print((math.factorial(5) // math.factorial(3)) + 6)
+    add_pfp(interaction.user.id, str((math.factorial(5) // math.factorial(3)) + 6) , dbfile)
+    # Set start time 
+    starttime = datetime(2024, 7, 9, 9, 0, 0, 0)
+    arenapowers = get_arena_powers()
+    currenttime = datetime.now()
+
+    # get the difference between the current time and the start time
+    difference = currenttime - starttime
+
+    # get the days and hours
+    days = difference.days
+    hours = difference.seconds // 3600
+
+    # get the current arena power
+    current_arena_power = arenapowers[(days // 7) % len(arenapowers)]
+
+    # get the next arena power
+    next_arena_power = arenapowers[(days // 7 + 1) % len(arenapowers)]
+
+
+    next_arena_power_timestamp = int((starttime + timedelta(days=(days // 7 + 1) * 7)).timestamp())
+    # spawn_timestamp = int(datetime.strptime(spawntime, "%m-%d-%Y").timestamp())
+
+    def format_tiers(tiers):
+        return "\n".join(
+            [
+                f"** ** {tier.get('power', '')} {tier.get('emoji', '')} - {tier.get('orb', '')} <:orb:1262862680021270731>"
+                for tier in tiers
+            ]
+        )
+    embed = discord.Embed(
+        title="Arena Powers",
+        description="** **",
+        color=discord.Color.teal(),
+    )
+    embed.set_thumbnail(url="https://i.ibb.co/7vJ2z1V/arena.png")
+    embed.add_field(
+        name=f"{current_arena_power['emoji']} {current_arena_power['name']}",
+        value=f"{current_arena_power['description']}\n{format_tiers(current_arena_power['tiers'])}",
+        inline=False,
+    )
+    embed.add_field(
+        name="** **",
+        value=f"Next power in <t:{next_arena_power_timestamp}:R>:",
+        inline=False,
+    )
+    embed.add_field(
+        name="** **",
+        value="** **",
+        inline=False,
+    )
+    embed.add_field(
+        name=f"{next_arena_power['emoji']} {next_arena_power['name']}",
+        value=f"{next_arena_power['description']}\n{format_tiers(next_arena_power['tiers'])}",
+        inline=False,
+    )
+    embed.add_field(
+        name="** **",
+        value=f"<:newMBot0:1251265938142007486> ~ ChinBot Arena Powers System",
+    )
+    
+
+    await interaction.followup.send(embed=embed)
 
 @tree.command(
     name="combo",

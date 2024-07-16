@@ -600,6 +600,7 @@ def get_description_pfp(pfp_id):
       23: "Rank 1 - Smokescreen",
       24: "Rank 2 - Slime Warrior",
       25: "Rank 3 - Soul Harvester",
+      26: "??? - Angelfish"
   }
   return pfps[int(pfp_id)]
 
@@ -607,3 +608,94 @@ def chunk_list(lst, chunk_size):
     """Split a list into chunks of a specified size."""
     for i in range(0, len(lst), chunk_size):
         yield lst[i:i + chunk_size]
+
+
+def get_arena_powers():
+  arena_powers = [
+        {
+            "name": "Tiebreaker",
+            "emoji": "<:tiebreaker:1198288123407372348>",
+            "description": "In the event of a tie, you win the matchup",
+            "tiers": [
+                {"tier": 1, "orb": 400}
+            ]
+        },
+        {
+            "name": "Combo Master",
+            "emoji": "<:ComboMaster:1262860895911022613>",
+            "description": "Start with 1 Orb filled at the beginning of each match",
+            "tiers": [
+                {"tier": 1, "orb": 1000}
+            ]
+        },
+        {
+            "name": "Master Healer",
+            "emoji": "<:masterhealer:1262861006665814096>",
+            "description": "You start with bonus HP",
+            "tiers": [
+                {"tier": 1, "power": 4, "emoji": "HP", "orb": 850},
+                {"tier": 2, "power": 7, "emoji": "HP", "orb": 1065},
+                {"tier": 3, "power": 10, "emoji": "HP", "orb": 1280}
+            ]
+        },
+        {
+            "name": "Master Elementalist",
+            "emoji": "<:masterelementalist:1262861128782839958>",
+            "description": "Opponents start with less HP",
+            "tiers": [
+                {"tier": 1, "power": 4, "emoji": "HP", "orb": 850},
+                {"tier": 2, "power": 7, "emoji": "HP", "orb": 1065},
+                {"tier": 3, "power": 10, "emoji": "HP", "orb": 1280}
+            ]
+        },
+        {
+            "name": "Master Enchanter",
+            "emoji": "<:masterenchanter:1262861080716247224>",
+            "description": "1 Orb added to max orb count",
+            "tiers": [
+                {"tier": 1, "orb": 700}
+            ]
+        },
+        {
+            "name": "Greed",
+            "emoji": "<:greed:1262861161884549304>",
+            "description": "Gain bonus coins at the end of each battle",
+            "tiers": [
+                {"tier": 1, "power": 20, "emoji": "%", "orb": 550},
+                {"tier": 2, "power": 40, "emoji": "%", "orb": 690},
+                {"tier": 3, "power": 60, "emoji": "%", "orb": 830}
+            ]
+        },
+        {
+            "name": "Quick Learner",
+            "emoji": "<:QuickLearner:1262861395222069389>",
+            "description": "Earn extra xp at the end of each match",
+            "tiers": [
+                {"tier": 1, "power": 20, "emoji": "%", "orb": 550},
+                {"tier": 2, "power": 40, "emoji": "%", "orb": 690},
+                {"tier": 3, "power": 60, "emoji": "%", "orb": 830}
+            ]
+        },
+        {
+            "name": "Lucky",
+            "emoji": "<:lucky:1262861466420252873>",
+            "description": "Increased chance of a card dropping from campaign bosses (multiplicative, not additive)",
+            "tiers": [
+                {"tier": 1, "power": 10, "emoji": "%", "orb": 550},
+                {"tier": 2, "power": 20, "emoji": "%", "orb": 690},
+                {"tier": 3, "power": 30, "emoji": "%", "orb": 830}
+            ]
+        },
+        {
+            "name": "Lobotomizer",
+            "emoji": "<:Lobotomizer:1262861602974208020>",
+            "description": "Remove Cards from opponents deck at the start of each battle",
+            "tiers": [
+                {"tier": 1, "power": 5, "emoji": "Cards", "orb": 700},
+                {"tier": 2, "power": 10, "emoji": "Cards", "orb": 875},
+                {"tier": 3, "power": 15, "emoji": "Cards", "orb": 1075}
+            ]
+        }
+    ]
+   
+  return arena_powers
