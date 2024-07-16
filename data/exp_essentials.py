@@ -271,9 +271,7 @@ def get_user_pfps_db(userid, db_connection):
   cursor.execute("SELECT pfps FROM users WHERE userid = ?", (userid,))
   pfps = cursor.fetchone()[0]
   if pfps is None:
-    currentexp = get_experience_From_db_itself(userid, db_connection)
-    add_user_pfps_for_levels(userid, 0, calculate_level(currentexp), db_connection)
-    pfps = get_user_pfps_db(userid, db_connection)
+    pfps = []
   # make the list a set json
   pfps = json.loads(pfps)
 
