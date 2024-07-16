@@ -259,13 +259,7 @@ async def combo_command(interaction, card1: str, card2: str):
     ) = test
     # transform the name cardname eg chinchilla into Chinchilla and dr. robo into Dr. Robo
 
-    embed = discord.Embed(
-        color=get_embedcolor(rarity),
-    )
-    embed.set_author(
-        icon_url=get_fusion_url(fusion),
-        name=f"{fusion}",
-    )
+    
     # add url link to wiki
     # get the second card in the combos:
     def find_value(key, data):
@@ -320,6 +314,14 @@ async def combo_command(interaction, card1: str, card2: str):
         combos,
         level_stats,
     ) = test
+
+    embed = discord.Embed(
+        color=get_embedcolor(rarity),
+    )
+    embed.set_author(
+        icon_url=get_fusion_url(fusion),
+        name=f"{fusion}",
+    )
 
     embed.add_field(name="Full Name", value=result.title(), inline=True)
     embed.add_field(name="Rarity", value=rarity, inline=True)
