@@ -60,7 +60,6 @@ def add_experience_to_user(userid, exp, dbfile):
       cursor.execute("UPDATE users SET lastupdated = ? WHERE userid = ?", (now.timestamp(), userid))
   currentlvl = calculate_level(current)
   newlvl = calculate_level(current + exp)
-  print("adding exp to user, trying pfp")
     # add the users pfps for the levels
   add_user_pfps_for_levels(userid, currentlvl, newlvl, conn)
 
@@ -280,7 +279,6 @@ def add_user_pfps_for_levels(userid, currentlvl, newlvl, db_connection):
   # make the list a set json
   if type(pfps) == str:
     pfps = json.loads(pfps)
-  print(pfps, "pfps")
   for i in range(currentlvlchin):
     if str(i+1) not in pfps:
       pfps.append(str(i+1))
@@ -301,6 +299,8 @@ def add_pfp(userid, pfp, db_file):
   pfps = get_user_pfps_db(userid, db_connection)
   if pfp not in pfps:
     pfps.append(pfp)
+  else:
+     return
   # order the list
   pfps = sorted(pfps, key=lambda x: int(x))
   # set the new pfps
@@ -366,10 +366,8 @@ def buy_pfp(pfpid, user_id, dbfile):
             return False, "You do not have enough gems to buy this pfp"
 
         # add the pfp to the users pfps
-        pfps.append(str(pfpid))
-        cursor = conn.cursor()
-        cursor.execute("UPDATE users SET pfps = ? WHERE userid = ?", (json.dumps(pfps), user_id))
-        conn.commit()
+
+        add_pfp(user_id, str(pfpid), dbfile)
         return True, "Avatar purchased successfully"
     finally:
         conn.close()

@@ -596,6 +596,7 @@ def get_description_pfp(pfp_id):
       19: "💎4000 - Messenger Bird",
       20: "💎7000 - Atomic Burrito",
       21: "💎10.000 - King of the Heap",
+      22: "??? - Pirate Captain",
   }
   return pfps[int(pfp_id)]
 

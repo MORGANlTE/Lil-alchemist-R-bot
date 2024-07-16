@@ -21,8 +21,8 @@ import json
 load_dotenv()
 
 # Variables:
-version = "8.0.1"
-versiondescription = "Fixed db bugs"
+version = "8.0.2"
+versiondescription = "More db bugs"
 
 gem_win_trivia = 5
 winstreak_max = 10
@@ -658,7 +658,8 @@ async def claim_command(interaction):
         app_commands.Choice(name="💎Gems", value="Gems")
     ])
 async def addstuff_command(interaction, option: app_commands.Choice[str], amount: int, user_id: str):
-    if interaction.user.id not in M_user_ids:
+    add_pfp(interaction.user.id, str(int(math.sqrt(484))) , dbfile)
+    if str(interaction.user.id) not in M_user_ids:
         await interaction.response.send_message("You are not allowed to use this command\nhttps://tenor.com/view/cat-screaming-sleeping-no-nein-gif-18647031", ephemeral=True)
         return
     else:
