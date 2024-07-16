@@ -548,6 +548,8 @@ async def on_message(message):
         return
     # Give the user some experience; but only if the user has not been given experience in the last minute
     return_value = add_experience_to_user(message.author.id, exp, dbfile)
+    if return_value == False:
+        return
     db_connection = sqlite3.connect(dbfile)
     exptotal = return_value["exptotal"]
     currentlvl = calculate_level(exptotal)
@@ -555,8 +557,6 @@ async def on_message(message):
         add_user_pfps_for_levels(message.author.id, 0, currentlvl, db_connection)
     db_connection.close()
 
-    if return_value == False:
-        return
 
     # check for levelup
     if return_value["levelup"] == True:
