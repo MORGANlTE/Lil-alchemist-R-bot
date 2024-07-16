@@ -622,6 +622,9 @@ async def setprofile_command(interaction, option: app_commands.Choice[str], page
 
     # return a select with all the pfps
     options = [SelectOption(label=get_description_pfp(pfps[i]), value=pfps[i]) for i in range(start_idx, min(end_idx, len(pfps)))]
+    if len(options) == 0:
+        await interaction.response.send_message(f"You have no profile pictures at page {page}", ephemeral=True)
+        return
     select = PfpSelect(options, pfps, dbfile)
 
     view = discord.ui.View(timeout=None)
