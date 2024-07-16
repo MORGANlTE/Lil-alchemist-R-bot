@@ -84,7 +84,6 @@ def get_experience_From_db_itself(userid, db_connection):
   cursor = conn.cursor()
   cursor.execute("SELECT exp FROM users WHERE userid = ?", (userid,))
   user_exp = cursor.fetchone()
-  conn.close()
   if user_exp is None:
     return 0
   else:
