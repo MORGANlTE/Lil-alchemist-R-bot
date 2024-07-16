@@ -21,8 +21,8 @@ import json
 load_dotenv()
 
 # Variables:
-version = "8.0.2"
-versiondescription = "More db bugs"
+version = "8.1.0"
+versiondescription = "Leaderboard avatars added permanently"
 
 gem_win_trivia = 5
 winstreak_max = 10
@@ -394,7 +394,7 @@ async def trivia_command(interaction):
 )
 @app_commands.describe(option="Choose what type of leaderboard you want")
 @app_commands.choices(option=[
-        app_commands.Choice(name="🎉Level", value="Lvl"),
+        app_commands.Choice(name="🎉Level", value="Exp"),
         app_commands.Choice(name="💎Gems", value="Gems")
     ])
 async def leaderboard_command(interaction, option: app_commands.Choice[str]):
@@ -432,7 +432,7 @@ async def leaderboard_command(interaction, option: app_commands.Choice[str]):
             description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - :gem: {user[2]} | 🔥 {user[3]}\n"
         else:
             description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - 👑 Lvl {calculate_level(user[4])} | {user[4]} Exp\n"
-
+    set_leaderboard_rank_pfps(gemsAndPerc[3][0], interaction.user.id, dbfile)
     embed = discord.Embed(
         description=f"{description}",
         color=discord.Color.brand_green(),
@@ -558,7 +558,11 @@ async def profile_command(interaction):
     discord_name = interaction.user.display_name
     discord_avatar = interaction.user.avatar.url if interaction.user.avatar is not None else "https://i.ibb.co/nbdqnSL/2.png"
     custom_pfp = get_custom_pfp(interaction.user.id, dbfile) + ".png"
-    pic = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, gemsAndPerc[3], custom_pfp)
+    leaderboard_rank = gemsAndPerc[3][0]
+    pic = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, leaderboard_rank, custom_pfp)
+
+    if int(leaderboard_rank) <= 3:
+        set_leaderboard_rank_pfps(leaderboard_rank, interaction.user.id, dbfile)
 
     await interaction.followup.send(
         file=pic,
@@ -571,12 +575,27 @@ async def profile_command(interaction):
     description="Edit your Discord Profile",
     guilds=guilds,
 )
-async def setprofile_command(interaction):
+@app_commands.describe(option="Choose what type of profile element you want to set")
+@app_commands.choices(option=[
+        app_commands.Choice(name="🖼️ Avatar", value="avatar"),
+        app_commands.Choice(name="🌄 Background", value="background"),
+        app_commands.Choice(name="🖌️ Border", value="border")
+    ])
+async def setprofile_command(interaction, option: app_commands.Choice[str], page: int = 1):
     # Define the question and answers
-
+    start_idx = (page - 1) * 10
+    end_idx = start_idx + 10
     # await interaction.response.defer()
     # top3 = get_top_users_top_3(dbfile)
-    pfps = get_pfps(interaction.user.id, dbfile)
+    if option.value == "avatar":
+        pfps = get_pfps(interaction.user.id, dbfile)
+    #elif option.value == "background":
+        #pfps = get_backgrounds(interaction.user.id, dbfile)
+    #elif option.value == "border":
+    #    pfps = get_borders(interaction.user.id, dbfile)
+    else:
+        await interaction.response.send_message("Invalid element type. Choose from 'avatar', 'background', or 'border'.", ephemeral=True)
+        return
     
     pfps = json.loads(pfps)
 
@@ -602,7 +621,7 @@ async def setprofile_command(interaction):
                 )
 
     # return a select with all the pfps
-    options = [SelectOption(label=get_description_pfp(pfps[i]), value=pfps[i]) for i in range(len(pfps))]
+    options = [SelectOption(label=get_description_pfp(pfps[i]), value=pfps[i]) for i in range(start_idx, min(end_idx, len(pfps)))]
     select = PfpSelect(options, pfps, dbfile)
 
     view = discord.ui.View(timeout=None)
@@ -654,7 +673,7 @@ async def claim_command(interaction):
 )
 @app_commands.describe(option="Choose what type of stuff")
 @app_commands.choices(option=[
-        app_commands.Choice(name="📞Exp", value="Lvl"),
+        app_commands.Choice(name="📞Exp", value="Exp"),
         app_commands.Choice(name="💎Gems", value="Gems")
     ])
 async def addstuff_command(interaction, option: app_commands.Choice[str], amount: int, user_id: str):

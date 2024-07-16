@@ -597,6 +597,9 @@ def get_description_pfp(pfp_id):
       20: "💎7000 - Atomic Burrito",
       21: "💎10.000 - King of the Heap",
       22: "??? - Pirate Captain",
+      23: "Rank 1 - Smokescreen",
+      24: "Rank 2 - Slime Warrior",
+      25: "Rank 3 - Soul Harvester",
   }
   return pfps[int(pfp_id)]
 
