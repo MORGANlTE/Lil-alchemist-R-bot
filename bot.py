@@ -21,8 +21,8 @@ import json
 load_dotenv()
 
 # Variables:
-version = "8.1.0"
-versiondescription = "Leaderboard avatars added permanently"
+version = "8.2.0"
+versiondescription = "Combo command added"
 
 gem_win_trivia = 5
 winstreak_max = 10
@@ -201,6 +201,197 @@ async def show_command(interaction, cardname: str, is_onyx: bool = False):
 
 
 @tree.command(
+    name="combo",
+    description="Look up a card on the LAR wiki",
+    guilds=guilds
+)
+async def combo_command(interaction, card1: str, card2: str):
+    await interaction.response.defer()
+    # test if this url gives us a boss card or a normal card
+    print("[Combo] " + card1 + " + " + card2)
+
+    url = f"https://lil-alchemist.fandom.com/wiki/{card1.title().replace(' ', '_').replace('_And_', '_and_')}"
+    test = ()
+    try:
+        resp = requests.get(url)
+        soup = BeautifulSoup(resp.content, "html.parser")
+        test = parseinfo(soup, card1)
+    except Exception as e:
+        # print(f"Error: {str(e)}")
+        try:
+            print("card not found, checking boss card")
+            url = f"https://lil-alchemist.fandom.com/wiki/{card1.title().replace(' ', '_')}_(Card)"
+            resp = requests.get(url)
+            soup = BeautifulSoup(resp.content, "html.parser")
+            test = parseinfo(soup, card1)
+        except Exception as e:
+            # print the exact error happening
+            # print(f"Error: {str(e)}")
+            try:
+                print("card not found, checking capitalized card")
+                url = f"https://lil-alchemist.fandom.com/wiki/{card1.replace(' ', '_')}"
+                resp = requests.get(url)
+                soup = BeautifulSoup(resp.content, "html.parser")
+                test = parseinfo(soup, card1)
+            except Exception as e:
+                # print the exact error happening
+                # print(f"Error: {str(e)}")
+                await interaction.followup.send(
+                    f"Combo `{card1}` + {card2} not found", ephemeral=True
+                )
+                return
+
+    # if we get here, the card is found
+
+    (
+        imgurl,
+        description,
+        base_attack,
+        base_defense,
+        base_power,
+        rarity,
+        form,
+        fusion,
+        where_to_acquire,
+        recipes,
+        combos,
+        level_stats,
+    ) = test
+    # transform the name cardname eg chinchilla into Chinchilla and dr. robo into Dr. Robo
+
+    embed = discord.Embed(
+        color=get_embedcolor(rarity),
+    )
+    embed.set_author(
+        icon_url=get_fusion_url(fusion),
+        name=f"{fusion}",
+    )
+    # add url link to wiki
+    # get the second card in the combos:
+    def find_value(key, data):
+        result = [value for k, value in data if k == key]
+        return result[0] if result else None
+    
+    result = find_value(card2, combos)
+
+    if result is None:
+        await interaction.followup.send(
+            f"Combo {card1} + `{card2}` not found", ephemeral=True
+        )
+        return
+    
+    url = f"https://lil-alchemist.fandom.com/wiki/{result.replace(' ', '_')}"
+    embed.add_field(
+        name="Wiki Page",
+        value=f"[Click here to visit the wiki page]({url})",
+        inline=False,
+    )
+    # get the card info page from the resulting combo
+    try:
+        resp = requests.get(url)
+        soup = BeautifulSoup(resp.content, "html.parser")
+        test = parseinfo(soup, result)
+    except Exception as e:
+        try:
+            print("card not found, checking capitalized card")
+            url = f"https://lil-alchemist.fandom.com/wiki/{result.replace(' ', '_')}"
+            resp = requests.get(url)
+            soup = BeautifulSoup(resp.content, "html.parser")
+            test = parseinfo(soup, result)
+        except Exception as e:
+            # print the exact error happening
+            # print(f"Error: {str(e)}")
+            await interaction.followup.send(
+                f"Combo: {card1} + {card2} = `{result}` not found", ephemeral=True
+            )
+            return
+    
+    (
+        imgurl,
+        description,
+        base_attack,
+        base_defense,
+        base_power,
+        rarity,
+        form,
+        fusion,
+        where_to_acquire,
+        recipes,
+        combos,
+        level_stats,
+    ) = test
+
+    embed.add_field(name="Full Name", value=result.title(), inline=True)
+    embed.add_field(name="Rarity", value=rarity, inline=True)
+    embed.add_field(name="Description", value=description, inline=False)
+    embed.set_thumbnail(url=imgurl)
+    levels_left = ""
+    levels_right = ""
+    for level in level_stats.items():
+        level_text = f"{level[0]}  -  {level[1]['Attack']}/{level[1]['Defense']}\n"
+        if int(level[0]) >= 4:
+            levels_right += level_text
+        else:
+            levels_left += level_text
+
+    embed.add_field(name="Levels", value=levels_left, inline=True)
+    embed.add_field(name="** **", value=levels_right, inline=True)
+
+    embed.add_field(
+        name="Where to acquire", value=", ".join(where_to_acquire), inline=False
+    )
+
+    if fusion == "Orb":
+        embed.add_field(
+            name="Combos",
+            value=f"Amount of Combos: {len(combos)}",
+            inline=False,
+        )
+
+    else:
+        combos_left = []
+        combos_right = []
+        counter = 0
+        if rarity == "Onyx":
+            # filter out all non onyx combos
+            combos = [
+                combo
+                for combo in combos
+                if "(Onyx)" in combo[0] and "(Onyx)" in combo[1]
+            ]
+        else:
+            # filter out all onyx combos
+            combos = [
+                combo
+                for combo in combos
+                if not "(Onyx)" in combo[0] and not "(Onyx)" in combo[1]
+            ]
+
+        for combo in recipes:
+            if counter < (len(recipes) / 2):
+                combos_left.append(f"{counter+1}.{combo[1]} + {combo[0]}")
+            else:
+                combos_right.append(f"{counter+1}.{combo[1]} + {combo[0]}")
+            counter += 1
+
+        # if empty combos, add a "/"
+        if len(recipes) == 0:
+            embed.add_field(name="Combos", value="/", inline=True)
+            embed.add_field(name="** **", value="", inline=True)
+        else:
+            embed.add_field(name="Combos", value="\n".join(combos_left), inline=True)
+            embed.add_field(name="** **", value="\n".join(combos_right), inline=True)
+
+    # add underneath the author the rarity and form
+    embed.set_footer(
+        text=f"{result.title()} - {rarity} ~ ChinBot & LAR Wiki",
+        icon_url=get_fusion_url(fusion),
+    )
+
+    await interaction.followup.send(embed=embed)
+
+
+@tree.command(
     name="help",
     description="Help with the commands",
     guilds=guilds,
@@ -224,6 +415,11 @@ async def help_command(interaction):
     embed.add_field(
         name=":game_die: /wiki",
         value="Searches the specified card on the wiki",
+        inline=True,
+    )
+    embed.add_field(
+        name="🔍 /combo",
+        value="Searches the specified combo on the wiki",
         inline=True,
     )
     embed.add_field(
