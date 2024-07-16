@@ -4,6 +4,7 @@ from discord.ui import Button, View, Select
 from data.data_grabber import *
 from data.packopening import *
 from data.shortcuts import *
+import datetime
 from data.exp_essentials import *
 import discord
 import requests
@@ -22,11 +23,14 @@ load_dotenv()
 # Variables:
 version = "8.0.1"
 versiondescription = "Fixed db bugs"
+
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
 exp = 10
-M_user_ids = [405067444764540928, 715932352311984201]
+# get userids from .env file
+M_user_ids = os.getenv("M_USER_IDS").split(", ")
+print(M_user_ids)
 dbfile = os.getenv("DATABASE")
 
 # Check the value of the ENVIRONMENT variable
@@ -232,6 +236,11 @@ async def help_command(interaction):
         value="Displays the help page",
         inline=True,
     )
+    embed.add_field(
+        name="<:gobking:1258839599938142269> /goblin",
+        value="Shows the next goblin spawn",
+        inline=True,
+    )
 
     # empty row here:
     embed.add_field(
@@ -253,6 +262,11 @@ async def help_command(interaction):
     embed.add_field(
         name=":bar_chart: /profile",
         value="Shows your profile",
+        inline=True,
+    )
+    embed.add_field(
+        name=":sos: /support",
+        value="How to contact support for Monumental",
         inline=True,
     )
     
@@ -290,7 +304,7 @@ async def help_command(interaction):
     )
     embed.add_field(
         name="** **",
-        value=f"<:newMBot0:1251265938142007486> v{version} - {versiondescription}\n*All copyrighted material belongs to Monumental*",
+        value=f"<:newMBot0:1251265938142007486> v{version} - {versiondescription}\n*All copyrighted material belongs to [Monumental](https://monumental.io/)*",
         inline=False,
     )
 
@@ -857,6 +871,13 @@ async def generate_command(interaction, packname:str):
         title=f"{packname} Pack",
         color=discord.Color.dark_magenta(),
     )
+    # link to the wiki
+    embed.add_field(
+        name="Wiki Page",
+        value=f"[Click here to visit the wiki page](https://lil-alchemist.fandom.com/wiki/Special_Packs/{packname.replace(' ', '_')})",
+        inline=False,
+    )
+
     for row in packcontent["cards"]:
         embed.add_field(name=row[0].replace("_", " ").replace("%27s", "'").replace("%26", "&"), value=row[2] + " " + row[1], inline=True)
     
@@ -865,12 +886,133 @@ async def generate_command(interaction, packname:str):
     if re.match(r"(http|https)://.*\.(?:png|jpg|jpeg|gif|png)", packcontent["img"]):
         embed.set_thumbnail(url=packcontent["img"])
 
-    
-
+    print("[PackLookup] " + packname)
     await interaction.response.send_message(embed=embed)
 
+@tree.command(
+    name="goblin",
+    description="When does my goblin spawn?",
+    guilds=guilds,
+)
+@app_commands.describe(goblin="Choose Goblin")
+@app_commands.choices(goblin=[
+        app_commands.Choice(name="Gold", value="gobgold"),
+        app_commands.Choice(name="Diamond", value="gobdia"),
+        app_commands.Choice(name="Goblin king", value="gobking")
+    ])
+async def goblin_command(interaction, goblin:app_commands.Choice[str], goblintime: str = None):
+    """
+    You can check out here when the goblin spawns and what rewards you can get from it.
+
+    Args:
+        goblintime (str, optional): MM-DD-YYYY The date you want to check the goblin for. Standard is today.
+    """
+    try:
+        if goblintime is None:
+            gtime = datetime.now()
+        else:
+            gtime = datetime.strptime(goblintime, "%m-%d-%Y")
+    except:
+        await interaction.response.send_message("Please provide a valid date in the format MM-DD-YYYY", ephemeral=True)
+        return
+
+    embed = discord.Embed(
+        title=f"Goblins overview",
+        color=discord.Color.brand_red(),
+    )
+    
+    goblins = {
+        "gobgold": {
+            "name": "Gold goblin",
+            "emoji": "<:gobgold:1258839564936675348>",
+            "spawn_daysC": 1,
+            "spawnC": 10,
+            "spawn_days": 12,
+            "health": 60,
+            "rewards": ["500 <:coin:1258877467842576415>", "50 <:gem:1258877082734297108> ", "1 <:gff:1258876866249625620> upgrade boost/1 random 2-orb <:gff:1258876866249625620>"]
+        },
+        "gobdia": {
+            "name": "Diamond goblin",
+            "emoji": "<:gobdiamond:1258839525401165887>",
+            "spawn_daysC": 1,
+            "spawnC": 4,
+            "spawn_days": 28,
+            "health": 72,
+            "rewards": ["1000 <:coin:1258877467842576415>", "100 <:gem:1258877082734297108> ", "5 fragments <:fragment:1196793443612098560>", "1 <:dff:1258876920574116000> upgrade boost/1 random portal event <:dff:1258876920574116000>"]
+        },
+        "gobking": {
+            "name": "Goblin king",
+            "emoji": "<:gobking:1258839599938142269>",
+            "spawn_daysC": 25, 
+            "spawnC": 1, 
+            "spawn_days": 54,
+            "health": 84,
+            "rewards": ["2000 <:coin:1258877467842576415>", "500 <:gem:1258877082734297108> ", "10 fragments <:fragment:1196793443612098560>", "1 non-event Premium <:gcc:1258877882571427880>/1 <:occ:1258878153913274449>"]
+        }
+    }
+
+    goblin = goblin.value 
+    
+    spawntimeC = (gtime + timedelta(days=goblins[goblin]["spawn_daysC"])).strftime("%m-%d-%Y")
+    spawntime = (gtime + timedelta(days=goblins[goblin]["spawn_days"])).strftime("%m-%d-%Y")
+    # convert spawntime to unix timestamp
+    spawn_timestamp = int(datetime.strptime(spawntime, "%m-%d-%Y").timestamp())
+    spawnC_timestamp = int(datetime.strptime(spawntimeC, "%m-%d-%Y").timestamp())
+
+    rewardstext = "\n".join(goblins[goblin]["rewards"])
+    embed.add_field(
+        name=str(goblins[goblin]["name"]) + " " + str(goblins[goblin]['emoji']),
+        value=f"<t:{spawn_timestamp}:D>\n{goblins[goblin]['health']} HP\n{str(goblins[goblin]['spawnC'])}% chance starting day <t:{spawnC_timestamp}:D>\n",
+        inline=False
+    )
+    embed.add_field(
+        name="Rewards",
+        value=rewardstext,
+        inline=False
+    )
+
+    embed.add_field(
+        name="** **",
+        value="<:newMBot0:1251265938142007486> Goblin info - :heart: <@511322291972341800> for the data",
+        inline=False,
+    )
 
 
+
+    
+    # send ephemeral message
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+@tree.command(
+    name="support",
+    description="How to contact support",
+    guilds=guilds,
+)
+
+async def support_command(interaction):
+
+#just a support command, becouse dynobot doesn't work in half the channels
+    embed = discord.Embed(
+        title="Support",
+        color=discord.Color.teal(),
+    )
+    embed.add_field(
+        name="** **",
+        value="""
+        Hey there, magical adventurer! 🧙‍♂️ Need a hand in the mystical world of Little Alchemist Remastered?
+        \n🌟 Just shoot an email over to `support@littlealchemist.io` with your Player ID, Player Name, and spill the beans about the puzzling enigma you've stumbled upon. 
+        \n🕵️‍♂️ We're all ears (and wands)! Don't forget to spice it up with images or videos—let's make this adventure one for the scrolls! 📜✨
+        \n👑 When it comes to questions about gameplay, remember, our Discord community is your enchanted haven! 
+        \n🔮 Join the fun, share your wisdom, and get answers from fellow adventurers. 
+        \n🗡️🛡️ Let's keep the magic alive, and may your gaming journey be filled with epic adventures and laughter! 🌟🤗✨""",
+        inline=False,
+    )
+    embed.add_field(
+        name="** **",
+        value="*<:newMBot0:1251265938142007486> ChinBot is not in any way affiliated with [Monumental](https://monumental.io/)*",
+    )
+
+    await interaction.response.send_message(embed=embed)
 
 @client.event
 async def on_ready():

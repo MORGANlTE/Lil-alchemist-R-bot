@@ -29,6 +29,7 @@ DATABASE=playerdb.db
 TOKEN=discordbottokenplaceholder
 # discord bot token
 RESET_COMMANDS=False
+M_USER_IDS = id1, id2, ...
 ```
 
 4. Run the bot with `python bot.py`.
@@ -36,12 +37,13 @@ RESET_COMMANDS=False
 ## 📚 Commands 📚
 
 - `/wiki <cardname> [is_onyx]`: Look up a card on the LAR wiki. If `is_onyx` is true, the bot will look up the Onyx version of the card.
-- `/packopening <packname>`: Simulate a pack opening from the game. Returns 4 cards from that pack in one image.
-- `/trivia`: Asks a trivia question. Answer correctly and gain some points. Answer wrongly and you will lose a lot!
+- `/packopening <packname>`: Simulate a pack opening from the game.
+- `/trivia`: Asks a trivia question. Answer correctly and gain some points.
 - `/leaderboard`: Shows the trivia leaderboard
-- `/help`: Shows an overview of all the available commands together with their description. Also shows version and update notes.
-- `/profile`: Shows your profile with the current level you're on. Every 5 levels = a new image, level 100 = surprise?
-- `/claim`: Claim your daily amount of gems. Is increased with the current level you're on, to give more experienced players a boost.
+- `/help`: Shows an overview of all the available commands together with their description. Includes version and update notes.
+- `/profile`: Shows your profile with the current level you're on.
+- `/claim`: Claim your daily amount of gems.
+- ... (Take a look at `/help` for all the commands!)
 
 ## 📝 Version 📝
 
