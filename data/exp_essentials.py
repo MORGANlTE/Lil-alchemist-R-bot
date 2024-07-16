@@ -273,7 +273,8 @@ def get_user_pfps_db(userid, db_connection):
   if pfps is None:
     pfps = []
   # make the list a set json
-  pfps = json.loads(pfps)
+  else:
+    pfps = json.loads(pfps)
 
   return pfps
 
