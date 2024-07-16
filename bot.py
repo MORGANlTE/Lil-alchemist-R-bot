@@ -262,7 +262,7 @@ async def show_arena(interaction, ):
     )
     embed.add_field(
         name="** **",
-        value=f"<:newMBot0:1251265938142007486> ~ ChinBot Arena Powers System",
+        value=f"<:newMBot0:1251265938142007486> ~ Arena Powers - :heart: <@271483861895086081> for the data",
     )
     
 
