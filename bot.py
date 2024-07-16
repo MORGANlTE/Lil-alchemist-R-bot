@@ -14,14 +14,16 @@ import os
 from dotenv import load_dotenv
 from data.Apro.Aprogergely import imageeditor
 import re
+import json
 
 
 # Load the .env file
 load_dotenv()
 
 # Variables:
-version = "7.3.3"
-versiondescription = "Updated goblin command"
+version = "8.0.1"
+versiondescription = "Fixed db bugs"
+
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -548,14 +550,15 @@ async def profile_command(interaction):
     # Define the question and answers
 
     await interaction.response.defer()
-    top3 = get_top_users_top_3(dbfile)
+    # top3 = get_top_users_top_3(dbfile)
     gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
     gems = gemsAndPerc[0] if gemsAndPerc[0] is not None else 0
     winstreak = int(gemsAndPerc[1]) if gemsAndPerc[1] is not None else 0
     exp = get_experience(interaction.user.id, dbfile) if interaction.user.id is not None else 0
     discord_name = interaction.user.display_name
     discord_avatar = interaction.user.avatar.url if interaction.user.avatar is not None else "https://i.ibb.co/nbdqnSL/2.png"
-    pic = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, interaction.user.id, top3, gemsAndPerc[3])
+    custom_pfp = get_custom_pfp(interaction.user.id, dbfile) + ".png"
+    pic = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, gemsAndPerc[3], custom_pfp)
 
     await interaction.followup.send(
         file=pic,
@@ -563,6 +566,53 @@ async def profile_command(interaction):
     # remove the image
     os.remove(f"./important_images/{discord_name}.png")
 
+@tree.command(
+    name="setprofile",
+    description="Edit your Discord Profile",
+    guilds=guilds,
+)
+async def setprofile_command(interaction):
+    # Define the question and answers
+
+    # await interaction.response.defer()
+    # top3 = get_top_users_top_3(dbfile)
+    pfps = get_pfps(interaction.user.id, dbfile)
+    
+    pfps = json.loads(pfps)
+
+
+    class PfpSelect(discord.ui.Select):
+            def __init__(self, options, pfps, dbfile):
+                super().__init__(placeholder='Choose your new pfp...', options=options)
+                self.pfps = pfps
+                self.dbfile = dbfile
+
+            async def callback(self, interaction: discord.Interaction):
+                await interaction.response.defer()
+                pfpid = self.values[0]
+                user_id = interaction.user.id
+                
+                # set the pfp
+                set_custom_pfp(user_id, pfpid, dbfile)
+
+                # give feedback to user
+                await interaction.followup.send(
+                    f"Profile picture set to {get_description_pfp(self.values[0])}",
+                    ephemeral=True
+                )
+
+    # return a select with all the pfps
+    options = [SelectOption(label=get_description_pfp(pfps[i]), value=pfps[i]) for i in range(len(pfps))]
+    select = PfpSelect(options, pfps, dbfile)
+
+    view = discord.ui.View(timeout=None)
+    view.add_item(select)
+
+    
+
+    await interaction.response.send_message(
+        "Choose your profile picture",
+        view=view, ephemeral=True)
 
 @tree.command(
     name="claim",
@@ -597,7 +647,6 @@ async def claim_command(interaction):
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
-
 @tree.command(
     name="addstuff",
     description="Just a command for M",
@@ -617,9 +666,140 @@ async def addstuff_command(interaction, option: app_commands.Choice[str], amount
             newamount = add_gems_to_user(user_id, amount, dbfile)
         else:
             t = add_experience_to_user(user_id, amount, dbfile)
+            if t == False:
+                await interaction.response.send_message("Too fast", ephemeral=True)
+                return
             newamount = t["exptotal"]
+
         print(f"Added {amount} {option.value} to {user_id} - New total: {newamount}")
-        await interaction.response.send_message(f"Added {amount} {option.value} to {user_id}\nNew total: {newamount} Exp", ephemeral=True)
+        await interaction.response.send_message(f"Added {amount} {option.value} to {user_id} / <@{user_id}>\nNew total: {newamount} {option.value}", ephemeral=True)
+
+@tree.command(
+    name="store",
+    description="Open the store",
+    guilds=guilds,
+)
+async def store_command(interaction):
+
+    pages = ["Avatars", "🚧 - Backgrounds - 🚧", "🚧 - Borders - 🚧"]
+
+    class PfpSelect(discord.ui.Select):
+        def __init__(self, options):
+            super().__init__(placeholder='Buy your new pfp...', options=options)
+
+        async def callback(self, interaction: discord.Interaction):
+            await interaction.response.defer()
+            pfpid = self.values[0]
+            user_id = interaction.user.id
+            # buy the pfp
+            returnmsg = buy_pfp(pfpid, user_id, dbfile)
+            if returnmsg[0] == True:
+                print(f"[Store] User {user_id} bought pfp {pfpid}")
+            # give feedback to user
+            await interaction.followup.send(
+                f"{returnmsg[0] == True and '✅' or '⛔'} {returnmsg[1]}",
+                ephemeral=True
+            )
+
+    class StoreSelect(discord.ui.Select):
+        def __init__(self, options):
+            super().__init__(placeholder='Choose your answer...', options=options)
+
+        async def callback(self, interaction: discord.Interaction):
+            await interaction.response.defer()
+            label = self.values[0]
+            user_id = interaction.user.id
+            if label == "Avatars":
+                nb_pfps = get_store_pfps_not_bought(user_id, dbfile)
+                if len(nb_pfps) == 0:
+                    await interaction.followup.send(
+                        f"🛒 You have bought all the profile pictures!",
+                        ephemeral=True
+                    )
+                    return
+                # we got the pfps, now we need to make a select with all the pfps
+                options = [discord.SelectOption(label=answer, value=str(i)) for i, answer in nb_pfps.items()]
+                select = PfpSelect(options)
+                view = discord.ui.View(timeout=None)
+                view.add_item(select)
+                await interaction.followup.send(
+                    "Buy a pfp",
+                    view=view, ephemeral=True)
+                
+    
+    # Define the question and answers
+    options = [discord.SelectOption(label=answer) for i,answer in enumerate(pages)]
+    select = StoreSelect(options)
+    view = discord.ui.View(timeout=None)
+    view.add_item(select)
+
+    await interaction.response.defer()
+    embed = discord.Embed(
+        title="Store",
+        description="Here are the available items in the store:",
+        color=discord.Color.teal(),
+    )
+    embed.add_field(
+        name="Avatars",
+        value="",
+        inline=True,
+    )
+    embed.add_field(
+        name="🚧 - Backgrounds",
+        value="",
+        inline=True,
+    )
+    embed.add_field(
+        name="Borders - 🚧",
+        value="",
+        inline=True,
+    )
+
+    embed.set_footer(
+        text="Made with love by _morganite",
+        icon_url="https://iili.io/JlxAR7R.png",
+    )
+
+    await interaction.followup.send(embed=embed, view=view)
+
+@tree.command(
+    name="inventory",
+    description="Open your inventory",
+    guilds=guilds,
+)
+async def inventory_command(interaction):
+    await interaction.response.defer()
+    embed = discord.Embed(
+        title="Inventory",
+        description="Here are the items in your inventory:",
+        color=discord.Color.teal(),
+    )
+    
+    pfps = get_pfps(interaction.user.id, dbfile)
+    pfps = json.loads(pfps)
+    pfps = [get_description_pfp(pfps[i]) for i in range(len(pfps))]
+    
+    chunked_pfps = list(chunk_list(pfps, 5))
+
+    embed.add_field(
+        name="Profile Pictures",
+        value="\n",
+        inline=False,
+    )
+
+    for i, chunk in enumerate(chunked_pfps):
+        embed.add_field(
+            name=f"** **",
+            value="\n".join(chunk),
+            inline=True,
+        )
+
+    embed.set_footer(
+        text="Made with love by _morganite",
+        icon_url="https://iili.io/JlxAR7R.png",
+    )
+
+    await interaction.followup.send(embed=embed)
 
 
     
