@@ -261,7 +261,9 @@ def get_user_pfps_db(userid, db_connection):
   cursor.execute("SELECT pfps FROM users WHERE userid = ?", (userid,))
   pfps = cursor.fetchone()[0]
   if pfps is None:
-    pfps = '["0"]'
+    currentexp = get_experience(userid, db_connection)
+    add_user_pfps_for_levels(userid, 0, calculate_level(currentexp), db_connection)
+    pfps = get_user_pfps_db(userid, db_connection)
   # make the list a set json
   pfps = json.loads(pfps)
 
@@ -275,7 +277,9 @@ def add_user_pfps_for_levels(userid, currentlvl, newlvl, db_connection):
   # check if we unlocked a new pfp
   currentlvlchin = chin_avatar_calculator(newlvl)
   if pfps is None:
-    pfps = '["0"]'
+    currentexp = get_experience(userid, db_connection)
+    add_user_pfps_for_levels(userid, 0, calculate_level(currentexp), db_connection)
+    pfps = get_user_pfps_db(userid, db_connection)
   # make the list a set json
   if type(pfps) == str:
     pfps = json.loads(pfps)
