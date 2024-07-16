@@ -287,9 +287,7 @@ def add_user_pfps_for_levels(userid, currentlvl, newlvl, db_connection):
   # check if we unlocked a new pfp
   currentlvlchin = chin_avatar_calculator(newlvl)
   if pfps is None:
-    currentexp = get_experience_From_db_itself(userid, db_connection)
-    add_user_pfps_for_levels(userid, 0, calculate_level(currentexp), db_connection)
-    pfps = get_user_pfps_db(userid, db_connection)
+    pfps = []
   # make the list a set json
   if type(pfps) == str:
     pfps = json.loads(pfps)
