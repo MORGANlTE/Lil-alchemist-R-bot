@@ -20,8 +20,8 @@ import json
 load_dotenv()
 
 # Variables:
-version = "8.3.0"
-versiondescription = "Arena command added"
+version = "8.3.1"
+versiondescription = "Updated help & readme w/ arena cmd"
 
 gem_win_trivia = 5
 winstreak_max = 10
@@ -506,6 +506,11 @@ async def help_command(interaction):
     embed.add_field(
         name="<:gobking:1258839599938142269> /goblin",
         value="Shows the next goblin spawn",
+        inline=True,
+    )
+    embed.add_field(
+        name=":crossed_swords: /arena",
+        value="Shows the current and upcoming arena powers",
         inline=True,
     )
 

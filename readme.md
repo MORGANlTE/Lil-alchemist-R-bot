@@ -47,8 +47,8 @@ M_USER_IDS = id1, id2, ...
 
 ## 📝 Version 📝
 
-Current version: 8.0.1
-Version description: Fixed db bugs
+Current version: 8.3.1
+Version description: Updated help & readme w/ arena cmd
 
 ## 📜 License 📜
 
