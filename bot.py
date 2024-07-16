@@ -432,7 +432,7 @@ async def leaderboard_command(interaction, option: app_commands.Choice[str]):
             description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - :gem: {user[2]} | 🔥 {user[3]}\n"
         else:
             description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - 👑 Lvl {calculate_level(user[4])} | {user[4]} Exp\n"
-    set_leaderboard_rank_pfps(gemsAndPerc[3][0], interaction.user.id, dbfile)
+    set_leaderboard_rank_pfps(gemsAndPerc[3], interaction.user.id, dbfile)
     embed = discord.Embed(
         description=f"{description}",
         color=discord.Color.brand_green(),
@@ -558,7 +558,7 @@ async def profile_command(interaction):
     discord_name = interaction.user.display_name
     discord_avatar = interaction.user.avatar.url if interaction.user.avatar is not None else "https://i.ibb.co/nbdqnSL/2.png"
     custom_pfp = get_custom_pfp(interaction.user.id, dbfile) + ".png"
-    leaderboard_rank = gemsAndPerc[3][0]
+    leaderboard_rank = gemsAndPerc[3]
     pic = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, leaderboard_rank, custom_pfp)
 
     if int(leaderboard_rank) <= 3:
