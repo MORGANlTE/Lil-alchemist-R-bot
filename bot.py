@@ -633,7 +633,6 @@ async def claim_command(interaction):
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
-
 @tree.command(
     name="addstuff",
     description="Just a command for M",
@@ -654,8 +653,137 @@ async def addstuff_command(interaction, option: app_commands.Choice[str], amount
         else:
             t = add_experience_to_user(user_id, amount, dbfile)
             newamount = t["exptotal"]
+
+            print(newamount)
         print(f"Added {amount} {option.value} to {user_id} - New total: {newamount}")
-        await interaction.response.send_message(f"Added {amount} {option.value} to {user_id}\nNew total: {newamount} Exp", ephemeral=True)
+        await interaction.response.send_message(f"Added {amount} {option.value} to {user_id} / <@{user_id}>\nNew total: {newamount} {option.value}", ephemeral=True)
+
+@tree.command(
+    name="store",
+    description="Open the store",
+    guilds=guilds,
+)
+async def store_command(interaction):
+
+    pages = ["Avatars", "🚧 - Backgrounds - 🚧", "🚧 - Borders - 🚧"]
+
+    class PfpSelect(discord.ui.Select):
+        def __init__(self, options):
+            super().__init__(placeholder='Buy your new pfp...', options=options)
+
+        async def callback(self, interaction: discord.Interaction):
+            await interaction.response.defer()
+            pfpid = self.values[0]
+            user_id = interaction.user.id
+            # buy the pfp
+            returnmsg = buy_pfp(pfpid, user_id, dbfile)
+            if returnmsg[0] == True:
+                print(f"[Store] User {user_id} bought pfp {pfpid}")
+            # give feedback to user
+            await interaction.followup.send(
+                f"{returnmsg[0] == True and '✅' or '⛔'} {returnmsg[1]}",
+                ephemeral=True
+            )
+
+    class StoreSelect(discord.ui.Select):
+        def __init__(self, options):
+            super().__init__(placeholder='Choose your answer...', options=options)
+
+        async def callback(self, interaction: discord.Interaction):
+            await interaction.response.defer()
+            label = self.values[0]
+            user_id = interaction.user.id
+            if label == "Avatars":
+                nb_pfps = get_store_pfps_not_bought(user_id, dbfile)
+                if len(nb_pfps) == 0:
+                    await interaction.followup.send(
+                        f"🛒 You have bought all the profile pictures!",
+                        ephemeral=True
+                    )
+                    return
+                # we got the pfps, now we need to make a select with all the pfps
+                options = [discord.SelectOption(label=answer, value=str(i)) for i, answer in nb_pfps.items()]
+                select = PfpSelect(options)
+                view = discord.ui.View(timeout=None)
+                view.add_item(select)
+                await interaction.followup.send(
+                    "Buy a pfp",
+                    view=view, ephemeral=True)
+                
+    
+    # Define the question and answers
+    options = [discord.SelectOption(label=answer) for i,answer in enumerate(pages)]
+    select = StoreSelect(options)
+    view = discord.ui.View(timeout=None)
+    view.add_item(select)
+
+    await interaction.response.defer()
+    embed = discord.Embed(
+        title="Store",
+        description="Here are the available items in the store:",
+        color=discord.Color.teal(),
+    )
+    embed.add_field(
+        name="Avatars",
+        value="",
+        inline=True,
+    )
+    embed.add_field(
+        name="🚧 - Backgrounds",
+        value="",
+        inline=True,
+    )
+    embed.add_field(
+        name="Borders - 🚧",
+        value="",
+        inline=True,
+    )
+
+    embed.set_footer(
+        text="Made with love by _morganite",
+        icon_url="https://iili.io/JlxAR7R.png",
+    )
+
+    await interaction.followup.send(embed=embed, view=view)
+
+@tree.command(
+    name="inventory",
+    description="Open your inventory",
+    guilds=guilds,
+)
+async def inventory_command(interaction):
+    await interaction.response.defer()
+    embed = discord.Embed(
+        title="Inventory",
+        description="Here are the items in your inventory:",
+        color=discord.Color.teal(),
+    )
+    
+    pfps = get_pfps(interaction.user.id, dbfile)
+    pfps = json.loads(pfps)
+    pfps = [get_description_pfp(pfps[i]) for i in range(len(pfps))]
+    
+    chunked_pfps = list(chunk_list(pfps, 5))
+
+    embed.add_field(
+        name="Profile Pictures",
+        value="\n",
+        inline=False,
+    )
+
+    for i, chunk in enumerate(chunked_pfps):
+        embed.add_field(
+            name=f"** **",
+            value="\n".join(chunk),
+            inline=True,
+        )
+
+    embed.set_footer(
+        text="Made with love by _morganite",
+        icon_url="https://iili.io/JlxAR7R.png",
+    )
+
+    await interaction.followup.send(embed=embed)
 
 
     

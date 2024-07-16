@@ -7,6 +7,7 @@ import requests
 import io
 from datetime import datetime, timedelta
 import json
+from data.shortcuts import *
 
 def calculate_level(exp):
     return math.ceil((-3 + math.sqrt(exp)) / 2)
@@ -256,12 +257,21 @@ def get_highest_exp(dbfile):
     return None
   return users
 
-def add_user_pfps_for_levels(userid, currentlvl, newlvl, db_connection):
-  # get user pfps
-  
+def get_user_pfps_db(userid, db_connection):
   cursor = db_connection.cursor()
   cursor.execute("SELECT pfps FROM users WHERE userid = ?", (userid,))
   pfps = cursor.fetchone()[0]
+  if pfps is None:
+    pfps = '["0"]'
+  # make the list a set json
+  pfps = json.loads(pfps)
+
+  return pfps
+
+def add_user_pfps_for_levels(userid, currentlvl, newlvl, db_connection):
+  # get user pfps
+  
+  pfps = get_user_pfps_db(userid, db_connection)
   oldpfps = pfps
 
   # check if we unlocked a new pfp
@@ -269,7 +279,8 @@ def add_user_pfps_for_levels(userid, currentlvl, newlvl, db_connection):
   if pfps is None:
     pfps = '["0"]'
   # make the list a set json
-  pfps = json.loads(pfps)
+  if type(pfps) == str:
+    pfps = json.loads(pfps)
   for i in range(currentlvlchin):
     if str(i+1) not in pfps:
       pfps.append(str(i+1))
@@ -279,8 +290,87 @@ def add_user_pfps_for_levels(userid, currentlvl, newlvl, db_connection):
 
   if pfps == oldpfps: # no updates needed
     return
+
+  cursor = db_connection.cursor()
     
   # set the new pfps
   cursor.execute("UPDATE users SET pfps = ? WHERE userid = ?", (json.dumps(pfps), userid))
   db_connection.commit()
 
+def add_pfp(userid, pfp, db_file):
+  db_connection = sqlite3.connect(db_file)
+  pfps = get_user_pfps_db(userid, db_connection)
+  if pfp not in pfps:
+    pfps.append(pfp)
+  # order the list
+  pfps = sorted(pfps, key=lambda x: int(x))
+  # set the new pfps
+  cursor = db_connection.cursor()
+  cursor.execute("UPDATE users SET pfps = ? WHERE userid = ?", (json.dumps(pfps), userid))
+  db_connection.commit()
+  db_connection.close()
+
+def get_store_pfps_not_bought(userid, dbfile):
+  db_connection = sqlite3.connect(dbfile)
+  pfps = get_user_pfps_db(userid, db_connection)
+  db_connection.close()
+
+  # store pfps:
+  #imgId : {price: name}
+  store_pfps = get_allstore_pfps()
+
+  # get the ones that are not bought
+  not_bought = []
+  for key in store_pfps.keys():
+    if str(key) not in pfps:
+      not_bought.append(key)
+
+  # get me the names of the not bought ones
+  return_not_bought = {}
+  for i in not_bought:
+    return_not_bought[i] = get_description_pfp(i)
+
+  return return_not_bought
+
+
+def get_allstore_pfps():
+  store_pfps = {
+      17: {0:"Bird"},
+      18: {3000:"Raging Bird"},
+      19: {4000:"Messenger Bird"},
+      20: {7000:"Atomic Burrito"},
+      21: {10000:"King of the Heap"},
+  }
+  return store_pfps
+
+def buy_pfp(pfpid, user_id, dbfile):
+    # Open a database connection
+    conn = sqlite3.connect(dbfile)
+    try:
+        # get pfp from the store
+        pfpid = int(pfpid)
+        # check if we already have this pfp
+        pfps = get_user_pfps_db(user_id, conn)
+        if str(pfpid) in pfps:
+            return False, "You already have this avatar"
+        store_pfps = get_allstore_pfps()
+        if pfpid not in store_pfps.keys():
+            return False, "This pfp does not exist in the store"
+        
+        # get the price
+        price = store_pfps[pfpid].keys()
+        # get the first element of the dict
+        price = list(price)[0]
+        # get the users gems
+        user_gems = get_users_gems_and_top_percentage(user_id, dbfile)[0]
+        if user_gems < price:
+            return False, "You do not have enough gems to buy this pfp"
+
+        # add the pfp to the users pfps
+        pfps.append(str(pfpid))
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET pfps = ? WHERE userid = ?", (json.dumps(pfps), user_id))
+        conn.commit()
+        return True, "Avatar purchased successfully"
+    finally:
+        conn.close()

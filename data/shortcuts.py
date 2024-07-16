@@ -590,6 +590,16 @@ def get_description_pfp(pfp_id):
       13: "lvl 65 - Bionic Chinchilla",
       14: "lvl 70 - Bone Chin",
       15: "lvl 75 - Forest Chinchillas",
-      16: "lvl 100 - Mecha Chinzilla"
+      16: "lvl 100 - Mecha Chinzilla",
+      17: "💎Free - Bird",
+      18: "💎3000 - Raging Bird",
+      19: "💎4000 - Messenger Bird",
+      20: "💎7000 - Atomic Burrito",
+      21: "💎10.000 - King of the Heap",
   }
   return pfps[int(pfp_id)]
+
+def chunk_list(lst, chunk_size):
+    """Split a list into chunks of a specified size."""
+    for i in range(0, len(lst), chunk_size):
+        yield lst[i:i + chunk_size]
