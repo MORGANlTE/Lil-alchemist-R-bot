@@ -265,6 +265,12 @@ async def help_command(interaction):
         inline=True,
     )
     embed.add_field(
+        name="👑 /setprofile",
+        value="Edit your profile",
+        inline=True,
+    )
+    
+    embed.add_field(
         name=":sos: /support",
         value="How to contact support for Monumental",
         inline=True,
@@ -295,6 +301,16 @@ async def help_command(interaction):
     embed.add_field(
         name=":gem: /trivia",
         value="Some fun trivia to try out",
+        inline=True,
+    )
+    embed.add_field(
+        name=":shopping_cart: /store",
+        value="Open the store",
+        inline=True,
+    )
+    embed.add_field(
+        name="🚁 /inventory",
+        value="Shows your inventory",
         inline=True,
     )
     embed.add_field(
