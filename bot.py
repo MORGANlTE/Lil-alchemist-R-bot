@@ -1,18 +1,19 @@
 import discord
 from discord import app_commands, ButtonStyle, SelectOption
 from discord.ui import Button, View, Select
+from data.Apro.Aprogergely import imageeditor
+from data.commands import *
 from data.data_grabber import *
 from data.packopening import *
 from data.shortcuts import *
-import datetime
 from data.exp_essentials import *
+from data.trivia import *
+import datetime
 import discord
 import requests
 from bs4 import BeautifulSoup
-from data.trivia import *
 import os
 from dotenv import load_dotenv
-from data.Apro.Aprogergely import imageeditor
 import re
 import json
 
@@ -22,16 +23,14 @@ load_dotenv()
 # Variables:
 version = "8.4.0"
 versiondescription = "Updated arena cmd w/ amount & formatting updated"
-
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
 exp = 10
-# get userids from .env file
+
+# Environment variables:
 M_user_ids = os.getenv("M_USER_IDS").split(", ")
 dbfile = os.getenv("DATABASE")
-
-# Check the value of the ENVIRONMENT variable
 environment = os.getenv("ENVIRONMENT")
 reset_commands = os.getenv("RESET_COMMANDS") if os.getenv("RESET_COMMANDS") is not None else True
 
@@ -40,11 +39,10 @@ if environment == "testing":
 elif environment == "production":
     guilds=[]
 else:
-    # Code for other environments or default behavior
     print("Running in unknown environment")
 print(f"Running in {environment} environment")
 
-# Functions:
+# Discord bot business:
 intents = discord.Intents.default()
 intents.messages = True
 client = discord.Client(intents=intents)
@@ -57,145 +55,17 @@ tree = app_commands.CommandTree(client)
 )
 async def show_command(interaction, cardname: str, is_onyx: bool = False):
     await interaction.response.defer()
-    # test if this url gives us a boss card or a normal card
-    print("[Searching] " + cardname)
-    t = check_if_custom_name(cardname)
-    if t is not None and t is not False:
-        await interaction.followup.send(embed=t)
-        return
-
-    if is_onyx:
-        cardname += "_(Onyx)"
-    url = f"https://lil-alchemist.fandom.com/wiki/{cardname.title().replace(' ', '_').replace('_And_', '_and_')}"
-    test = ()
     try:
-        resp = requests.get(url)
-        soup = BeautifulSoup(resp.content, "html.parser")
-        test = parseinfo(soup, cardname)
+        embed = await show_command_embed(cardname, is_onyx)
+
+        if embed:
+            await interaction.followup.send(embed=embed)
+        else:
+            await interaction.followup.send(f"Card `{cardname}` not found")
     except Exception as e:
-        # print(f"Error: {str(e)}")
-        try:
-            print("card not found, checking boss card")
-            url = f"https://lil-alchemist.fandom.com/wiki/{cardname.title().replace(' ', '_')}_(Card)"
-            resp = requests.get(url)
-            soup = BeautifulSoup(resp.content, "html.parser")
-            test = parseinfo(soup, cardname)
-        except Exception as e:
-            # print the exact error happening
-            # print(f"Error: {str(e)}")
-            try:
-                print("card not found, checking capitalized card")
-                url = f"https://lil-alchemist.fandom.com/wiki/{cardname.replace(' ', '_')}"
-                resp = requests.get(url)
-                soup = BeautifulSoup(resp.content, "html.parser")
-                test = parseinfo(soup, cardname)
-            except Exception as e:
-                # print the exact error happening
-                # print(f"Error: {str(e)}")
-                await interaction.followup.send(
-                    f"Card `{cardname}` not found", ephemeral=True
-                )
-                return
-
-    # if we get here, the card is found
-
-    (
-        imgurl,
-        description,
-        base_attack,
-        base_defense,
-        base_power,
-        rarity,
-        form,
-        fusion,
-        where_to_acquire,
-        recipes,
-        combos,
-        level_stats,
-    ) = test
-    # transform the name cardname eg chinchilla into Chinchilla and dr. robo into Dr. Robo
-
-    embed = discord.Embed(
-        color=get_embedcolor(rarity),
-    )
-    embed.set_author(
-        icon_url=get_fusion_url(fusion),
-        name=f"{fusion}",
-    )
-    # add url link to wiki
-    embed.add_field(
-        name="Wiki Page",
-        value=f"[Click here to visit the wiki page]({url})",
-        inline=False,
-    )
-    embed.add_field(name="Full Name", value=cardname.title(), inline=True)
-    embed.add_field(name="Rarity", value=rarity, inline=True)
-    embed.add_field(name="Description", value=description, inline=False)
-    embed.set_thumbnail(url=imgurl)
-    levels_left = ""
-    levels_right = ""
-    for level in level_stats.items():
-        level_text = f"{level[0]}  -  {level[1]['Attack']}/{level[1]['Defense']}\n"
-        if int(level[0]) >= 4:
-            levels_right += level_text
-        else:
-            levels_left += level_text
-
-    embed.add_field(name="Levels", value=levels_left, inline=True)
-    embed.add_field(name="** **", value=levels_right, inline=True)
-
-    embed.add_field(
-        name="Where to acquire", value=", ".join(where_to_acquire), inline=False
-    )
-
-    if fusion == "Orb":
-        embed.add_field(
-            name="Combos",
-            value=f"Amount of Combos: {len(combos)}",
-            inline=False,
-        )
-
-    else:
-        combos_left = []
-        combos_right = []
-        counter = 0
-        if rarity == "Onyx":
-            # filter out all non onyx combos
-            combos = [
-                combo
-                for combo in combos
-                if "(Onyx)" in combo[0] and "(Onyx)" in combo[1]
-            ]
-        else:
-            # filter out all onyx combos
-            combos = [
-                combo
-                for combo in combos
-                if not "(Onyx)" in combo[0] and not "(Onyx)" in combo[1]
-            ]
-
-        for combo in recipes:
-            if counter < (len(recipes) / 2):
-                combos_left.append(f"{counter+1}.{combo[1]} + {combo[0]}")
-            else:
-                combos_right.append(f"{counter+1}.{combo[1]} + {combo[0]}")
-            counter += 1
-
-        # if empty combos, add a "/"
-        if len(recipes) == 0:
-            embed.add_field(name="Combos", value="/", inline=True)
-            embed.add_field(name="** **", value="", inline=True)
-        else:
-            embed.add_field(name="Combos", value="\n".join(combos_left), inline=True)
-            embed.add_field(name="** **", value="\n".join(combos_right), inline=True)
-
-    # add underneath the author the rarity and form
-    embed.set_footer(
-        text=f"{cardname.title()} - {rarity} ~ ChinBot & LAR Wiki",
-        icon_url=get_fusion_url(fusion),
-    )
-
-    await interaction.followup.send(embed=embed)
+        print(e)
+        # print full error
+        await interaction.followup.send(f"An error occured while searching for `{cardname}`: {e}")
 
 @tree.command(
     name="arena",
@@ -208,70 +78,15 @@ async def show_arena(interaction, amount: int = 2):
     Args:
         amount (int, optional): The amount of upcoming arena powers to show. Defaults to 2 (current and next)
     """
-    add_pfp(interaction.user.id, str((math.factorial(5) // math.factorial(3)) + 6) , dbfile)
-    # Set start time 
-    starttime = datetime(2024, 7, 9, 9, 0, 0, 0)
-    arenapowers = get_arena_powers()
-    max_powers_allowed = (len(arenapowers) + 1)
-    if amount < 1 or amount > max_powers_allowed:
-        await interaction.response.send_message(
-            f"Invalid amount of next arena powers, choose a number between 1 and {max_powers_allowed}", ephemeral=True
-        )
-        return
     await interaction.response.defer()
-
-    currenttime = datetime.now()
-
-    # get the difference between the current time and the start time
-    difference = currenttime - starttime
-
-    # get the days and hours
-    days = difference.days
-    hours = difference.seconds // 3600
-
-    # get the next arena power
-    next_arena_power = arenapowers[(days // 7 + 1) % len(arenapowers)]
-
-
-    next_arena_power_timestamp = int((starttime + timedelta(days=(days // 7 + 1) * 7)).timestamp())
-    # spawn_timestamp = int(datetime.strptime(spawntime, "%m-%d-%Y").timestamp())
-
-    def format_tiers(tiers):
-        return "\n".join(
-            [
-                f"{tier.get('power', '')} {tier.get('emoji', '')} - {tier.get('orb', '')} <:orb:1262862680021270731>"
-                for tier in tiers
-            ]
-        )
-    embed = discord.Embed(
-        title="Arena Powers",
-        description=":clock1: `Current`:\n\n",
-        color=discord.Color.teal(),
-    )
-
-    for i in range(0, amount):
-        next_arena_power = arenapowers[(days // 7 + i) % len(arenapowers)]
-        next_arena_power_timestamp = int((starttime + timedelta(days=(days // 7 + i) * 7)).timestamp())
-        next_next_arena_power_timestamp = int((starttime + timedelta(days=(days // 7 + i + 1) * 7)).timestamp())
-        formatted = format_tiers(next_arena_power['tiers']).strip()
-        if formatted.startswith("-"):
-            formatted = formatted.strip()[1:]
-
-        
-        embed.add_field(
-            name=f"{next_arena_power['emoji']} {next_arena_power['name']}",
-            value=f"{next_arena_power['description']}\n{formatted}\n\n" + ("" if i == amount - 1 else f":clock1: <t:{next_next_arena_power_timestamp}:R>:"),
-            inline=False,
-        )
-
-
-    embed.add_field(
-        name="** **",
-        value=f"<:newMBot0:1251265938142007486> ~ Arena Powers - :heart: <@271483861895086081> for the data",
-    )
-    
-
-    await interaction.followup.send(embed=embed)
+    try:
+        embed = show_arena_embed(amount=amount, dbfile=dbfile, userid=interaction.user.id)
+        if type(embed) == discord.Embed:
+            await interaction.followup.send(embed=embed)
+        elif type(embed) == int:
+            await interaction.followup.send(f"Invalid amount of next arena powers, choose a number between 1 and {embed}", ephemeral=True)
+    except Exception as e:
+        await interaction.followup.send(f"An error occured while searching for the arena powers: {e}")
 
 @tree.command(
     name="combo",
@@ -280,190 +95,15 @@ async def show_arena(interaction, amount: int = 2):
 )
 async def combo_command(interaction, card1: str, card2: str):
     await interaction.response.defer()
-    # test if this url gives us a boss card or a normal card
     print("[Combo] " + card1 + " + " + card2)
-
-    url = f"https://lil-alchemist.fandom.com/wiki/{card1.title().replace(' ', '_').replace('_And_', '_and_')}"
-    test = ()
     try:
-        resp = requests.get(url)
-        soup = BeautifulSoup(resp.content, "html.parser")
-        test = parseinfo(soup, card1)
+        embed = show_combo_embed(card1=card1, card2=card2)
+        if type(embed) == discord.Embed:
+            await interaction.followup.send(embed=embed)
+        elif type(embed) == str:
+            await interaction.followup.send(f"Card `{embed}` not found")
     except Exception as e:
-        # print(f"Error: {str(e)}")
-        try:
-            print("card not found, checking boss card")
-            url = f"https://lil-alchemist.fandom.com/wiki/{card1.title().replace(' ', '_')}_(Card)"
-            resp = requests.get(url)
-            soup = BeautifulSoup(resp.content, "html.parser")
-            test = parseinfo(soup, card1)
-        except Exception as e:
-            # print the exact error happening
-            # print(f"Error: {str(e)}")
-            try:
-                print("card not found, checking capitalized card")
-                url = f"https://lil-alchemist.fandom.com/wiki/{card1.replace(' ', '_')}"
-                resp = requests.get(url)
-                soup = BeautifulSoup(resp.content, "html.parser")
-                test = parseinfo(soup, card1)
-            except Exception as e:
-                # print the exact error happening
-                # print(f"Error: {str(e)}")
-                await interaction.followup.send(
-                    f"Combo `{card1}` + {card2} not found", ephemeral=True
-                )
-                return
-
-    # if we get here, the card is found
-
-    (
-        imgurl,
-        description,
-        base_attack,
-        base_defense,
-        base_power,
-        rarity,
-        form,
-        fusion,
-        where_to_acquire,
-        recipes,
-        combos,
-        level_stats,
-    ) = test
-    # transform the name cardname eg chinchilla into Chinchilla and dr. robo into Dr. Robo
-
-    
-    # add url link to wiki
-    # get the second card in the combos:
-    def find_value(key, data):
-        result = [value for k, value in data if k == key]
-        return result[0] if result else None
-    
-    result = find_value(card2, combos)
-
-    if result is None:
-        await interaction.followup.send(
-            f"Combo {card1} + `{card2}` not found", ephemeral=True
-        )
-        return
-    
-    url = f"https://lil-alchemist.fandom.com/wiki/{result.replace(' ', '_')}"
-
-    # get the card info page from the resulting combo
-    try:
-        resp = requests.get(url)
-        soup = BeautifulSoup(resp.content, "html.parser")
-        test = parseinfo(soup, result)
-    except Exception as e:
-        try:
-            print("card not found, checking capitalized card")
-            url = f"https://lil-alchemist.fandom.com/wiki/{result.replace(' ', '_')}"
-            resp = requests.get(url)
-            soup = BeautifulSoup(resp.content, "html.parser")
-            test = parseinfo(soup, result)
-        except Exception as e:
-            # print the exact error happening
-            # print(f"Error: {str(e)}")
-            await interaction.followup.send(
-                f"Combo: {card1} + {card2} = `{result}` not found", ephemeral=True
-            )
-            return
-    
-    (
-        imgurl,
-        description,
-        base_attack,
-        base_defense,
-        base_power,
-        rarity,
-        form,
-        fusion,
-        where_to_acquire,
-        recipes,
-        combos,
-        level_stats,
-    ) = test
-
-    embed = discord.Embed(
-        color=get_embedcolor(rarity),
-    )
-    embed.set_author(
-        icon_url=get_fusion_url(fusion),
-        name=f"{fusion}",
-    )
-    embed.add_field(
-        name="Wiki Page",
-        value=f"[Click here to visit the wiki page]({url})",
-        inline=False,
-    )
-    embed.add_field(name="Full Name", value=result.title(), inline=True)
-    embed.add_field(name="Rarity", value=rarity, inline=True)
-    embed.add_field(name="Description", value=description, inline=False)
-    embed.set_thumbnail(url=imgurl)
-    levels_left = ""
-    levels_right = ""
-    for level in level_stats.items():
-        level_text = f"{level[0]}  -  {level[1]['Attack']}/{level[1]['Defense']}\n"
-        if int(level[0]) >= 4:
-            levels_right += level_text
-        else:
-            levels_left += level_text
-
-    embed.add_field(name="Levels", value=levels_left, inline=True)
-    embed.add_field(name="** **", value=levels_right, inline=True)
-
-    embed.add_field(
-        name="Where to acquire", value=", ".join(where_to_acquire), inline=False
-    )
-
-    if fusion == "Orb":
-        embed.add_field(
-            name="Combos",
-            value=f"Amount of Combos: {len(combos)}",
-            inline=False,
-        )
-
-    else:
-        combos_left = []
-        combos_right = []
-        counter = 0
-        if rarity == "Onyx":
-            # filter out all non onyx combos
-            combos = [
-                combo
-                for combo in combos
-                if "(Onyx)" in combo[0] and "(Onyx)" in combo[1]
-            ]
-        else:
-            # filter out all onyx combos
-            combos = [
-                combo
-                for combo in combos
-                if not "(Onyx)" in combo[0] and not "(Onyx)" in combo[1]
-            ]
-
-        for combo in recipes:
-            if counter < (len(recipes) / 2):
-                combos_left.append(f"{counter+1}.{combo[1]} + {combo[0]}")
-            else:
-                combos_right.append(f"{counter+1}.{combo[1]} + {combo[0]}")
-            counter += 1
-
-        # if empty combos, add a "/"
-        if len(recipes) == 0:
-            embed.add_field(name="Combos", value="/", inline=True)
-            embed.add_field(name="** **", value="", inline=True)
-        else:
-            embed.add_field(name="Combos", value="\n".join(combos_left), inline=True)
-            embed.add_field(name="** **", value="\n".join(combos_right), inline=True)
-
-    # add underneath the author the rarity and form
-    embed.set_footer(
-        text=f"{result.title()} - {rarity} ~ ChinBot & LAR Wiki",
-        icon_url=get_fusion_url(fusion),
-    )
-
-    await interaction.followup.send(embed=embed)
+        await interaction.followup.send(f"An error occured while searching for the combo: {e}")
 
 
 @tree.command(
@@ -472,140 +112,11 @@ async def combo_command(interaction, card1: str, card2: str):
     guilds=guilds,
 )
 async def help_command(interaction):
-    avatar_url = client.user.avatar.url
-
-    embed = discord.Embed(
-        title="Bot Commands",
-        description="Here are the available commands:",
-        color=discord.Color.teal(),
-    )
-
-    embed.add_field(
-        name="Informational",
-        value="** **",
-        inline="False",
-    )
-    
-
-    embed.add_field(
-        name=":game_die: /wiki",
-        value="Searches the specified card on the wiki",
-        inline=True,
-    )
-    embed.add_field(
-        name="🔍 /combo",
-        value="Searches the specified combo on the wiki",
-        inline=True,
-    )
-    embed.add_field(
-        name=":flower_playing_cards: /packview",
-        value="Shows the contents of a pack",
-        inline=True,
-    )
-    embed.add_field(
-        name=":question: /help",
-        value="Displays the help page",
-        inline=True,
-    )
-    embed.add_field(
-        name="<:gobking:1258839599938142269> /goblin",
-        value="Shows the next goblin spawn",
-        inline=True,
-    )
-    embed.add_field(
-        name=":crossed_swords: /arena",
-        value="Shows the current and upcoming arena powers",
-        inline=True,
-    )
-
-    # empty row here:
-    embed.add_field(
-        name="** **",
-        value="** **",
-        inline=False,
-    )
-    embed.add_field(
-        name="\nServer related",
-        value="** **",
-        inline="False",
-    )
-    
-    embed.add_field(
-        name=":coin: /leaderboard",
-        value="Shows the global leaderboard",
-        inline=True,
-    )
-    embed.add_field(
-        name=":bar_chart: /profile",
-        value="Shows your profile",
-        inline=True,
-    )
-    embed.add_field(
-        name="👑 /setprofile",
-        value="Edit your profile",
-        inline=True,
-    )
-    
-    embed.add_field(
-        name=":sos: /support",
-        value="How to contact support for Monumental",
-        inline=True,
-    )
-    
-    # empty row here:
-    embed.add_field(
-        name="** **",
-        value="** **",
-        inline=False,
-    )
-    embed.add_field(
-        name="\nFun",
-        value="** **",
-        inline="False",
-    )
-
-    embed.add_field(
-        name=":moneybag: /claim",
-        value="Claim your daily login",
-        inline=True,
-    )
-    embed.add_field(
-        name=":package: /packopening",
-        value="Opens a pack",
-        inline=True,
-    )
-    embed.add_field(
-        name=":gem: /trivia",
-        value="Some fun trivia to try out",
-        inline=True,
-    )
-    embed.add_field(
-        name=":shopping_cart: /store",
-        value="Open the store",
-        inline=True,
-    )
-    embed.add_field(
-        name="🚁 /inventory",
-        value="Shows your inventory",
-        inline=True,
-    )
-    embed.add_field(
-        name=":coral: /generate",
-        value="Make a custom card classical LA style! - Thx Aprogergely!",
-        inline=True,
-    )
-    embed.add_field(
-        name="** **",
-        value=f"<:newMBot0:1251265938142007486> v{version} - {versiondescription}\n*All copyrighted material belongs to [Monumental](https://monumental.io/)*",
-        inline=False,
-    )
-
-    embed.set_footer(
-        text="Made with love by _morganite",
-        icon_url="https://iili.io/JlxAR7R.png",
-    )
-
-    await interaction.response.send_message(embed=embed)
+    try:
+        embed = help_embed(version=version, description=versiondescription)
+        await interaction.response.send_message(embed=embed)
+    except Exception as e:
+        await interaction.response.send_message(f"An error occured while fetching the help: {e}")
 
 
 @tree.command(
@@ -615,69 +126,13 @@ async def help_command(interaction):
 )
 async def trivia_command(interaction):
     # Define the question and answers
-
-    class TriviaSelect(discord.ui.Select):
-            def __init__(self, options, trivia, dbfile, embed, message):
-                super().__init__(placeholder='Choose your answer...', options=options)
-                self.trivia = trivia
-                self.dbfile = dbfile
-                self.embed = embed
-                self.message = message
-
-            async def callback(self, interaction: discord.Interaction):
-                await interaction.response.defer()
-                label = self.values[0]
-                user_id = interaction.user.id
-                streak = get_winstreak(user_id, self.dbfile)
-                if streak == None:
-                    streak = 1
-                elif streak >= winstreak_max:
-                    streak = winstreak_max
-                else:
-                    streak += 1
-
-                # check if the user was wrong or right
-                if self.trivia.answers.index(label) != self.trivia.correct_answer_index:
-                    return_message = f"⛔ {interaction.user.mention} did not answer `{self.trivia.answers[self.trivia.correct_answer_index]}` {gem_loss_trivia} :gem:"
-                    update_winstreak(user_id, dbfile, 0)
-                else:
-                    return_message = f"✅ {interaction.user.mention} answered `{self.trivia.answers[self.trivia.correct_answer_index]}`\n+{gem_win_trivia + streak} :gem: 🔥 {streak}"
-                    update_winstreak(user_id, dbfile, streak)
-                newgems = add_gems_to_user(user_id, (gem_win_trivia + streak), dbfile)
-
-                # add the message to the embed
-                self.embed.add_field(name="Answer", value=return_message, inline=False)
-
-                # we edit the embed again, with a new question
-                embed, trivia = await generate_embed_trivia(interaction)
-                self.options = [discord.SelectOption(label=answer) for answer in trivia.answers]
-                self.trivia = trivia
-                embed.add_field(name="Last question", value=return_message, inline=False)
-                self.embed = embed
-                # put the new embed
-                await self.message.edit(embed=embed, view=self.view)
-                    
-    r = await interaction.response.send_message("** **")
-    message = await interaction.channel.send("Loading trivia question...")
-    embed, trivia = await generate_embed_trivia(interaction)
-    emojis = ["1️⃣", "2️⃣", "3️⃣"]
-    options = [discord.SelectOption(label=answer, emoji=emojis[i]) for i,answer in enumerate(trivia.answers)]
-    select = TriviaSelect(options, trivia, dbfile, embed=embed, message=message)
-    view = discord.ui.View(timeout=None)
-    view.add_item(select)
-
-    await message.edit(embed=embed, view=view, content="")
-
-    # edit_only = False
-    # last_message = await interaction.channel.history(limit=1).flatten()
-    # if last_message[0].id != interaction.message.id:
-    #     edit_only = True
-
-    # we let the user select an answer, now we check if the answer is correct
-    # get the answer:
-    # message = await interaction.followup.send(embed=embed, view=view)
-
-    
+    try:
+        r = await interaction.response.send_message("** **")
+        message = await interaction.channel.send("Loading trivia question...")
+        embed, view = await trivia_embed(interaction=interaction, winstreak_max=winstreak_max, gem_win_trivia=gem_win_trivia, gem_loss_trivia=gem_loss_trivia, dbfile=dbfile, message=message)
+        await message.edit(embed=embed, view=view, content="")
+    except Exception as e:
+        await interaction.response.send_message(f"An error occured while fetching the trivia question: {e}")
 
 @tree.command(
     name="leaderboard",
@@ -690,68 +145,13 @@ async def trivia_command(interaction):
         app_commands.Choice(name="💎Gems", value="Gems")
     ])
 async def leaderboard_command(interaction, option: app_commands.Choice[str]):
-    category = True if option.value == "Gems" else False
-    # Define the question and answers
     await interaction.response.defer()
-    top_users = get_top_users(dbfile, category)
-    gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
-    # if any value in the list is None, set it to 0
-    if gemsAndPerc is None:
-        gemsAndPerc = [0, 0]
+    try:
+        embed = await leaderboard_embed(option=option, dbfile=dbfile, interaction=interaction)
+        await interaction.followup.send(embed=embed)
+    except Exception as e:
+        await interaction.followup.send(f"An error occured while fetching the leaderboard: {e}")
 
-    # for each gem and percentage, if it is None, set it to 0
-    newlist = []
-    for i in range(len(gemsAndPerc)):
-        if gemsAndPerc[i] is None:
-            newlist.append(0)
-        else:
-            newlist.append(gemsAndPerc[i])
-
-    gemsAndPerc = newlist
-
-    # Format the top users into a mentionable format
-    description = "**Your score**\n"
-    if not category:
-        description += f"#{str(gemsAndPerc[3])}"
-        description += f" - {int(gemsAndPerc[2])} Exp"
-    else:
-        description += f":gem: {str(gemsAndPerc[0])} - 🔥{int(gemsAndPerc[1])}"
-        
-    description += f"\n\n**Global {':gem: ' if category else ':crown: '}leaderboard:**\n"
-
-    for i, user in enumerate(top_users):
-        if category:
-            description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - :gem: {user[2]} | 🔥 {user[3]}\n"
-        else:
-            description += f"\n{get_medal_emoji(i+1)} <@{user[1]}> - 👑 Lvl {calculate_level(user[4])} | {user[4]} Exp\n"
-    set_leaderboard_rank_pfps(gemsAndPerc[3], interaction.user.id, dbfile)
-    embed = discord.Embed(
-        description=f"{description}",
-        color=discord.Color.brand_green(),
-    )
-    iconurl = interaction.user.avatar.url if interaction.user.avatar else "https://iili.io/JlxRIZ7.png"
-    embed.set_author(
-        name=f"{interaction.user.name}'s score",
-        icon_url=iconurl
-    )
-    if category:
-        embed.set_thumbnail(url="https://cdn-icons-png.flaticon.com/512/2850/2850979.png")
-    else:
-        embed.set_thumbnail(url="https://iili.io/Jc4oxEl.png")
-    await interaction.followup.send(embed=embed)
-
-def get_medal_emoji(rank):
-    if rank == 1:
-        return "🥇"
-    elif rank == 2:
-        return "🥈"
-    elif rank == 3:
-        return "🥉"
-    elif rank == 4:
-        return "🔥"
-    else:
-        return "👾"
-  
 
 
 @tree.command(
@@ -761,84 +161,27 @@ def get_medal_emoji(rank):
 )
 async def packopening_command(interaction, packname: str):
     await interaction.response.defer()
-    packname = packname.strip()
+    try:
+        imgcards, embed = await packopening_embed(interaction=interaction, packname=packname)
+        if embed == False:
+            await interaction.followup.send(
+                f"{imgcards}",
+            )
+            return
+        else:
+            await interaction.followup.send(
+                f"{interaction.user.mention} opened `{packname}` Pack",
+                file=imgcards,
+                embed=embed if embed == 4 else None,
+            )
+        
+        os.remove(f"./images/{imgcards.filename}")
+    except Exception as e:
+        await interaction.followup.send(f"An error occured while opening the pack: {e}")
 
-    if len(packname) < 2:
-        await interaction.response.send_message(f"There are no pack names this short man, what r u doing 😅", ephemeral=True)
-        return
-    
-    gif = discord.File(
-            f"./opening.gif",
-            filename=f"opening.gif",
-        )
-
-    waiting = await interaction.followup.send(
-        f"{interaction.user.mention} waiting for `{packname}` Pack...",
-        file=gif,
-    )
-
-    # Simulate opening a pack and get the image URL of the card
-    imageCards = await simulate_pack_opening(packname)
-
-
-    if imageCards == "Not found":
-        imageCards = await simulate_pack_opening(packname.capitalize())
-
-    await waiting.delete()
-
-    if imageCards == "Not found":
-        closestpack = find_closest_pack(packname.replace(" ", "_"), get_packs())
-        await interaction.followup.send(f"Pack `{packname}` not found\nDid you mean `{closestpack.replace('_', ' ')}`?", ephemeral=True)
-        return
-    if imageCards == "Error occured":
-        await interaction.followup.send(
-            f"An error occured while opening pack `{packname}`, please check console")
-        return
-    # random number between 1 and 4, if 4 send the embed
-    randomNumber = random.randint(1, 4)
-
-    embed = discord.Embed(
-        description=f"You found 10 <:fragment:1196793443612098560>",
-        color=discord.Color.teal(),
-    )
-
-
-    await interaction.followup.send(
-        f"{interaction.user.mention} opened `{packname}` Pack",
-        file=imageCards,
-        embed=embed if randomNumber == 4 else None,
-    )
-    
-    # remove the image
-
-    os.remove(f"./images/{imageCards.filename}")
-
-
-
-# Every time a message is send, give the user some experience, except for bots and also only after 1 minute, since we dont want to give experience for spamming
 @client.event
 async def on_message(message):
-    if message.author.bot:
-        return
-    if message.content.startswith("!"):
-        return
-    # Give the user some experience; but only if the user has not been given experience in the last minute
-    return_value = add_experience_to_user(message.author.id, exp, dbfile)
-    if return_value == False:
-        return
-    db_connection = sqlite3.connect(dbfile)
-    exptotal = return_value["exptotal"]
-    currentlvl = calculate_level(exptotal)
-    if get_user_pfps_db(message.author.id, db_connection= db_connection) == None or get_user_pfps_db(message.author.id, db_connection= db_connection) == []:
-        add_user_pfps_for_levels(message.author.id, 0, currentlvl, db_connection)
-    db_connection.close()
-
-
-    # check for levelup
-    if return_value["levelup"] == True:
-        # get the interaction
-        # you can send a levelupmessage if you want, but not needed I feel
-        return
+    on_message_handler(message=message, dbfile=dbfile, exp=exp)
 
 @tree.command(
     name="profile",
@@ -881,10 +224,8 @@ async def profile_command(interaction):
         app_commands.Choice(name="🖌️ Border", value="border")
     ])
 async def setprofile_command(interaction, option: app_commands.Choice[str], page: int = 1):
-    # Define the question and answers
     start_idx = (page - 1) * 10
     end_idx = start_idx + 10
-    # await interaction.response.defer()
     # top3 = get_top_users_top_3(dbfile)
     if option.value == "avatar":
         pfps = get_pfps(interaction.user.id, dbfile)
@@ -941,8 +282,6 @@ async def setprofile_command(interaction, option: app_commands.Choice[str], page
     guilds=guilds,
 )
 async def claim_command(interaction):
-    # check if the user has already claimed
-
     return_value, text = claim_daily(interaction.user.id, dbfile)
 
     if return_value == "User not found":
@@ -1004,7 +343,6 @@ async def addstuff_command(interaction, option: app_commands.Choice[str], amount
 async def store_command(interaction):
 
     pages = ["Avatars", "🚧 - Backgrounds - 🚧", "🚧 - Borders - 🚧"]
-
     class PfpSelect(discord.ui.Select):
         def __init__(self, options):
             super().__init__(placeholder='Buy your new pfp...', options=options)
@@ -1047,7 +385,6 @@ async def store_command(interaction):
                 await interaction.followup.send(
                     "Buy a pfp",
                     view=view, ephemeral=True)
-                
     
     # Define the question and answers
     options = [discord.SelectOption(label=answer) for i,answer in enumerate(pages)]
@@ -1153,11 +490,9 @@ async def inventory_command(interaction):
         app_commands.Choice(name="Onyx", value="Onyx")
     ])
 async def generate_command(interaction, option:app_commands.Choice[str], name:str, atk: str, dfc:str, img_url: str, is_final_form:bool):
-    # await interaction.response.send_message(f"Sadly still under construction (font issues)")
     await interaction.response.defer()
     try:
         filepath = "./data/Apro/"
-        # save the image in the images folder
         imageCards = imageeditor(image_location=filepath, cardname=name, rarity=option.value, attack=atk, defense=dfc, isFinalForm=is_final_form, level="1", imgurl=img_url, offset_x=0, offset_y=0, resize_factor_override=100)
 
         await interaction.followup.send(
@@ -1243,35 +578,7 @@ async def goblin_command(interaction, goblin:app_commands.Choice[str], goblintim
         color=discord.Color.brand_red(),
     )
     
-    goblins = {
-        "gobgold": {
-            "name": "Gold goblin",
-            "emoji": "<:gobgold:1258839564936675348>",
-            "spawn_daysC": 1,
-            "spawnC": 10,
-            "spawn_days": 12,
-            "health": 60,
-            "rewards": ["500 <:coin:1258877467842576415>", "50 <:gem:1258877082734297108> ", "1 <:gff:1258876866249625620> upgrade boost/1 random 2-orb <:gff:1258876866249625620>"]
-        },
-        "gobdia": {
-            "name": "Diamond goblin",
-            "emoji": "<:gobdiamond:1258839525401165887>",
-            "spawn_daysC": 1,
-            "spawnC": 4,
-            "spawn_days": 28,
-            "health": 72,
-            "rewards": ["1000 <:coin:1258877467842576415>", "100 <:gem:1258877082734297108> ", "5 fragments <:fragment:1196793443612098560>", "1 <:dff:1258876920574116000> upgrade boost/1 random portal event <:dff:1258876920574116000>"]
-        },
-        "gobking": {
-            "name": "Goblin king",
-            "emoji": "<:gobking:1258839599938142269>",
-            "spawn_daysC": 25, 
-            "spawnC": 1, 
-            "spawn_days": 54,
-            "health": 84,
-            "rewards": ["2000 <:coin:1258877467842576415>", "500 <:gem:1258877082734297108> ", "10 fragments <:fragment:1196793443612098560>", "1 non-event Premium <:gcc:1258877882571427880>/1 <:occ:1258878153913274449>"]
-        }
-    }
+    goblins = get_goblins()
 
     goblin = goblin.value 
     
@@ -1298,11 +605,7 @@ async def goblin_command(interaction, goblin:app_commands.Choice[str], goblintim
         value="<:newMBot0:1251265938142007486> Goblin info - :heart: <@511322291972341800> for the data",
         inline=False,
     )
-
-
-
     
-    # send ephemeral message
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
 @tree.command(
@@ -1312,8 +615,6 @@ async def goblin_command(interaction, goblin:app_commands.Choice[str], goblintim
 )
 
 async def support_command(interaction):
-
-#just a support command, becouse dynobot doesn't work in half the channels
     embed = discord.Embed(
         title="Support",
         color=discord.Color.teal(),
@@ -1333,7 +634,6 @@ async def support_command(interaction):
         name="** **",
         value="*<:newMBot0:1251265938142007486> ChinBot is not in any way affiliated with [Monumental](https://monumental.io/)*",
     )
-
     await interaction.response.send_message(embed=embed)
 
 @client.event
@@ -1343,12 +643,10 @@ async def on_ready():
         print("[V] Synced guilds")
     print("[V] Finished setting up commands")
     print(f"[V] Logged in as {client.user} (ID: {client.user.id})")
-    # remove everything from the images folder
     delete_saved_images()
     print("[V] Cleared images folder")
     setup_packs()
     print("[V] Setup the packs")
-    # Create the database if it doesn't exist
     setup_database(dbfile)
     print("[V] Db created/checked")
 

@@ -10,6 +10,7 @@ from data.data_grabber import get_rarity_and_form_etc
 from data.data_grabber import get_fusion_url, get_embedcolor
 from data.custom_cards.custom_card_names import custom_names
 import re
+from data.data_grabber import *
 
 # Discord.py
 async def sync_guilds(guilds, tree):
@@ -699,3 +700,67 @@ def get_arena_powers():
     ]
    
   return arena_powers
+
+def get_goblins():
+    goblins = {
+        "gobgold": {
+            "name": "Gold goblin",
+            "emoji": "<:gobgold:1258839564936675348>",
+            "spawn_daysC": 1,
+            "spawnC": 10,
+            "spawn_days": 12,
+            "health": 60,
+            "rewards": ["500 <:coin:1258877467842576415>", "50 <:gem:1258877082734297108> ", "1 <:gff:1258876866249625620> upgrade boost/1 random 2-orb <:gff:1258876866249625620>"]
+        },
+        "gobdia": {
+            "name": "Diamond goblin",
+            "emoji": "<:gobdiamond:1258839525401165887>",
+            "spawn_daysC": 1,
+            "spawnC": 4,
+            "spawn_days": 28,
+            "health": 72,
+            "rewards": ["1000 <:coin:1258877467842576415>", "100 <:gem:1258877082734297108> ", "5 fragments <:fragment:1196793443612098560>", "1 <:dff:1258876920574116000> upgrade boost/1 random portal event <:dff:1258876920574116000>"]
+        },
+        "gobking": {
+            "name": "Goblin king",
+            "emoji": "<:gobking:1258839599938142269>",
+            "spawn_daysC": 25, 
+            "spawnC": 1, 
+            "spawn_days": 54,
+            "health": 84,
+            "rewards": ["2000 <:coin:1258877467842576415>", "500 <:gem:1258877082734297108> ", "10 fragments <:fragment:1196793443612098560>", "1 non-event Premium <:gcc:1258877882571427880>/1 <:occ:1258878153913274449>"]
+        }
+    }
+    return goblins
+
+def construct_url(cardname: str, is_onyx: bool = False, is_boss: bool = False) -> str:
+    if is_onyx:
+        cardname += "_(Onyx)"
+    if is_boss:
+        cardname += "_(Card)"
+    return f"https://lil-alchemist.fandom.com/wiki/{cardname.title().replace(' ', '_').replace('_And_', '_and_')}"
+
+
+def get_correct_url(urls, cardname):
+    for url in urls:
+        try:
+            resp = requests.get(url)
+            soup = BeautifulSoup(resp.content, "html.parser")
+            url = url
+            return parseinfo(soup, cardname)
+        except Exception as e:
+            if url == urls[-1]:
+                return None
+            
+
+def get_medal_emoji(rank):
+    if rank == 1:
+        return "🥇"
+    elif rank == 2:
+        return "🥈"
+    elif rank == 3:
+        return "🥉"
+    elif rank == 4:
+        return "🔥"
+    else:
+        return "👾"
