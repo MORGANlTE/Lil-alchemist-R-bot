@@ -20,8 +20,8 @@ import json
 load_dotenv()
 
 # Variables:
-version = "8.3.1"
-versiondescription = "Updated help & readme w/ arena cmd"
+version = "8.4.0"
+versiondescription = "Updated arena cmd w/ amount & formatting updated"
 
 gem_win_trivia = 5
 winstreak_max = 10
@@ -202,12 +202,24 @@ async def show_command(interaction, cardname: str, is_onyx: bool = False):
     description="Look up current arena powers & upcoming ones",
     guilds=guilds
 )
-async def show_arena(interaction, ):
-    await interaction.response.defer()
+async def show_arena(interaction, amount: int = 2):
+    """
+    Shows the current and upcoming arena powers rotation
+    Args:
+        amount (int, optional): The amount of upcoming arena powers to show. Defaults to 2 (current and next)
+    """
     add_pfp(interaction.user.id, str((math.factorial(5) // math.factorial(3)) + 6) , dbfile)
     # Set start time 
     starttime = datetime(2024, 7, 9, 9, 0, 0, 0)
     arenapowers = get_arena_powers()
+    max_powers_allowed = (len(arenapowers) + 1)
+    if amount < 1 or amount > max_powers_allowed:
+        await interaction.response.send_message(
+            f"Invalid amount of next arena powers, choose a number between 1 and {max_powers_allowed}", ephemeral=True
+        )
+        return
+    await interaction.response.defer()
+
     currenttime = datetime.now()
 
     # get the difference between the current time and the start time
@@ -216,9 +228,6 @@ async def show_arena(interaction, ):
     # get the days and hours
     days = difference.days
     hours = difference.seconds // 3600
-
-    # get the current arena power
-    current_arena_power = arenapowers[(days // 7) % len(arenapowers)]
 
     # get the next arena power
     next_arena_power = arenapowers[(days // 7 + 1) % len(arenapowers)]
@@ -230,36 +239,32 @@ async def show_arena(interaction, ):
     def format_tiers(tiers):
         return "\n".join(
             [
-                f"** ** {tier.get('power', '')} {tier.get('emoji', '')} - {tier.get('orb', '')} <:orb:1262862680021270731>"
+                f"{tier.get('power', '')} {tier.get('emoji', '')} - {tier.get('orb', '')} <:orb:1262862680021270731>"
                 for tier in tiers
             ]
         )
     embed = discord.Embed(
         title="Arena Powers",
-        description="** **",
+        description=":clock1: `Current`:\n\n",
         color=discord.Color.teal(),
     )
-    embed.set_thumbnail(url="https://i.ibb.co/7vJ2z1V/arena.png")
-    embed.add_field(
-        name=f"{current_arena_power['emoji']} {current_arena_power['name']}",
-        value=f"{current_arena_power['description']}\n{format_tiers(current_arena_power['tiers'])}",
-        inline=False,
-    )
-    embed.add_field(
-        name="** **",
-        value=f"Next power in <t:{next_arena_power_timestamp}:R>:",
-        inline=False,
-    )
-    embed.add_field(
-        name="** **",
-        value="** **",
-        inline=False,
-    )
-    embed.add_field(
-        name=f"{next_arena_power['emoji']} {next_arena_power['name']}",
-        value=f"{next_arena_power['description']}\n{format_tiers(next_arena_power['tiers'])}",
-        inline=False,
-    )
+
+    for i in range(0, amount):
+        next_arena_power = arenapowers[(days // 7 + i) % len(arenapowers)]
+        next_arena_power_timestamp = int((starttime + timedelta(days=(days // 7 + i) * 7)).timestamp())
+        next_next_arena_power_timestamp = int((starttime + timedelta(days=(days // 7 + i + 1) * 7)).timestamp())
+        formatted = format_tiers(next_arena_power['tiers']).strip()
+        if formatted.startswith("-"):
+            formatted = formatted.strip()[1:]
+
+        
+        embed.add_field(
+            name=f"{next_arena_power['emoji']} {next_arena_power['name']}",
+            value=f"{next_arena_power['description']}\n{formatted}\n\n" + ("" if i == amount - 1 else f":clock1: <t:{next_next_arena_power_timestamp}:R>:"),
+            inline=False,
+        )
+
+
     embed.add_field(
         name="** **",
         value=f"<:newMBot0:1251265938142007486> ~ Arena Powers - :heart: <@271483861895086081> for the data",
