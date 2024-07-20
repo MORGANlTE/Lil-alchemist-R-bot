@@ -32,7 +32,11 @@ exp = 10
 M_user_ids = os.getenv("M_USER_IDS").split(", ")
 dbfile = os.getenv("DATABASE")
 environment = os.getenv("ENVIRONMENT")
-reset_commands = os.getenv("RESET_COMMANDS") if os.getenv("RESET_COMMANDS") is not None else True
+adminguildids = os.getenv("ADMIN_GUILDS").split(",")
+
+adminguilds = []
+for guild in adminguildids:
+    adminguilds.append(discord.Object(id=int(guild)))
 
 if environment == "testing":
     guilds=[discord.Object(id=945414516391424040), discord.Object(id=1021360015061291008)]
@@ -636,11 +640,21 @@ async def support_command(interaction):
     )
     await interaction.response.send_message(embed=embed)
 
+
+@tree.command(
+    name="sync",
+    description="Sync the commands",
+    guilds=adminguilds,
+)
+async def sync_command(interaction):
+    await interaction.response.defer()
+    await tree.sync()
+    await interaction.followup.send("Synced")
+    print("[V] Synced Guilds")
+
+
 @client.event
 async def on_ready():
-    if reset_commands:
-        await sync_guilds(guilds, tree)
-        print("[V] Synced guilds")
     print("[V] Finished setting up commands")
     print(f"[V] Logged in as {client.user} (ID: {client.user.id})")
     delete_saved_images()
