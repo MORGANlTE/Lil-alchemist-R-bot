@@ -539,8 +539,8 @@ async def profile_embed(interaction, dbfile):
     return {"pic":pic, "discord_name":discord_name}
 
 async def setprofile_embed(interaction, dbfile, page, option):
-    start_idx = (page - 1) * 10
-    end_idx = start_idx + 10
+    start_idx = (page - 1) * 5
+    end_idx = start_idx + 5
     
     if option.value == "avatar":
         pfps = get_pfps(interaction.user.id, dbfile)
@@ -549,8 +549,7 @@ async def setprofile_embed(interaction, dbfile, page, option):
     #elif option.value == "border":
     #    pfps = get_borders(interaction.user.id, dbfile)
     else:
-        await interaction.response.send_message("Invalid element type. Choose from 'avatar', 'background', or 'border'.", ephemeral=True)
-        return
+        return "Invalid element type. Choose from 'avatar', 'background', or 'border'."
     
     pfps = json.loads(pfps)
 
@@ -604,3 +603,226 @@ def add_stuff(option, amount, userid, dbfile, M_user_ids, command_user):
         print(f"Added {amount} {option.value} to {userid} - New total: {newamount}")
         return f"Added {amount} {option.value} to {userid} / <@{userid}>\nNew total: {newamount} {option.value}"
 
+async def store_embed(interaction, dbfile):
+    pages = ["Avatars", "🚧 - Backgrounds - 🚧", "🚧 - Borders - 🚧"]
+    class PfpSelect(discord.ui.Select):
+        def __init__(self, options):
+            super().__init__(placeholder='Buy your new pfp...', options=options)
+
+        async def callback(self, interaction: discord.Interaction):
+            await interaction.response.defer()
+            pfpid = self.values[0]
+            user_id = interaction.user.id
+            # buy the pfp
+            returnmsg = buy_pfp(pfpid, user_id, dbfile)
+            if returnmsg[0] == True:
+                print(f"[Store] User {user_id} bought pfp {pfpid}")
+            # give feedback to user
+            await interaction.followup.send(
+                f"{returnmsg[0] == True and '✅' or '⛔'} {returnmsg[1]}",
+                ephemeral=True
+            )
+
+    class StoreSelect(discord.ui.Select):
+        def __init__(self, options):
+            super().__init__(placeholder='Choose your answer...', options=options)
+
+        async def callback(self, interaction: discord.Interaction):
+            await interaction.response.defer()
+            label = self.values[0]
+            user_id = interaction.user.id
+            if label == "Avatars":
+                nb_pfps = get_store_pfps_not_bought(user_id, dbfile)
+                if len(nb_pfps) == 0:
+                    await interaction.followup.send(
+                        f"🛒 You have bought all the profile pictures!",
+                        ephemeral=True
+                    )
+                    return
+                # we got the pfps, now we need to make a select with all the pfps
+                options = [discord.SelectOption(label=answer, value=str(i)) for i, answer in nb_pfps.items()]
+                select = PfpSelect(options)
+                view = discord.ui.View(timeout=None)
+                view.add_item(select)
+                await interaction.followup.send(
+                    "Buy a pfp",
+                    view=view, ephemeral=True)
+    
+    # Define the question and answers
+    options = [discord.SelectOption(label=answer) for i,answer in enumerate(pages)]
+    select = StoreSelect(options)
+    view = discord.ui.View(timeout=None)
+    view.add_item(select)
+
+    embed = discord.Embed(
+        title="Store",
+        description="Here are the available items in the store:",
+        color=discord.Color.teal(),
+    )
+    embed.add_field(
+        name="Avatars",
+        value="",
+        inline=True,
+    )
+    embed.add_field(
+        name="🚧 - Backgrounds",
+        value="",
+        inline=True,
+    )
+    embed.add_field(
+        name="Borders - 🚧",
+        value="",
+        inline=True,
+    )
+
+    embed.set_footer(
+        text="Made with love by _morganite",
+        icon_url="https://iili.io/JlxAR7R.png",
+    )
+
+    return embed, view
+
+async def inventory_embed(interaction, dbfile):
+    embed = discord.Embed(
+        title="Inventory",
+        description="Here are the items in your inventory:",
+        color=discord.Color.teal(),
+    )
+    
+    pfps = get_pfps(interaction.user.id, dbfile)
+    pfps = json.loads(pfps)
+    pfps = [get_description_pfp(pfps[i]) for i in range(len(pfps))]
+    
+    chunked_pfps = list(chunk_list(pfps, 5))
+
+    embed.add_field(
+        name="Profile Pictures",
+        value="\n",
+        inline=False,
+    )
+
+    for i, chunk in enumerate(chunked_pfps):
+        embed.add_field(
+            name=f"**Page {i+1}**",
+            value="\n".join(chunk),
+            inline=True,
+        )
+
+    embed.set_footer(
+        text="Made with love by _morganite",
+        icon_url="https://iili.io/JlxAR7R.png",
+    )
+
+    return embed
+
+def packview_embed(packname):
+    if len(packname) < 2:
+        return f"There are no pack names this short man, what r u doing 😅"
+    packcontent = get_pack_contents(packname)
+
+    if packcontent == "Not found":
+        closestpack = find_closest_pack(packname, get_packs())
+        return f"Pack `{packname}` not found\nDid you mean `{closestpack}`?"
+    
+    embed = discord.Embed(
+        title=f"{packname} Pack",
+        color=discord.Color.dark_magenta(),
+    )
+    # link to the wiki
+    embed.add_field(
+        name="Wiki Page",
+        value=f"[Click here to visit the wiki page](https://lil-alchemist.fandom.com/wiki/Special_Packs/{packname.replace(' ', '_')})",
+        inline=False,
+    )
+
+    for row in packcontent["cards"]:
+        embed.add_field(name=row[0].replace("_", " ").replace("%27s", "'").replace("%26", "&"), value=row[2] + " " + row[1], inline=True)
+    
+    # check if valid url
+
+    if re.match(r"(http|https)://.*\.(?:png|jpg|jpeg|gif|png)", packcontent["img"]):
+        embed.set_thumbnail(url=packcontent["img"])
+
+    return embed
+
+def goblin_embed(goblintime, goblin):
+    try:
+        if goblintime is None:
+            gtime = datetime.now()
+        else:
+            gtime = datetime.strptime(goblintime, "%m-%d-%Y")
+    except:
+        return "Please provide a valid date in the format MM-DD-YYYY"
+
+    embed = discord.Embed(
+        title=f"Goblins overview",
+        color=discord.Color.brand_red(),
+    )
+    
+    goblins = get_goblins()
+
+    spawntimeC = (gtime + timedelta(days=goblins[goblin]["spawn_daysC"])).strftime("%m-%d-%Y")
+    spawntime = (gtime + timedelta(days=goblins[goblin]["spawn_days"])).strftime("%m-%d-%Y")
+    # convert spawntime to unix timestamp
+    spawn_timestamp = int(datetime.strptime(spawntime, "%m-%d-%Y").timestamp())
+    spawnC_timestamp = int(datetime.strptime(spawntimeC, "%m-%d-%Y").timestamp())
+
+    rewardstext = "\n".join(goblins[goblin]["rewards"])
+    embed.add_field(
+        name=str(goblins[goblin]["name"]) + " " + str(goblins[goblin]['emoji']),
+        value=f"<t:{spawn_timestamp}:D>\n{goblins[goblin]['health']} HP\n{str(goblins[goblin]['spawnC'])}% chance starting day <t:{spawnC_timestamp}:D>\n",
+        inline=False
+    )
+    embed.add_field(
+        name="Rewards",
+        value=rewardstext,
+        inline=False
+    )
+
+    embed.add_field(
+        name="** **",
+        value="<:newMBot0:1251265938142007486> Goblin info - :heart: <@511322291972341800> for the data",
+        inline=False,
+    )
+
+    return embed
+
+def support_embed():
+    embed = discord.Embed(
+        title="Support",
+        color=discord.Color.teal(),
+    )
+    embed.add_field(
+        name="** **",
+        value="""
+        Hey there, magical adventurer! 🧙‍♂️ Need a hand in the mystical world of Little Alchemist Remastered?
+        \n🌟 Just shoot an email over to `support@littlealchemist.io` with your Player ID, Player Name, and spill the beans about the puzzling enigma you've stumbled upon. 
+        \n🕵️‍♂️ We're all ears (and wands)! Don't forget to spice it up with images or videos—let's make this adventure one for the scrolls! 📜✨
+        \n👑 When it comes to questions about gameplay, remember, our Discord community is your enchanted haven! 
+        \n🔮 Join the fun, share your wisdom, and get answers from fellow adventurers. 
+        \n🗡️🛡️ Let's keep the magic alive, and may your gaming journey be filled with epic adventures and laughter! 🌟🤗✨""",
+        inline=False,
+    )
+    embed.add_field(
+        name="** **",
+        value="*<:newMBot0:1251265938142007486> ChinBot is not in any way affiliated with [Monumental](https://monumental.io/)*",
+    )
+
+    return embed
+
+async def sync_commands(adminguilds, tree):
+    await tree.sync()
+    for guild in adminguilds:
+      await tree.sync(guild=guild)
+
+async def on_startup_handler(adminguilds, tree, client, dbfile):
+    for guild in adminguilds:
+      await tree.sync(guild=guild)
+    print("[V] Finished setting up commands")
+    print(f"[V] Logged in as {client.user} (ID: {client.user.id})")
+    delete_saved_images()
+    print("[V] Cleared images folder")
+    setup_packs()
+    print("[V] Setup the packs")
+    setup_database(dbfile)
+    print("[V] Db created/checked")
