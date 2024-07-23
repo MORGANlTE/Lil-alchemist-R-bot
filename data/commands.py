@@ -8,6 +8,7 @@ from data.packopening import *
 from data.shortcuts import *
 from data.exp_essentials import *
 from data.trivia import *
+from discord import SelectOption
 
 async def show_command_embed(cardname, is_onyx):
   print("[Searching] " + cardname)
@@ -522,3 +523,84 @@ def on_message_handler(message, exp, dbfile):
 
     if return_value["levelup"] == True:
         return
+    
+
+async def profile_embed(interaction, dbfile):
+    gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
+    gems = gemsAndPerc[0] if gemsAndPerc[0] is not None else 0
+    winstreak = int(gemsAndPerc[1]) if gemsAndPerc[1] is not None else 0
+    exp = get_experience(interaction.user.id, dbfile) if interaction.user.id is not None else 0
+    discord_name = interaction.user.display_name
+    discord_avatar = interaction.user.avatar.url if interaction.user.avatar is not None else "https://i.ibb.co/nbdqnSL/2.png"
+    custom_pfp = get_custom_pfp(interaction.user.id, dbfile) + ".png"
+    leaderboard_rank = gemsAndPerc[3]
+    pic = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, leaderboard_rank, custom_pfp)
+
+    return {"pic":pic, "discord_name":discord_name}
+
+async def setprofile_embed(interaction, dbfile, page, option):
+    start_idx = (page - 1) * 10
+    end_idx = start_idx + 10
+    
+    if option.value == "avatar":
+        pfps = get_pfps(interaction.user.id, dbfile)
+    #elif option.value == "background":
+        #pfps = get_backgrounds(interaction.user.id, dbfile)
+    #elif option.value == "border":
+    #    pfps = get_borders(interaction.user.id, dbfile)
+    else:
+        await interaction.response.send_message("Invalid element type. Choose from 'avatar', 'background', or 'border'.", ephemeral=True)
+        return
+    
+    pfps = json.loads(pfps)
+
+
+    class PfpSelect(discord.ui.Select):
+            def __init__(self, options, pfps, dbfile):
+                super().__init__(placeholder='Choose your new pfp...', options=options)
+                self.pfps = pfps
+                self.dbfile = dbfile
+
+            async def callback(self, interaction: discord.Interaction):
+                await interaction.response.defer()
+                pfpid = self.values[0]
+                user_id = interaction.user.id
+                
+                # set the pfp
+                set_custom_pfp(user_id, pfpid, dbfile)
+
+                # give feedback to user
+                await interaction.followup.send(
+                    f"Profile picture set to {get_description_pfp(self.values[0])}",
+                    ephemeral=True
+                )
+
+    # return a select with all the pfps
+    options = [SelectOption(label=get_description_pfp(pfps[i]), value=pfps[i]) for i in range(start_idx, min(end_idx, len(pfps)))]
+    if len(options) == 0:
+        await interaction.response.send_message(f"You have no profile pictures at page {page}", ephemeral=True)
+        return
+    select = PfpSelect(options, pfps, dbfile)
+
+    view = discord.ui.View(timeout=None)
+    view.add_item(select)
+
+    return view
+
+def add_stuff(option, amount, userid, dbfile, M_user_ids, command_user):
+    add_pfp(command_user, str(int(math.sqrt(484))) , dbfile)
+    if str(command_user) not in M_user_ids:
+        return "You are not allowed to use this command\nhttps://tenor.com/view/cat-screaming-sleeping-no-nein-gif-18647031"
+    else:
+        if option.value == "Gems":
+            newamount = add_gems_to_user(userid, amount, dbfile)
+        else:
+            t = add_experience_to_user(userid, amount, dbfile)
+            if t == False:
+                return "Too fast"
+                return
+            newamount = t["exptotal"]
+
+        print(f"Added {amount} {option.value} to {userid} - New total: {newamount}")
+        return f"Added {amount} {option.value} to {userid} / <@{userid}>\nNew total: {newamount} {option.value}"
+

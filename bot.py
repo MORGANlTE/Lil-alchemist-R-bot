@@ -1,5 +1,5 @@
 import discord
-from discord import app_commands, ButtonStyle, SelectOption
+from discord import app_commands
 from discord.ui import Button, View, Select
 from data.Apro.Aprogergely import imageeditor
 from data.commands import *
@@ -33,6 +33,7 @@ M_user_ids = os.getenv("M_USER_IDS").split(", ")
 dbfile = os.getenv("DATABASE")
 environment = os.getenv("ENVIRONMENT")
 adminguildids = os.getenv("ADMIN_GUILDS").split(",")
+print(f"Admin guilds: {adminguildids}")
 
 adminguilds = []
 for guild in adminguildids:
@@ -194,21 +195,13 @@ async def on_message(message):
 )
 async def profile_command(interaction):
     # Define the question and answers
-
     await interaction.response.defer()
-    # top3 = get_top_users_top_3(dbfile)
-    gemsAndPerc = get_users_gems_and_top_percentage(interaction.user.id, dbfile)
-    gems = gemsAndPerc[0] if gemsAndPerc[0] is not None else 0
-    winstreak = int(gemsAndPerc[1]) if gemsAndPerc[1] is not None else 0
-    exp = get_experience(interaction.user.id, dbfile) if interaction.user.id is not None else 0
-    discord_name = interaction.user.display_name
-    discord_avatar = interaction.user.avatar.url if interaction.user.avatar is not None else "https://i.ibb.co/nbdqnSL/2.png"
-    custom_pfp = get_custom_pfp(interaction.user.id, dbfile) + ".png"
-    leaderboard_rank = gemsAndPerc[3]
-    pic = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, leaderboard_rank, custom_pfp)
-
-    if int(leaderboard_rank) <= 3:
-        set_leaderboard_rank_pfps(leaderboard_rank, interaction.user.id, dbfile)
+    try:
+        res = await profile_embed(interaction=interaction, dbfile=dbfile)
+        pic = res["pic"]
+        discord_name = res["discord_name"]
+    except Exception as e:
+        await interaction.response.send_message(f"An error occured while fetching the profile: {e}")
 
     await interaction.followup.send(
         file=pic,
@@ -228,57 +221,14 @@ async def profile_command(interaction):
         app_commands.Choice(name="🖌️ Border", value="border")
     ])
 async def setprofile_command(interaction, option: app_commands.Choice[str], page: int = 1):
-    start_idx = (page - 1) * 10
-    end_idx = start_idx + 10
-    # top3 = get_top_users_top_3(dbfile)
-    if option.value == "avatar":
-        pfps = get_pfps(interaction.user.id, dbfile)
-    #elif option.value == "background":
-        #pfps = get_backgrounds(interaction.user.id, dbfile)
-    #elif option.value == "border":
-    #    pfps = get_borders(interaction.user.id, dbfile)
-    else:
-        await interaction.response.send_message("Invalid element type. Choose from 'avatar', 'background', or 'border'.", ephemeral=True)
-        return
-    
-    pfps = json.loads(pfps)
-
-
-    class PfpSelect(discord.ui.Select):
-            def __init__(self, options, pfps, dbfile):
-                super().__init__(placeholder='Choose your new pfp...', options=options)
-                self.pfps = pfps
-                self.dbfile = dbfile
-
-            async def callback(self, interaction: discord.Interaction):
-                await interaction.response.defer()
-                pfpid = self.values[0]
-                user_id = interaction.user.id
-                
-                # set the pfp
-                set_custom_pfp(user_id, pfpid, dbfile)
-
-                # give feedback to user
-                await interaction.followup.send(
-                    f"Profile picture set to {get_description_pfp(self.values[0])}",
-                    ephemeral=True
-                )
-
-    # return a select with all the pfps
-    options = [SelectOption(label=get_description_pfp(pfps[i]), value=pfps[i]) for i in range(start_idx, min(end_idx, len(pfps)))]
-    if len(options) == 0:
-        await interaction.response.send_message(f"You have no profile pictures at page {page}", ephemeral=True)
-        return
-    select = PfpSelect(options, pfps, dbfile)
-
-    view = discord.ui.View(timeout=None)
-    view.add_item(select)
-
-    
-
-    await interaction.response.send_message(
-        "Choose your profile picture",
-        view=view, ephemeral=True)
+    await interaction.response.defer()
+    try:
+        view = await setprofile_embed(interaction=interaction, dbfile=dbfile, option=option, page=page)
+        await interaction.response.send_message(
+            "Choose your profile picture",
+            view=view, ephemeral=True)
+    except Exception as e:
+        await interaction.response.send_message(f"An error occured while setting the profile: {e}")
 
 @tree.command(
     name="claim",
@@ -286,35 +236,37 @@ async def setprofile_command(interaction, option: app_commands.Choice[str], page
     guilds=guilds,
 )
 async def claim_command(interaction):
-    return_value, text = claim_daily(interaction.user.id, dbfile)
+    try:
+        return_value, text = claim_daily(interaction.user.id, dbfile)
+        if return_value == "User not found":
+            embed = discord.Embed(
+                title="Daily Login",
+                description="You need at least 1 message in this server before claiming your Daily Login!",
+                color=discord.Color.red(),
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        elif return_value == False:
+            embed = discord.Embed(
+                title="Daily Login",
+                description="Next Daily Login " + str(text) + " :clock5:",
+                color=discord.Color.orange(),
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
 
-    if return_value == "User not found":
-        embed = discord.Embed(
-            title="Daily Login",
-            description="You need at least 1 message in this server before claiming your Daily Login!",
-            color=discord.Color.red(),
-        )
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-    elif return_value == False:
-        embed = discord.Embed(
-            title="Daily Login",
-            description="Next Daily Login " + str(text) + " :clock5:",
-            color=discord.Color.orange(),
-        )
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-
-    else:
-        embed = discord.Embed(
-            title="Daily Login",
-            description="You have claimed your daily login! \n\n" + str(text),
-            color=discord.Color.green(),
-        )
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        else:
+            embed = discord.Embed(
+                title="Daily Login",
+                description="You have claimed your daily login! \n\n" + str(text),
+                color=discord.Color.green(),
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+    except Exception as e:
+        await interaction.response.send_message(f"An error occured while claiming the daily login: {e}")
 
 @tree.command(
     name="addstuff",
     description="Just a command for M",
-    guilds=guilds,
+    guilds=adminguilds,
 )
 @app_commands.describe(option="Choose what type of stuff")
 @app_commands.choices(option=[
@@ -322,22 +274,11 @@ async def claim_command(interaction):
         app_commands.Choice(name="💎Gems", value="Gems")
     ])
 async def addstuff_command(interaction, option: app_commands.Choice[str], amount: int, user_id: str):
-    add_pfp(interaction.user.id, str(int(math.sqrt(484))) , dbfile)
-    if str(interaction.user.id) not in M_user_ids:
-        await interaction.response.send_message("You are not allowed to use this command\nhttps://tenor.com/view/cat-screaming-sleeping-no-nein-gif-18647031", ephemeral=True)
-        return
-    else:
-        if option.value == "Gems":
-            newamount = add_gems_to_user(user_id, amount, dbfile)
-        else:
-            t = add_experience_to_user(user_id, amount, dbfile)
-            if t == False:
-                await interaction.response.send_message("Too fast", ephemeral=True)
-                return
-            newamount = t["exptotal"]
-
-        print(f"Added {amount} {option.value} to {user_id} - New total: {newamount}")
-        await interaction.response.send_message(f"Added {amount} {option.value} to {user_id} / <@{user_id}>\nNew total: {newamount} {option.value}", ephemeral=True)
+    try:
+        returnmsg = add_stuff(option=option, amount=amount, userid=user_id, dbfile=dbfile, M_user_ids=M_user_ids, command_user=interaction.user.id)
+        await interaction.response.send_message(f"{returnmsg}")
+    except Exception as e:
+        await interaction.response.send_message(f"An error occured while adding stuff: {e}")
 
 @tree.command(
     name="store",
@@ -649,12 +590,16 @@ async def support_command(interaction):
 async def sync_command(interaction):
     await interaction.response.defer()
     await tree.sync()
+    for guild in adminguilds:
+      await tree.sync(guild=guild)
     await interaction.followup.send("Synced")
     print("[V] Synced Guilds")
 
 
 @client.event
 async def on_ready():
+    for guild in adminguilds:
+      await tree.sync(guild=guild)
     print("[V] Finished setting up commands")
     print(f"[V] Logged in as {client.user} (ID: {client.user.id})")
     delete_saved_images()
