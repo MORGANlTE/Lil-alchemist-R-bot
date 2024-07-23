@@ -1,6 +1,5 @@
 import discord
 from discord import app_commands
-from discord.ui import Button, View, Select
 from data.Apro.Aprogergely import imageeditor
 from data.commands import *
 from data.data_grabber import *
@@ -8,21 +7,16 @@ from data.packopening import *
 from data.shortcuts import *
 from data.exp_essentials import *
 from data.trivia import *
-import datetime
 import discord
-import requests
-from bs4 import BeautifulSoup
 import os
 from dotenv import load_dotenv
-import re
-import json
 
 # Load the .env file
 load_dotenv()
 
 # Variables:
-version = "8.4.0"
-versiondescription = "Updated arena cmd w/ amount & formatting updated"
+version = "8.4.2"
+versiondescription = "Cleanup"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -447,15 +441,18 @@ async def support_command(interaction):
     guilds=adminguilds,
 )
 async def sync_command(interaction):
-    print("[Sync] " + interaction.user.name)
     await interaction.response.defer()
-    await sync_commands(adminguilds=adminguilds, tree=tree)
-    print("[V] Synced Guilds")
-    await interaction.followup.send("Synced")
+    print("[Sync] " + interaction.user.name)
+    try:
+        val = await sync_command_handler(userid=str(interaction.user.id), M_user_ids=M_user_ids, adminguilds=adminguilds, tree=tree)
+        await interaction.followup.send(val)
+    except Exception as e:
+        print(e)
+        await interaction.followup.send(f"An error occured while syncing the commands: {e}")
 
 
 @client.event
 async def on_ready():
-    await on_startup_handler(admin_guilds=adminguilds, tree=tree, client=client, dbfile=dbfile)
+    await on_startup_handler(adminguilds=adminguilds, tree=tree, client=client, dbfile=dbfile)
 
 client.run(os.getenv("TOKEN"))

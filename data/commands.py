@@ -826,3 +826,10 @@ async def on_startup_handler(adminguilds, tree, client, dbfile):
     print("[V] Setup the packs")
     setup_database(dbfile)
     print("[V] Db created/checked")
+
+async def sync_command_handler(userid, M_user_ids, adminguilds, tree):
+    if userid not in M_user_ids:
+        return "You are not allowed to use this command"
+    await sync_commands(adminguilds=adminguilds, tree=tree)
+    print("[V] Synced Guilds")
+    return "Synced"
