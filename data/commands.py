@@ -816,9 +816,6 @@ async def sync_commands(adminguilds, tree):
       await tree.sync(guild=guild)
 
 async def on_startup_handler(adminguilds, tree, client, dbfile):
-    for guild in adminguilds:
-      await tree.sync(guild=guild)
-    print("[V] Finished setting up commands")
     print(f"[V] Logged in as {client.user} (ID: {client.user.id})")
     delete_saved_images()
     print("[V] Cleared images folder")
