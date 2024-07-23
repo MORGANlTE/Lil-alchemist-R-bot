@@ -49,8 +49,8 @@ ADMIN_GUILDS = id1, id2, ...
 
 ## 📝 Version 📝
 
-Current version: 8.4.2
-Version description: Cleanup
+Current version: 8.4.3
+Version description: Bugs
 
 ## 📜 License 📜
 

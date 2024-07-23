@@ -832,4 +832,4 @@ async def sync_command_handler(userid, M_user_ids, adminguilds, tree):
         return "You are not allowed to use this command"
     await sync_commands(adminguilds=adminguilds, tree=tree)
     print("[V] Synced Guilds")
-    return "Synced"
+    return "✅ Synced Guilds Globally 🌍\n✅ Synced admin guilds 🐦‍⬛"

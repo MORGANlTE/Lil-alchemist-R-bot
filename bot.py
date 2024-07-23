@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.4.2"
-versiondescription = "Cleanup"
+version = "8.4.3"
+versiondescription = "Bugs"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -286,7 +286,7 @@ async def claim_command(interaction):
         app_commands.Choice(name="💎Gems", value="Gems")
     ])
 async def addstuff_command(interaction, option: app_commands.Choice[str], amount: int, user_id: str):
-    print("[AddStuff] " + option + " " + str(amount) + " " + user_id)
+    print("[AddStuff] " + str(option) + " " + str(amount) + " " + user_id)
     try:
         returnmsg = add_stuff(option=option, amount=amount, userid=user_id, dbfile=dbfile, M_user_ids=M_user_ids, command_user=interaction.user.id)
         await interaction.response.send_message(f"{returnmsg}")
@@ -363,7 +363,6 @@ async def generate_command(interaction, option:app_commands.Choice[str], name:st
             f"{interaction.user.mention} generated `{name}`",
             file=imageCards,
         )
-        print("[Generated] " + name)
     except Exception as e:
         print(e)
         await interaction.followup.send(f"An error occured while generating the card: {e}")
