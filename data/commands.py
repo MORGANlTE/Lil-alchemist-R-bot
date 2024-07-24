@@ -515,10 +515,13 @@ def on_message_handler(message, exp, dbfile):
         return
     if message.content.startswith("!"):
         return
+    if str(message.channel.type) == "private_thread" or str(message.channel.type) == "public_thread":
+        return
     # Give the user some experience; but only if the user has not been given experience in the last minute
     return_value = add_experience_to_user(message.author.id, exp, dbfile)
     if return_value == False:
         return
+    
     db_connection = sqlite3.connect(dbfile)
     exptotal = return_value["exptotal"]
     currentlvl = calculate_level(exptotal)
