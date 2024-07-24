@@ -22,8 +22,10 @@ async def show_command_embed(cardname, is_onyx):
   url = ""
   
   test = get_correct_url(urls, cardname)
-  if test is None:
+  if test["info"] is None:
       return test
+  
+  url = test["url"]
 
   (
       imgurl,
@@ -38,7 +40,7 @@ async def show_command_embed(cardname, is_onyx):
       recipes,
       combos,
       level_stats,
-  ) = test
+  ) = test["info"]
 
   embed = discord.Embed(
       color=get_embedcolor(rarity),
@@ -182,9 +184,10 @@ def show_combo_embed(card1, card2):
 
     
     test = get_correct_url(urls, cardname=card1)
-    if test is None:
+    if test["info"] is None:
         return card1
 
+    url = test["url"]
 
     (
         imgurl,
@@ -199,7 +202,7 @@ def show_combo_embed(card1, card2):
         recipes,
         combos,
         level_stats,
-    ) = test
+    ) = test["info"]
     
     def find_value(key, data):
         result = [value for k, value in data if k == key]
@@ -214,9 +217,11 @@ def show_combo_embed(card1, card2):
 
     test = get_correct_url(urls, cardname=result)
 
-    if test is None:
+    if test["info"] is None:
         return result
     
+    url = test["url"]
+
     (
         imgurl,
         description,
@@ -230,7 +235,7 @@ def show_combo_embed(card1, card2):
         recipes,
         combos,
         level_stats,
-    ) = test
+    ) = test["info"]
 
     embed = discord.Embed(
         color=get_embedcolor(rarity),

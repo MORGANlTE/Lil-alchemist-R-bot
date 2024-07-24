@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.4.3"
+version = "8.4.4"
 versiondescription = "Bugs"
 gem_win_trivia = 5
 winstreak_max = 10
@@ -150,7 +150,7 @@ async def trivia_command(interaction):
     ])
 async def leaderboard_command(interaction, option: app_commands.Choice[str]):
     await interaction.response.defer()
-    print("[Leaderboard] " + option)
+    print("[Leaderboard] " + option.value)
     try:
         embed = await leaderboard_embed(option=option, dbfile=dbfile, interaction=interaction)
         await interaction.followup.send(embed=embed)

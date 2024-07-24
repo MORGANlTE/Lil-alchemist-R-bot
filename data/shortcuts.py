@@ -747,7 +747,7 @@ def get_correct_url(urls, cardname):
             resp = requests.get(url)
             soup = BeautifulSoup(resp.content, "html.parser")
             url = url
-            return parseinfo(soup, cardname)
+            return {"info": parseinfo(soup, cardname), "url": url}
         except Exception as e:
             if url == urls[-1]:
                 return None
