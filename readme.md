@@ -49,7 +49,7 @@ ADMIN_GUILDS = id1, id2, ...
 
 ## 📝 Version 📝
 
-Current version: 8.4.3
+Current version: 8.4.4
 Version description: Bugs
 
 ## 📜 License 📜
