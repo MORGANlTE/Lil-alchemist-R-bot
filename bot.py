@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.6.1"
-versiondescription = "Goblin error fix"
+version = "8.6.3"
+versiondescription = "More bugs fixed"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -219,11 +219,11 @@ async def profile_command(interaction):
     ])
 async def setprofile_command(interaction, option: app_commands.Choice[str], page: int = 1):
     await interaction.response.defer()
-    print("[SetProfile] " + option)
+    print("[SetProfile] " + option.value)
     try:
         view = await setprofile_embed(interaction=interaction, dbfile=dbfile, option=option, page=page)
         if type(view) == str:
-            await interaction.followup.send(view=view, ephemeral=True)
+            await interaction.followup.send(content=view, ephemeral=True)
             return
         await interaction.followup.send(
             "Choose your profile picture",
@@ -366,7 +366,7 @@ async def generate_command(interaction, packname:str):
     try:
         embed = packview_embed(packname)
         if type(embed) == str:
-            await interaction.response.send_message(embed=embed)
+            await interaction.response.send_message(content=embed)
             return
         await interaction.response.send_message(embed=embed)
         print("[PackView] " + packname)
