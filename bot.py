@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.6.0"
-versiondescription = "Bugs & Logging"
+version = "8.6.1"
+versiondescription = "Goblin error fix"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -396,7 +396,7 @@ async def goblin_command(interaction, goblin:app_commands.Choice[str], goblintim
     try:
         embed = goblin_embed(goblin=goblin.value, goblintime=goblintime)
         if type(embed) == str:
-            await interaction.followup.send(embed=embed)
+            await interaction.followup.send(content=embed)
             return
         await interaction.followup.send(embed=embed)
     except Exception as e:
