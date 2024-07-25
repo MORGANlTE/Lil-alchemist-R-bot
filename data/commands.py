@@ -179,7 +179,7 @@ def show_arena_embed(amount, dbfile, userid):
 
 def show_combo_embed(card1, card2):
     
-    urls = construct_urls(result)
+    urls = construct_urls(card1)
     url = ""
 
     
