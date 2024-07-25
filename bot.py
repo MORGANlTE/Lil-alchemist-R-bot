@@ -357,6 +357,33 @@ async def generate_command(interaction, option:app_commands.Choice[str], name:st
 
 
 @tree.command(
+    name="generatemultiple",
+    description="Generate cards",
+    guilds=adminguilds,
+)
+async def generate_command(interaction, options:str, names:str, atks: str, dfcs:str, img_urls: str, is_final_forms:str):
+    await interaction.response.defer()
+    filename_locations = []
+    imageCardsList = []
+    for option, name, atk, dfc, img_url, is_final_form in zip(options.split(", "), names.split(", "), atks.split(", "), dfcs.split(", "), img_urls.split(", "), is_final_forms.split(",")):
+        print("[Generate] " + name)
+        try:
+            filepath = "./data/Apro/"
+            imageCards = imageeditor(image_location=filepath, cardname=name, rarity=option, attack=atk, defense=dfc, isFinalForm=is_final_form, level="1", imgurl=img_url, offset_x=0, offset_y=0, resize_factor_override=100)
+            imageCardsList.append(imageCards)
+            filename_locations.append(imageCards.filename)
+        except Exception as e:
+            await handle_error(client, admindbfile, e, f"An error occured while generating the card: {e}", interaction)
+
+    await interaction.followup.send(
+            f"{interaction.user.mention} generated `{names}`:",
+            files=imageCardsList,
+        )
+    for filename in filename_locations:
+        os.remove(f"{filename}")
+
+
+@tree.command(
     name="packview",
     description="What in the pack? Only one way to find out.",
     guilds=guilds,
