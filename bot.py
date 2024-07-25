@@ -117,6 +117,61 @@ async def help_command(interaction):
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while using help cmd: {e}", interaction)
 
+@tree.command(
+    name="reset",
+    description="At what time does arena resets?",
+    guilds=guilds
+)
+async def show_reset(interaction, amount: int = 1):
+    """
+    Shows when the arena reset is going to happen
+
+    """
+    add_pfp(interaction.user.id, str((math.factorial(5) // math.factorial(3)) + 6) , dbfile)
+    # Set start time 
+    starttime = datetime(2024, 23, 7, 3, 0, 0, 0)
+
+    currenttime = datetime.now()
+
+    # get the difference between the current time and the start time
+    difference = currenttime - starttime
+
+    # get the days and hours
+    days = difference.days
+    hours = difference.seconds // 3600
+    minutes = difference.seconds // 60
+
+    # get the next reset time
+    next_arena_reset = reset[(days // 7 + 1 - minutes // 30) % len(reset)]
+
+
+    next_arena_reset_timestamp = int((starttime + timedelta(days=(days // 7 + 1 - minutes // 30) * 7)).timestamp())
+    # spawn_timestamp = int(datetime.strptime(spawntime, "%m-%d-%Y").timestamp())
+
+    embed = discord.Embed(
+        title="Arena Reset Time",
+        description=":clock1: `Current`:\n\n",
+        color=discord.Color.teal(),
+    )
+
+        next_arena_reset_timestamp = int((starttime + timedelta(days=(days // 7 + 1 - minutes // 30) * 7)).timestamp())
+
+    
+        embed.add_field(
+            name=f"{next_arena_reset},
+            
+f":clock1: <t:{next_next_arena_reset_timestamp}:R>:"),
+            inline=False,
+        )
+
+
+    embed.add_field(
+        name="** **",
+        value=f"<Made with frustration by Tris and corrected by M",
+    )
+    
+
+    await interaction.followup.send(embed=embed)
 
 @tree.command(
     name="trivia",
