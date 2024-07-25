@@ -16,13 +16,13 @@ async def show_command_embed(cardname, is_onyx):
   if t is not None and t is not False:
       return t
 
-  urls = [construct_url(cardname, is_onyx), construct_url(cardname, is_onyx, is_boss=True)]
+  urls = construct_urls(cardname, is_onyx)
 
   test = ()
   url = ""
   
   test = get_correct_url(urls, cardname)
-  if test["info"] is None:
+  if test is None:
       return test
   
   url = test["url"]
@@ -179,12 +179,12 @@ def show_arena_embed(amount, dbfile, userid):
 
 def show_combo_embed(card1, card2):
     
-    urls = [construct_url(card1), construct_url(card1)]
+    urls = construct_urls(result)
     url = ""
 
     
     test = get_correct_url(urls, cardname=card1)
-    if test["info"] is None:
+    if test is None:
         return card1
 
     url = test["url"]
@@ -212,12 +212,12 @@ def show_combo_embed(card1, card2):
     if result is None:
         return card2
         
-    urls = [construct_url(result), construct_url(result)]
+    urls = construct_urls(result)
     url = ""
 
     test = get_correct_url(urls, cardname=result)
 
-    if test["info"] is None:
+    if test is None:
         return result
     
     url = test["url"]

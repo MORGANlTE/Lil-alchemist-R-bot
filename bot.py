@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.5.0"
-versiondescription = "Logging"
+version = "8.6.0"
+versiondescription = "Bugs & Logging"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5

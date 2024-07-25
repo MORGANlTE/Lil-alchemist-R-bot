@@ -750,12 +750,22 @@ def get_goblins():
     }
     return goblins
 
-def construct_url(cardname: str, is_onyx: bool = False, is_boss: bool = False) -> str:
+def construct_urls(cardname: str, is_onyx: bool = False) -> str:
+    # we return a list of 3 urls, one with the cardname, one with the cardname + onyx and one with the cardname + card
+    cardname = cardname.replace(" ", "_")
     if is_onyx:
         cardname += "_(Onyx)"
-    if is_boss:
-        cardname += "_(Card)"
-    return f"https://lil-alchemist.fandom.com/wiki/{cardname.title().replace(' ', '_').replace('_And_', '_and_')}"
+
+    urls = [
+        f"https://lil-alchemist.fandom.com/wiki/{cardname.title().replace(' ', '_').replace('_And_', '_and_')}",
+        f"https://lil-alchemist.fandom.com/wiki/{cardname.title().replace(' ', '_').replace('_And_', '_and_')}_(Card)",
+        f"https://lil-alchemist.fandom.com/wiki/{cardname.title().replace(' ', '_').replace('_And_', '_and_').replace('_The_', '_the_').replace('_Is_', '_is_')}",
+        f"https://lil-alchemist.fandom.com/wiki/{cardname.replace(' ', '_').replace('_And_', '_and_').replace('_The_', '_the_').replace('_Is_', '_is_')}",
+        f"https://lil-alchemist.fandom.com/wiki/{cardname.replace(' ', '_')}",
+        f"https://lil-alchemist.fandom.com/wiki/{cardname.replace(' ', '_')}_(Card)",
+        ]
+    
+    return urls        
 
 
 def get_correct_url(urls, cardname):
@@ -764,10 +774,11 @@ def get_correct_url(urls, cardname):
             resp = requests.get(url)
             soup = BeautifulSoup(resp.content, "html.parser")
             url = url
-            return {"info": parseinfo(soup, cardname), "url": url}
+            info = parseinfo(soup, cardname)
+            return {"info": info, "url": url}
         except Exception as e:
             if url == urls[-1]:
-                return None
+                return None # tried all, but no url found... .
             
 
 def get_medal_emoji(rank):

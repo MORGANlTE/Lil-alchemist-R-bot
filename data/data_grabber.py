@@ -139,8 +139,8 @@ def get_image(soup):
 
 def get_rarity_and_form_etc(soup):
     # The table for the rarity and form information
+    # print whole soup but formatted
     tables_rarity_form = soup.find_all("table", class_="pi-horizontal-group")
-
     # Description
     descr = (
         tables_rarity_form[0]
@@ -272,20 +272,22 @@ def get_rarity_and_form_etc(soup):
 
 def parseinfo(soup, cardname):
     imgurl = get_image(soup)
-
-    (
-        description,
-        base_attack,
-        base_defense,
-        base_power,
-        rarity,
-        form,
-        fusion,
-        where_to_acquire,
-        level_stats,
-        recipes,
-        combos,
-    ) = get_rarity_and_form_etc(soup)
+    try:
+        (
+            description,
+            base_attack,
+            base_defense,
+            base_power,
+            rarity,
+            form,
+            fusion,
+            where_to_acquire,
+            level_stats,
+            recipes,
+            combos,
+        ) = get_rarity_and_form_etc(soup)
+    except Exception as e:
+        raise e
 
     levelstats = []
 

@@ -50,8 +50,8 @@ ADMIN_DB = admin.db
 
 ## 📝 Version 📝
 
-Current version: 8.4.4
-Version description: Bugs
+Current version: 8.6.0
+Version description: Bugs & Logging
 
 ## 📜 License 📜
 
