@@ -10,6 +10,7 @@ from data.data_grabber import get_rarity_and_form_etc
 from data.data_grabber import get_fusion_url, get_embedcolor
 from data.custom_cards.custom_card_names import custom_names
 import re
+import traceback
 from data.data_grabber import *
 
 # Discord.py
@@ -25,12 +26,16 @@ async def sync_guilds(guilds, tree):
 
 # Database shortcuts:
   
-def setup_database(dbfile):
+def setup_databases(dbfile, admindbfile):
     conn = sqlite3.connect(dbfile)
     create_leaderboard_if_doesnt_exist(conn)
     check_winstreak_exists_in_users(conn)
     check_exp_exists_in_users(conn)
     check_profilepictures_exist_in_users(conn)
+    conn.close()
+    # setup admin controls
+    conn = sqlite3.connect(admindbfile)
+    check_admin_guildandchannels_exist(conn)
     conn.close()
 
 def create_leaderboard_if_doesnt_exist(conn):
@@ -106,6 +111,18 @@ def check_profilepictures_exist_in_users(conn):
     if not current_pfp_exists:
         cursor.execute("ALTER TABLE users ADD COLUMN current_pfp TEXT")
         conn.commit()
+
+def check_admin_guildandchannels_exist(conn):
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS loggingchannels (
+            id INTEGER PRIMARY KEY,
+            guildid TEXT,
+            channelid TEXT
+        )
+    ''')
+    conn.commit()
+   
 
 def add_gems_to_user(userid, gems, dbfile):
   conn = sqlite3.connect(dbfile)
@@ -764,3 +781,58 @@ def get_medal_emoji(rank):
         return "🔥"
     else:
         return "👾"
+    
+
+
+async def handle_error(client, admindb, error, errorwhere, interaction):
+    await interaction.followup.send(errorwhere)
+    get_logging_guilds_and_channels = get_logging_guilds_and_channels_from_db(admindb)
+
+    for guild in get_logging_guilds_and_channels:
+        guildid = guild[0]
+        channelid = guild[1]
+        guild = client.get_guild(int(guildid))
+        channel = guild.get_channel(int(channelid))
+        #  create embed
+        embed = discord.Embed(
+            title="Error",
+            description=f"Error: {errorwhere}",
+            color=discord.Color.red()
+        )
+        errormessage = traceback.format_exception(type(error), error, error.__traceback__) # this is a list
+        errormessage = "\n".join(errormessage)
+        embed.add_field(name="Error", value=f"{errormessage}")
+        embed.set_footer(text="ChinBot & LAR Wiki")
+        embed.timestamp = interaction.created_at
+        embed.set_thumbnail(url="https://i.ibb.co/5KDyYkM/aw.jpg")
+        await channel.send(embed=embed)
+
+def set_logging_channel(guildid, channelid, admindbfile):
+    conn = sqlite3.connect(admindbfile)
+    cursor = conn.cursor()
+    
+    # Check if the guildid and channelid both exists in the database
+    cursor.execute("SELECT * FROM loggingchannels WHERE guildid = ? AND channelid = ?", (guildid, channelid))
+    data = cursor.fetchone()
+    
+    if data is None:
+        # Insert new record if guildid does not exist
+        cursor.execute("INSERT INTO loggingchannels (guildid, channelid) VALUES (?, ?)", (guildid, channelid))
+    else:
+        # Delete the existing channelid if it exists
+        cursor.execute("DELETE FROM loggingchannels WHERE channelid = ?", (channelid,))
+    
+    conn.commit()
+    conn.close()
+
+    if data is None:
+        return True
+    return False
+
+def get_logging_guilds_and_channels_from_db(admindbfile):
+    conn = sqlite3.connect(admindbfile)
+    cursor = conn.cursor()
+    cursor.execute("SELECT guildid, channelid FROM loggingchannels")
+    data = cursor.fetchall()
+    conn.close()
+    return data

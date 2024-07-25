@@ -823,13 +823,13 @@ async def sync_commands(adminguilds, tree):
     for guild in adminguilds:
       await tree.sync(guild=guild)
 
-async def on_startup_handler(adminguilds, tree, client, dbfile):
+async def on_startup_handler(adminguilds, tree, client, dbfile, admindbfile):
     print(f"[V] Logged in as {client.user} (ID: {client.user.id})")
     delete_saved_images()
     print("[V] Cleared images folder")
     setup_packs()
     print("[V] Setup the packs")
-    setup_database(dbfile)
+    setup_databases(dbfile, admindbfile)
     print("[V] Db created/checked")
 
 async def sync_command_handler(userid, M_user_ids, adminguilds, tree):
@@ -838,3 +838,11 @@ async def sync_command_handler(userid, M_user_ids, adminguilds, tree):
     await sync_commands(adminguilds=adminguilds, tree=tree)
     print("[V] Synced Guilds")
     return "✅ Synced Guilds Globally 🌍\n✅ Synced admin guilds 🐦‍⬛"
+
+async def setlogging_command_handler(interaction, admindbfile):
+    guild_id = interaction.guild.id
+    channel_id = interaction.channel.id
+    set_logs = set_logging_channel(guild_id, channel_id, admindbfile)
+    if set_logs == False:
+        return f"⛔ Logging channel removed in server `{interaction.guild.name}`"
+    return f"✅ Added logging channel <#{channel_id}> in server `{interaction.guild.name}`"

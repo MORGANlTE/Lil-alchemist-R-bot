@@ -32,6 +32,7 @@ RESET_COMMANDS=False
 M_USER_IDS = id1, id2, ...
 # ids used for admin commands such as syncing and adjusting data
 ADMIN_GUILDS = id1, id2, ...
+ADMIN_DB = admin.db
 ```
 
 4. Run the bot with `python bot.py`.

@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.4.4"
-versiondescription = "Bugs"
+version = "8.5.0"
+versiondescription = "Logging"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -25,9 +25,9 @@ exp = 10
 # Environment variables:
 M_user_ids = os.getenv("M_USER_IDS").split(", ")
 dbfile = os.getenv("DATABASE")
+admindbfile = os.getenv("ADMIN_DB")
 environment = os.getenv("ENVIRONMENT")
 adminguildids = os.getenv("ADMIN_GUILDS").split(",")
-print(f"Admin guilds: {adminguildids}")
 
 adminguilds = []
 for guild in adminguildids:
@@ -62,8 +62,8 @@ async def show_command(interaction, cardname: str, is_onyx: bool = False):
         else:
             await interaction.followup.send(f"Card `{cardname}` not found")
     except Exception as e:
-        print(e)
-        await interaction.followup.send(f"An error occured while searching for `{cardname}`: {e}")
+        await handle_error(client, admindbfile, e, f"An error occured while searching for `{cardname}`", interaction)
+        
 
 @tree.command(
     name="arena",
@@ -85,8 +85,7 @@ async def show_arena(interaction, amount: int = 2):
         elif type(embed) == int:
             await interaction.followup.send(f"Invalid amount of next arena powers, choose a number between 1 and {embed}", ephemeral=True)
     except Exception as e:
-        print(e)
-        await interaction.followup.send(f"An error occured while searching for the arena powers: {e}")
+        await handle_error(client, admindbfile, e, f"An error occured while searching for the arena powers: {e}", interaction)
 
 @tree.command(
     name="combo",
@@ -103,9 +102,7 @@ async def combo_command(interaction, card1: str, card2: str):
         elif type(embed) == str:
             await interaction.followup.send(f"Card `{embed}` not found")
     except Exception as e:
-        print(e)
-        await interaction.followup.send(f"An error occured while searching for the combo: {e}")
-
+        await handle_error(client, admindbfile, e, f"An error occured while searching for the combo: {e}", interaction)
 
 @tree.command(
     name="help",
@@ -118,8 +115,7 @@ async def help_command(interaction):
         embed = help_embed(version=version, description=versiondescription)
         await interaction.response.send_message(embed=embed)
     except Exception as e:
-        print(e)
-        await interaction.response.send_message(f"An error occured while fetching the help: {e}")
+        await handle_error(client, admindbfile, e, f"An error occured while using help cmd: {e}", interaction)
 
 
 @tree.command(
@@ -135,8 +131,7 @@ async def trivia_command(interaction):
         embed, view = await trivia_embed(interaction=interaction, winstreak_max=winstreak_max, gem_win_trivia=gem_win_trivia, gem_loss_trivia=gem_loss_trivia, dbfile=dbfile, message=message)
         await message.edit(embed=embed, view=view, content="")
     except Exception as e:
-        print(e)
-        await interaction.response.send_message(f"An error occured while fetching the trivia question: {e}")
+        await handle_error(client, admindbfile, e, f"An error occured while getting trivia: {e}", interaction)
 
 @tree.command(
     name="leaderboard",
@@ -155,10 +150,7 @@ async def leaderboard_command(interaction, option: app_commands.Choice[str]):
         embed = await leaderboard_embed(option=option, dbfile=dbfile, interaction=interaction)
         await interaction.followup.send(embed=embed)
     except Exception as e:
-        print(e)
-        await interaction.followup.send(f"An error occured while fetching the leaderboard: {e}")
-
-
+        await handle_error(client, admindbfile, e, f"An error occured while getting the leaderboard: {e}", interaction)
 
 @tree.command(
     name="packopening",
@@ -184,8 +176,8 @@ async def packopening_command(interaction, packname: str):
         
         os.remove(f"./images/{imgcards.filename}")
     except Exception as e:
-        print(e)
-        await interaction.followup.send(f"An error occured while opening the pack: {e}")
+        await handle_error(client, admindbfile, e, f"An error occured while opening pack `{packname}`: {e}", interaction)
+
 
 @client.event
 async def on_message(message):
@@ -204,15 +196,15 @@ async def profile_command(interaction):
         res = await profile_embed(interaction=interaction, dbfile=dbfile)
         pic = res["pic"]
         discord_name = res["discord_name"]
+        await interaction.followup.send(
+            file=pic,
+        )
     except Exception as e:
-        print(e)
-        await interaction.response.send_message(f"An error occured while fetching the profile: {e}")
-
-    await interaction.followup.send(
-        file=pic,
-    )
+        await handle_error(client, admindbfile, e, f"An error occured while getting your profile: {e}", interaction)
     # remove the image
     os.remove(f"./important_images/{discord_name}.png")
+
+    
 
 @tree.command(
     name="setprofile",
@@ -237,8 +229,7 @@ async def setprofile_command(interaction, option: app_commands.Choice[str], page
             "Choose your profile picture",
             view=view, ephemeral=True)
     except Exception as e:
-        print(e)
-        await interaction.response.send_message(f"An error occured while setting the profile: {e}")
+        await handle_error(client, admindbfile, e, f"An error occured while setting your profile: {e}", interaction)
 
 @tree.command(
     name="claim",
@@ -272,8 +263,7 @@ async def claim_command(interaction):
             )
             await interaction.response.send_message(embed=embed, ephemeral=True)
     except Exception as e:
-        print(e)
-        await interaction.response.send_message(f"An error occured while claiming the daily login: {e}")
+        await handle_error(client, admindbfile, e, f"An error occured while claiming daily login: {e}", interaction)
 
 @tree.command(
     name="addstuff",
@@ -291,8 +281,7 @@ async def addstuff_command(interaction, option: app_commands.Choice[str], amount
         returnmsg = add_stuff(option=option, amount=amount, userid=user_id, dbfile=dbfile, M_user_ids=M_user_ids, command_user=interaction.user.id)
         await interaction.response.send_message(f"{returnmsg}")
     except Exception as e:
-        print(e)
-        await interaction.response.send_message(f"An error occured while adding stuff: {e}")
+        handle_error(client, admindbfile, e, f"An error occured while adding: {e}", interaction)
 
 @tree.command(
     name="store",
@@ -306,8 +295,7 @@ async def store_command(interaction):
         embed, view = await store_embed(interaction=interaction, dbfile=dbfile)
         await interaction.followup.send(embed=embed, view=view)
     except Exception as e:
-        print(e)
-        await interaction.followup.send(f"An error occured while opening the store: {e}")
+        await handle_error(client, admindbfile, e, f"An error occured while getting the store: {e}", interaction)
 
 @tree.command(
     name="inventory",
@@ -321,8 +309,7 @@ async def inventory_command(interaction):
         embed = await inventory_embed(interaction=interaction, dbfile=dbfile)
         await interaction.followup.send(embed=embed)
     except Exception as e:
-        print(e)
-        await interaction.followup.send(f"An error occured while opening the inventory: {e}")
+        await handle_error(client, admindbfile, e, f"An error occured while opening your inventory: {e}", interaction)
 
     
 # worker example:
@@ -364,8 +351,7 @@ async def generate_command(interaction, option:app_commands.Choice[str], name:st
             file=imageCards,
         )
     except Exception as e:
-        print(e)
-        await interaction.followup.send(f"An error occured while generating the card: {e}")
+        await handle_error(client, admindbfile, e, f"An error occured while generating the card: {e}", interaction)
     
     os.remove(f"{imageCards.filename}")
 
@@ -385,8 +371,7 @@ async def generate_command(interaction, packname:str):
         await interaction.response.send_message(embed=embed)
         print("[PackView] " + packname)
     except Exception as e:
-        print(e)
-        await interaction.response.send_message(f"An error occured while looking up the pack: {e}")
+        await handle_error(client, admindbfile, e, f"An error occured while looking up the pack `{packname}`: {e}", interaction)
 
 @tree.command(
     name="goblin",
@@ -415,8 +400,8 @@ async def goblin_command(interaction, goblin:app_commands.Choice[str], goblintim
             return
         await interaction.followup.send(embed=embed)
     except Exception as e:
-        print(e)
-        await interaction.followup.send(f"An error occured while checking the goblin: {e}")
+        await handle_error(client, admindbfile, e, f"An error occured while checking the goblin: {e}", interaction)
+ 
 
 @tree.command(
     name="support",
@@ -430,8 +415,7 @@ async def support_command(interaction):
         embed = support_embed()
         await interaction.response.send_message(embed=embed)
     except Exception as e:
-        print(e)
-        await interaction.response.send_message(f"An error occured while fetching the support: {e}")
+        await handle_error(client, admindbfile, e, f"An error occured while getting support cmd: {e}", interaction)
 
 
 @tree.command(
@@ -446,12 +430,25 @@ async def sync_command(interaction):
         val = await sync_command_handler(userid=str(interaction.user.id), M_user_ids=M_user_ids, adminguilds=adminguilds, tree=tree)
         await interaction.followup.send(val)
     except Exception as e:
-        print(e)
-        await interaction.followup.send(f"An error occured while syncing the commands: {e}")
+        await handle_error(client, admindbfile, e, f"An error occured while trying to sync: {e}", interaction)
+
+@tree.command(
+    name="setlogging",
+    description="Add/Remove current channel as logging channel",
+    guilds=adminguilds,
+)
+async def setlogging_command(interaction):
+    await interaction.response.defer()
+    print("[SetLogging] " + interaction.user.name)
+    try:
+        val = await setlogging_command_handler(interaction=interaction, admindbfile=admindbfile)
+        await interaction.followup.send(val)
+    except Exception as e:
+        await handle_error(client, admindbfile, e, f"An error occured while trying to set logging: {e}", interaction)
 
 
 @client.event
 async def on_ready():
-    await on_startup_handler(adminguilds=adminguilds, tree=tree, client=client, dbfile=dbfile)
+    await on_startup_handler(adminguilds=adminguilds, tree=tree, client=client, dbfile=dbfile, admindbfile=admindbfile)
 
 client.run(os.getenv("TOKEN"))
