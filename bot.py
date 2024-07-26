@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.7.0"
-versiondescription = "Arena commands expanded"
+version = "8.8.0"
+versiondescription = "Custom Status"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -28,6 +28,7 @@ dbfile = os.getenv("DATABASE")
 admindbfile = os.getenv("ADMIN_DB")
 environment = os.getenv("ENVIRONMENT")
 adminguildids = os.getenv("ADMIN_GUILDS").split(",")
+adminguildids_ints = [int(guild) for guild in adminguildids]
 
 adminguilds = []
 for guild in adminguildids:
@@ -306,6 +307,7 @@ async def addstuff_command(interaction, option: app_commands.Choice[str], amount
     except Exception as e:
         handle_error(client, admindbfile, e, f"An error occured while adding: {e}", interaction)
 
+
 @tree.command(
     name="store",
     description="Open the store",
@@ -495,6 +497,62 @@ async def setlogging_command(interaction):
         await interaction.followup.send(val)
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while trying to set logging: {e}", interaction)
+print(adminguildids)
+
+groupStatus = app_commands.Group(name="status", description="Set status of the bot", guild_ids=adminguildids_ints)
+
+@groupStatus.command(
+    name="set",
+    description="Set the bot's status",
+)
+@app_commands.describe(option="Choose type of status")
+@app_commands.choices(option=[
+        app_commands.Choice(
+            name="🎧Listening",
+            value="Listening"
+        ),
+        app_commands.Choice(
+            name="👀Watching",
+            value="Watching"
+        ),
+        app_commands.Choice(
+            name="🎮Playing",
+            value="Playing"
+        ),
+        app_commands.Choice(
+            name="🎥Streaming",
+            value="Streaming"
+        ),
+        app_commands.Choice(
+            name="📝None",
+            value="None"
+        )
+    ])
+async def status_command(interaction, option: app_commands.Choice[str], text:str = ""):
+    await interaction.response.defer()
+    print("[Status] " + option.value)
+    try:
+        val = await status_command_handler(status=option.value, client=client, statustext=text)
+        await interaction.followup.send(content=val)
+    except Exception as e:
+        await handle_error(client, admindbfile, e, f"An error occured while setting the status: {e}", interaction)
+
+@groupStatus.command(
+    name="clear",
+    description="Clear the bot's status",
+)
+async def clear_command(interaction):
+    await interaction.response.defer()
+    print("[ClearStatus]")
+    try:
+        val = await clear_command_handler(client=client)
+        await interaction.followup.send(content=val)
+    except Exception as e:
+        await handle_error(client, admindbfile, e, f"An error occured while clearing the status: {e}", interaction)
+
+# add the group to the tree
+tree.add_command(groupStatus)
+
 
 
 @client.event

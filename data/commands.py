@@ -889,3 +889,24 @@ async def setlogging_command_handler(interaction, admindbfile):
     if set_logs == False:
         return f"⛔ Logging channel removed in server `{interaction.guild.name}`"
     return f"✅ Added logging channel <#{channel_id}> in server `{interaction.guild.name}`"
+
+
+async def status_command_handler(status, client, statustext):
+    # can be status listening playing or watching
+    if status == "Listening":
+        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=statustext))
+    elif status == "Playing":
+        await client.change_presence(activity=discord.Game(name=statustext))
+    elif status == "Watching":
+        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=statustext))
+    elif status == "Streaming":
+        await client.change_presence(activity=discord.Streaming(name=statustext, url="https://www.twitch.tv/monumental_llc"))
+    else:
+        # clear the status
+        await client.change_presence(activity=None)
+
+    return f"✅ Status set to `{status} {statustext}`"
+
+async def clear_command_handler(client):
+    await client.change_presence(activity=None)
+    return "🚫 Status cleared"
