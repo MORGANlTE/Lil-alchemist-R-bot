@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.6.3"
-versiondescription = "More bugs fixed"
+version = "8.7.0"
+versiondescription = "Arena commands expanded"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5

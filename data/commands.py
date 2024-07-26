@@ -197,26 +197,26 @@ def show_arena_reset_embed():
     # next season reset
     next_season_reset = abs(minutes_passed // 40200)
 
-    print(next_arena_reset)
-    print(next_season_reset)
     next_arena_reset_timestamp = int((starttime + timedelta(minutes=((next_arena_reset + 1) * 10050))).timestamp())
     next_season_reset_timestamp = int((starttime + timedelta(minutes=((next_season_reset + 1) * 40200))).timestamp())
 
     embed = discord.Embed(
-        title="Arena Reset",
-        description=":clock1: `Next Arena Reset`:\n\n",
-        color=discord.Color.teal(),
+        title="Next Arena Reset",
+        description=f"\n\n",
+        color=discord.Color.pink(),
     )
     embed.add_field(
-        name=f"<t:{next_season_reset_timestamp}:R>",
-        value=f":clock1: <t:{next_arena_reset_timestamp}:R>:",
-        inline=False,
-                    )
-
+        name=f"Arena Reset",
+        value=f":clock1: <t:{next_arena_reset_timestamp}:R>",
+        inline=False,)    
+    embed.add_field(
+        name=f"Season Reset",
+        value=f":clock1: <t:{next_season_reset_timestamp}:R>",
+        inline=False,)
 
     embed.add_field(
         name="** **",
-        value=f"<Made with frustration by Tris and corrected by M",
+        value=f"<:newMBot0:1251265938142007486> Made with :anger: by <@436146993530667009> & :heart: by <@405067444764540928>",
     )
 
     return embed
@@ -376,7 +376,7 @@ def help_embed(version, description):
         (":flower_playing_cards: /packview", "Shows the contents of a pack", True),
         (":question: /help", "Displays the help page", True),
         ("<:gobking:1258839599938142269> /goblin", "Shows the next goblin spawn", True),
-        (":crossed_swords: /arena", "Shows the current and upcoming arena powers", True),
+        (":crossed_swords: /arena", "Shows the current and upcoming arena powers/reset time", True),
         ("** **", "** **", False),
         ("Server related", "** **", False),
         (":coin: /leaderboard", "Shows the global leaderboard", True),
@@ -390,7 +390,7 @@ def help_embed(version, description):
         (":gem: /trivia", "Some fun trivia to try out", True),
         (":shopping_cart: /store", "Open the store", True),
         ("🚁 /inventory", "Shows your inventory", True),
-        (":coral: /generate", "Make a custom card classical LA style! - :heart: Aprogergely!", True),
+        (":coral: /generate", "Make a custom card LAR style - :heart: <@429653599296028683>!", True),
     ]
 
     for name, value, inline in fields:
