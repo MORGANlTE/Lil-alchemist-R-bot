@@ -141,7 +141,7 @@ def get_image_img_url(soup):
 
     if script_element:
         # Get the text content of the script element
-        script_text = script_element.text
+        script_text = script_element.text.encode('utf-8').decode('utf-8')
         # Parse the JSON data
         import json
 
