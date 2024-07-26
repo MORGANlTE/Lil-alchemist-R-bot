@@ -122,7 +122,7 @@ async def help_command(interaction):
     description="At what time does arena resets?",
     guilds=guilds
 )
-async def show_reset(interaction, amount: int = 1):
+async def show_reset(interaction):
     """
     Shows when the arena reset is going to happen
 
@@ -142,7 +142,7 @@ async def show_reset(interaction, amount: int = 1):
     minutes = difference.seconds // 60
 
     # get the next reset time
-    next_arena_reset = reset[(days // 7 + 1 - minutes // 30) % len(reset)]
+    next_arena_reset = (days // 7 + 1 - minutes // 30)
 
 
     next_arena_reset_timestamp = int((starttime + timedelta(days=(days // 7 + 1 - minutes // 30) * 7)).timestamp())
@@ -154,15 +154,14 @@ async def show_reset(interaction, amount: int = 1):
         color=discord.Color.teal(),
     )
 
-        next_arena_reset_timestamp = int((starttime + timedelta(days=(days // 7 + 1 - minutes // 30) * 7)).timestamp())
+    next_arena_reset_timestamp = int((starttime + timedelta(days=(days // 7 + 1 - minutes // 30) * 7)).timestamp())
 
-    
-        embed.add_field(
-            name=f"{next_arena_reset},
-            
-f":clock1: <t:{next_next_arena_reset_timestamp}:R>:"),
-            inline=False,
-        )
+
+    embed.add_field(
+        name=f"{next_arena_reset}",
+        value=f":clock1: <t:{next_arena_reset_timestamp}:R>:",
+        inline=False,
+                    )
 
 
     embed.add_field(
