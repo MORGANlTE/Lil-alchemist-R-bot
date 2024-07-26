@@ -136,6 +136,22 @@ def get_image(soup):
         image_url = None
     return image_url
 
+def get_image_img_url(soup):
+    script_element = soup.find("script", type="application/ld+json")
+
+    if script_element:
+        # Get the text content of the script element
+        script_text = script_element.text
+        # Parse the JSON data
+        import json
+
+        json_data = json.loads(script_text)
+        # Extract the image URL from the JSON data
+        img_url = json_data["mainEntity"]["image"]
+    else:
+        img_url = None
+    return img_url
+
 
 def get_rarity_and_form_etc(soup):
     # The table for the rarity and form information

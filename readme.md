@@ -50,8 +50,8 @@ ADMIN_DB = admin.db
 
 ## 📝 Version 📝
 
-Current version: 8.7.0
-Version description: Arena commands expanded
+Current version: 8.9.0
+Version description: Added only image support for wiki cmd
 
 ## 📜 License 📜
 

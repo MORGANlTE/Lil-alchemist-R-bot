@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.8.0"
-versiondescription = "Custom Status"
+version = "8.9.0"
+versiondescription = "Added only image support for wiki cmd"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -56,9 +56,17 @@ tree = app_commands.CommandTree(client)
 async def show_command(interaction, cardname: str, is_onyx: bool = False):
     await interaction.response.defer()
     try:
-        embed = await show_command_embed(cardname, is_onyx)
+        val = await show_command_embed(cardname, is_onyx)
 
-        if embed:
+        if type(val) == discord.Embed:
+            await interaction.followup.send(embed=val)
+        elif type(val) == str:
+            embed = discord.Embed(
+                title=f"{cardname}",
+                description=f"Wiki Page\n[Click here to visit the wiki page](https://lil-alchemist.fandom.com/wiki/{cardname.replace(' ', '_')})\n\nCard `{cardname}`\nWiki data not found",
+                color=discord.Color.red(),
+            )
+            embed.set_thumbnail(url=val)
             await interaction.followup.send(embed=embed)
         else:
             await interaction.followup.send(f"Card `{cardname}` not found")

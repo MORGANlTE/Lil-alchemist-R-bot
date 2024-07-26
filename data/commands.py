@@ -23,7 +23,8 @@ async def show_command_embed(cardname, is_onyx):
   
   test = get_correct_url(urls, cardname)
   if test is None:
-      return test
+      imgurls = construct_image_urls(cardname, is_onyx)
+      return get_just_image(imgurls, cardname)
   
   url = test["url"]
 

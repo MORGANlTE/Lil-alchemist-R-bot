@@ -765,7 +765,22 @@ def construct_urls(cardname: str, is_onyx: bool = False) -> str:
         f"https://lil-alchemist.fandom.com/wiki/{cardname.replace(' ', '_')}_(Card)",
         ]
     
-    return urls        
+    return urls
+
+def construct_image_urls(cardname: str, is_onyx: bool = False) -> str:
+    cardname = cardname.replace(" ", "_")
+    if is_onyx:
+        cardname += "_(Onyx)"
+    urls = [
+        f"https://lil-alchemist.fandom.com/wiki/File:{cardname.title().replace(' ', '_').replace('_And_', '_and_')}.png",
+        f"https://lil-alchemist.fandom.com/wiki/File:{cardname.title().replace(' ', '_').replace('_And_', '_and_').replace('_The_', '_the_').replace('_Is_', '_is_')}.png",
+        f"https://lil-alchemist.fandom.com/wiki/File:{cardname.replace(' ', '_').replace('_And_', '_and_').replace('_The_', '_the_').replace('_Is_', '_is_')}.png",
+        f"https://lil-alchemist.fandom.com/wiki/File:{cardname.replace(' ', '_')}.png",
+        f"https://lil-alchemist.fandom.com/wiki/File:{cardname.title().replace(' ', '_').replace('_And_', '_and_')}_(Card).png",
+        f"https://lil-alchemist.fandom.com/wiki/File:{cardname.replace(' ', '_')}_(Card).png",
+        ]
+    
+    return urls
 
 
 def get_correct_url(urls, cardname):
@@ -773,9 +788,21 @@ def get_correct_url(urls, cardname):
         try:
             resp = requests.get(url)
             soup = BeautifulSoup(resp.content, "html.parser")
-            url = url
             info = parseinfo(soup, cardname)
             return {"info": info, "url": url}
+        except Exception as e:
+            if url == urls[-1]:
+                return None # tried all, but no url found... .
+            
+def get_just_image(urls, cardname):
+    for url in urls:
+        try:
+            resp = requests.get(url, allow_redirects=False)
+            # get response url
+            respurl = resp.url
+            soup = BeautifulSoup(resp.content, "html.parser")
+            img = get_image_img_url(soup)
+            return img
         except Exception as e:
             if url == urls[-1]:
                 return None # tried all, but no url found... .
