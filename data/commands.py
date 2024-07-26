@@ -177,6 +177,50 @@ def show_arena_embed(amount, dbfile, userid):
 
     return embed
 
+def show_arena_reset_embed():
+    # Set start time 
+    starttime = datetime(2024, 7, 9, 4, 0, 0, 0)
+    # each arena week is 6 days 23 hours and 30 minutes which is equal to 10 050 minutes
+    # each season is 27 days 22 hours is equal to 40 200 minutes
+
+    currenttime = datetime.now()
+
+    # get the difference between the current time and the start time
+    difference = currenttime - starttime
+
+    # get the minutes that have passed since the start time
+    minutes_passed = difference.total_seconds() / 60
+
+    # get the next arena reset time
+    next_arena_reset = abs(minutes_passed // 10050)
+
+    # next season reset
+    next_season_reset = abs(minutes_passed // 40200)
+
+    print(next_arena_reset)
+    print(next_season_reset)
+    next_arena_reset_timestamp = int((starttime + timedelta(minutes=((next_arena_reset + 1) * 10050))).timestamp())
+    next_season_reset_timestamp = int((starttime + timedelta(minutes=((next_season_reset + 1) * 40200))).timestamp())
+
+    embed = discord.Embed(
+        title="Arena Reset",
+        description=":clock1: `Next Arena Reset`:\n\n",
+        color=discord.Color.teal(),
+    )
+    embed.add_field(
+        name=f"<t:{next_season_reset_timestamp}:R>",
+        value=f":clock1: <t:{next_arena_reset_timestamp}:R>:",
+        inline=False,
+                    )
+
+
+    embed.add_field(
+        name="** **",
+        value=f"<Made with frustration by Tris and corrected by M",
+    )
+
+    return embed
+
 def show_combo_embed(card1, card2):
     
     urls = construct_urls(card1)

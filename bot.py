@@ -63,29 +63,7 @@ async def show_command(interaction, cardname: str, is_onyx: bool = False):
             await interaction.followup.send(f"Card `{cardname}` not found")
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while searching for `{cardname}`", interaction)
-        
 
-@tree.command(
-    name="arena",
-    description="Look up current arena powers & upcoming ones",
-    guilds=guilds
-)
-async def show_arena(interaction, amount: int = 2):
-    """
-    Shows the current and upcoming arena powers rotation
-    Args:
-        amount (int, optional): The amount of upcoming arena powers to show. Defaults to 2 (current and next)
-    """
-    await interaction.response.defer()
-    print("[Arena] " + str(amount))
-    try:
-        embed = show_arena_embed(amount=amount, dbfile=dbfile, userid=interaction.user.id)
-        if type(embed) == discord.Embed:
-            await interaction.followup.send(embed=embed)
-        elif type(embed) == int:
-            await interaction.followup.send(f"Invalid amount of next arena powers, choose a number between 1 and {embed}", ephemeral=True)
-    except Exception as e:
-        await handle_error(client, admindbfile, e, f"An error occured while searching for the arena powers: {e}", interaction)
 
 @tree.command(
     name="combo",
@@ -117,10 +95,33 @@ async def help_command(interaction):
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while using help cmd: {e}", interaction)
 
-@tree.command(
+groupArena = app_commands.Group(name="arena", description="Arena related commands")
+
+@groupArena.command(
+    name="powers",
+    description="Look up current arena powers & upcoming ones",
+)
+async def show_arena(interaction, amount: int = 2):
+    """
+    Shows the current and upcoming arena powers rotation
+    Args:
+        amount (int, optional): The amount of upcoming arena powers to show. Defaults to 2 (current and next)
+    """
+    await interaction.response.defer()
+    print("[ArenaPowers] " + str(amount))
+    try:
+        embed = show_arena_embed(amount=amount, dbfile=dbfile, userid=interaction.user.id)
+        if type(embed) == discord.Embed:
+            await interaction.followup.send(embed=embed)
+        elif type(embed) == int:
+            await interaction.followup.send(f"Invalid amount of next arena powers, choose a number between 1 and {embed}", ephemeral=True)
+    except Exception as e:
+        await handle_error(client, admindbfile, e, f"An error occured while searching for the arena powers: {e}", interaction)
+
+
+@groupArena.command(
     name="reset",
     description="At what time does arena resets?",
-    guilds=guilds
 )
 async def show_reset(interaction):
     """
@@ -128,49 +129,17 @@ async def show_reset(interaction):
 
     """
     await interaction.response.defer()
-    # Set start time 
-    starttime = datetime(2024, 7, 23, 3, 0, 0, 0)
+    print("[ArenaReset]")
+    try:
+        embed = show_arena_reset_embed()
+        if type(embed) == discord.Embed:
+            await interaction.followup.send(embed=embed)
+    except Exception as e:
+        await handle_error(client, admindbfile, e, f"An error occured while searching for the arena powers: {e}", interaction)
 
-    currenttime = datetime.now()
+# add the group to the tree
+tree.add_command(groupArena)
 
-    # get the difference between the current time and the start time
-    difference = currenttime - starttime
-
-    # get the days and hours
-    days = difference.days
-    hours = difference.seconds // 3600
-    minutes = difference.seconds // 60
-
-    # get the next reset time
-    next_arena_reset = (days // 7 + 1 - minutes // 30)
-
-
-    next_arena_reset_timestamp = int((starttime + timedelta(days=(days // 7 + 1 - minutes // 30) * 7)).timestamp())
-    # spawn_timestamp = int(datetime.strptime(spawntime, "%m-%d-%Y").timestamp())
-
-    embed = discord.Embed(
-        title="Arena Reset Time",
-        description=":clock1: `Current`:\n\n",
-        color=discord.Color.teal(),
-    )
-
-    next_arena_reset_timestamp = int((starttime + timedelta(days=(days // 7 + 1 - minutes // 30) * 7)).timestamp())
-
-
-    embed.add_field(
-        name=f"{next_arena_reset}",
-        value=f":clock1: <t:{next_arena_reset_timestamp}:R>:",
-        inline=False,
-                    )
-
-
-    embed.add_field(
-        name="** **",
-        value=f"<Made with frustration by Tris and corrected by M",
-    )
-    
-
-    await interaction.followup.send(embed=embed)
 
 @tree.command(
     name="trivia",
