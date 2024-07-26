@@ -127,9 +127,9 @@ async def show_reset(interaction):
     Shows when the arena reset is going to happen
 
     """
-    add_pfp(interaction.user.id, str((math.factorial(5) // math.factorial(3)) + 6) , dbfile)
+    await interaction.response.defer()
     # Set start time 
-    starttime = datetime(2024, 23, 7, 3, 0, 0, 0)
+    starttime = datetime(2024, 7, 23, 3, 0, 0, 0)
 
     currenttime = datetime.now()
 
