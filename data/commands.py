@@ -875,6 +875,10 @@ async def on_startup_handler(adminguilds, tree, client, dbfile, admindbfile):
     print("[V] Setup the packs")
     setup_databases(dbfile, admindbfile)
     print("[V] Db created/checked")
+    # print in what guilds the bot is
+    print(f"[V] Connected to servers:")
+    for guild in client.guilds:
+        print(f"  - {guild.name} ({guild.id})")
 
 async def sync_command_handler(userid, M_user_ids, adminguilds, tree):
     if userid not in M_user_ids:
