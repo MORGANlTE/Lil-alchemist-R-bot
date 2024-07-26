@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.6.3"
-versiondescription = "More bugs fixed"
+version = "8.7.0"
+versiondescription = "Arena commands expanded"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -63,29 +63,7 @@ async def show_command(interaction, cardname: str, is_onyx: bool = False):
             await interaction.followup.send(f"Card `{cardname}` not found")
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while searching for `{cardname}`", interaction)
-        
 
-@tree.command(
-    name="arena",
-    description="Look up current arena powers & upcoming ones",
-    guilds=guilds
-)
-async def show_arena(interaction, amount: int = 2):
-    """
-    Shows the current and upcoming arena powers rotation
-    Args:
-        amount (int, optional): The amount of upcoming arena powers to show. Defaults to 2 (current and next)
-    """
-    await interaction.response.defer()
-    print("[Arena] " + str(amount))
-    try:
-        embed = show_arena_embed(amount=amount, dbfile=dbfile, userid=interaction.user.id)
-        if type(embed) == discord.Embed:
-            await interaction.followup.send(embed=embed)
-        elif type(embed) == int:
-            await interaction.followup.send(f"Invalid amount of next arena powers, choose a number between 1 and {embed}", ephemeral=True)
-    except Exception as e:
-        await handle_error(client, admindbfile, e, f"An error occured while searching for the arena powers: {e}", interaction)
 
 @tree.command(
     name="combo",
@@ -116,6 +94,51 @@ async def help_command(interaction):
         await interaction.response.send_message(embed=embed)
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while using help cmd: {e}", interaction)
+
+groupArena = app_commands.Group(name="arena", description="Arena related commands")
+
+@groupArena.command(
+    name="powers",
+    description="Look up current arena powers & upcoming ones",
+)
+async def show_arena(interaction, amount: int = 2):
+    """
+    Shows the current and upcoming arena powers rotation
+    Args:
+        amount (int, optional): The amount of upcoming arena powers to show. Defaults to 2 (current and next)
+    """
+    await interaction.response.defer()
+    print("[ArenaPowers] " + str(amount))
+    try:
+        embed = show_arena_embed(amount=amount, dbfile=dbfile, userid=interaction.user.id)
+        if type(embed) == discord.Embed:
+            await interaction.followup.send(embed=embed)
+        elif type(embed) == int:
+            await interaction.followup.send(f"Invalid amount of next arena powers, choose a number between 1 and {embed}", ephemeral=True)
+    except Exception as e:
+        await handle_error(client, admindbfile, e, f"An error occured while searching for the arena powers: {e}", interaction)
+
+
+@groupArena.command(
+    name="reset",
+    description="At what time does arena resets?",
+)
+async def show_reset(interaction):
+    """
+    Shows when the arena reset is going to happen
+
+    """
+    await interaction.response.defer()
+    print("[ArenaReset]")
+    try:
+        embed = show_arena_reset_embed()
+        if type(embed) == discord.Embed:
+            await interaction.followup.send(embed=embed)
+    except Exception as e:
+        await handle_error(client, admindbfile, e, f"An error occured while searching for the arena powers: {e}", interaction)
+
+# add the group to the tree
+tree.add_command(groupArena)
 
 
 @tree.command(

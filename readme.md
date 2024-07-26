@@ -50,8 +50,8 @@ ADMIN_DB = admin.db
 
 ## 📝 Version 📝
 
-Current version: 8.6.0
-Version description: Bugs & Logging
+Current version: 8.7.0
+Version description: Arena commands expanded
 
 ## 📜 License 📜
 
