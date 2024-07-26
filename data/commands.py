@@ -564,6 +564,8 @@ def on_message_handler(message, exp, dbfile):
         return
     # Give the user some experience; but only if the user has not been given experience in the last minute
     return_value = add_experience_to_user(message.author.id, exp, dbfile)
+    # print the user and their id
+    print(f"User: {message.author} - ID: {message.author.id} gained exp in server {message.guild.id}")
     if return_value == False:
         return
     
