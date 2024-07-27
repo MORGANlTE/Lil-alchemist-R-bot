@@ -145,9 +145,7 @@ def get_image_img_url(soup):
         script_text = script_element
         print("Script text:")
         print(script_text)
-        print("Script text text:")
-        print(script_text.text)
-        json_data = json.loads(script_text.text)
+        json_data = json.loads(script_text)
         print("Json data:")
         print(json_data)
        
