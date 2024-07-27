@@ -140,12 +140,12 @@ def get_image_img_url(soup):
     script_element = soup.find("script", type="application/ld+json")
 
     if script_element:
-        # Get the text content of the script element
-        script_text = script_element.text.encode('utf-8').decode('utf-8')
+        # Get the text content of the script element, make sure Linux can read the line endings
+        script_text = script_element.text.replace("\r\n", "\n")
         # Parse the JSON data
         import json
-
-        json_data = json.loads(script_text)
+        # make sure Linux can read the line endings aswell
+        json_data = json.loads(script_text.replace("\r\n", "\n"))
         # Extract the image URL from the JSON data
         img_url = json_data["mainEntity"]["image"]
     else:

@@ -167,7 +167,7 @@ def show_arena_embed(amount, dbfile, userid):
         
         embed.add_field(
             name=f"{next_arena_power['emoji']} {next_arena_power['name']}",
-            value=f"{next_arena_power['description']}\n{formatted}\n\n" + ("" if i == amount - 1 else f":clock1: <t:{next_next_arena_power_timestamp}:R>:"),
+            value=f"{next_arena_power['description']}\n{formatted}\n\n" + ("" if i == amount - 1 else f":clock1: <t:{next_next_arena_power_timestamp}:R> - <t:{next_next_arena_power_timestamp}>:"),
             inline=False,
         )
 
@@ -208,11 +208,11 @@ def show_arena_reset_embed():
     )
     embed.add_field(
         name=f"Arena Reset",
-        value=f":clock1: <t:{next_arena_reset_timestamp}:R>",
+        value=f":clock1: <t:{next_arena_reset_timestamp}:R> - <t:{next_arena_reset_timestamp}>",
         inline=False,)    
     embed.add_field(
         name=f"Season Reset",
-        value=f":clock1: <t:{next_season_reset_timestamp}:R>",
+        value=f":clock1: <t:{next_season_reset_timestamp}:R> - <t:{next_season_reset_timestamp}>",
         inline=False,)
 
     embed.add_field(
