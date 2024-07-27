@@ -142,7 +142,10 @@ def get_image_img_url(soup):
 
     if script_element:
         # <script type="application/ld+json">{"@context":"http://schema.org","@type":"Article","url":"https://lil-alchemist.fandom.com/wiki/File:Wintertide_(Onyx)_(Card).png","name":"Wintertide (Onyx) (Card).png","headline":"Wintertide (Onyx) (Card).png","mainEntity":{"@type":"Thing","url":"https://lil-alchemist.fandom.com/wiki/File:Wintertide_(Onyx)_(Card).png","name":"Wintertide (Onyx) (Card).png","image":"https://static.wikia.nocookie.net/lil-alchemist/images/e/e6/Site-logo.png/revision/latest?cb=20210713151124"},"about":{"@type":"Thing","url":"https://lil-alchemist.fandom.com/wiki/File:Wintertide_(Onyx)_(Card).png","name":"Wintertide (Onyx) (Card).png","image":"https://static.wikia.nocookie.net/lil-alchemist/images/e/e6/Site-logo.png/revision/latest?cb=20210713151124"},"author":{"@type":"Organization","url":"https://lil-alchemist.fandom.com/wiki/File:Wintertide_(Onyx)_(Card).png?action=credits","name":"Contributors to Lil' Alchemist Wiki"},"publisher":{"@type":"Organization","name":"Fandom, Inc.","logo":{"@type":"ImageObject","url":"https://static.wikia.nocookie.net/750feb85-de88-4a4f-b294-8b48142ac182/thumbnail-down/width/1280/height/720"}},"image":"https://static.wikia.nocookie.net/lil-alchemist/images/e/e6/Site-logo.png/revision/latest?cb=20210713151124","thumbnailUrl":"https://static.wikia.nocookie.net/lil-alchemist/images/e/e6/Site-logo.png/revision/latest?cb=20210713151124"}</script>
-        script_text = script_element.strip("script type=\"application/ld+json\">").strip("</script>")  # Remove script tags
+        print("Script Element: ", script_element)
+        print(type(script_element))
+
+        script_text = str(script_element).strip("script type=\"application/ld+json\">").strip("</script>")  # Remove script tags
         print("Script Text: ", script_text)
         data = json.loads(script_text)
         print("Data: ", data)
