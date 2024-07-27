@@ -149,7 +149,12 @@ def get_image_img_url(soup):
         print("\n\nScript text: " + script_text)
         # remove spaces at the beginning and end of the string
         # load the json string
-        json_from_script = json.loads(str(script_text))
+        # check if valid json
+        try:
+            json_from_script = json.loads(script_text)
+        except json.JSONDecodeError as e:
+            print("Error: " + str(e))
+            json_from_script = None
         print("\n\nJson from script: " + json_from_script)
 
                
