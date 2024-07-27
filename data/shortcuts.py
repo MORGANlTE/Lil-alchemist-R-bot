@@ -804,6 +804,8 @@ def get_just_image(urls, cardname):
             img = get_image_img_url(soup)
             return img
         except Exception as e:
+            errormessage = traceback.format_exception(type(e), e, e.__traceback__) # this is a list
+            
             if url == urls[-1]:
                 return None # tried all, but no url found... .
             
