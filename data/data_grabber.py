@@ -4,6 +4,7 @@ import sys
 import os
 from sqlalchemy.sql.expression import or_
 import discord
+import json
 
 # Add the current directory to the Python module search path
 sys.path.append(os.path.dirname(__file__))
@@ -141,12 +142,15 @@ def get_image_img_url(soup):
 
     if script_element:
         # Get the text content of the script element, make sure Linux can read the line endings
-        script_text = script_element.text.replace("\r\n", "\n")
-        # Parse the JSON data
-        import json
-        # make sure Linux can read the line endings aswell
-        json_data = json.loads(script_text.replace("\r\n", "\n"))
-        # Extract the image URL from the JSON data
+        script_text = script_element
+        print("Script text:")
+        print(script_text)
+        print("Script text text:")
+        print(script_text.text)
+        json_data = json.loads(script_text.text)
+        print("Json data:")
+        print(json_data)
+       
         img_url = json_data["mainEntity"]["image"]
     else:
         img_url = None
