@@ -50,8 +50,8 @@ ADMIN_DB = admin.db
 
 ## 📝 Version 📝
 
-Current version: 8.9.0
-Version description: Added only image support for wiki cmd
+Current version: 8.10.0
+Version description: Support for unfinished cards & timetables
 
 ## 📜 License 📜
 

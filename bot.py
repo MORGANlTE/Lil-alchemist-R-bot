@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.9.0"
-versiondescription = "Added only image support for wiki cmd"
+version = "8.10.0"
+versiondescription = "Support for unfinished cards & timetables"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
