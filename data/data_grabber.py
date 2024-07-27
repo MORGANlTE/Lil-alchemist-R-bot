@@ -146,6 +146,7 @@ def get_image_img_url(soup):
         script_text = str(script_element).strip("script type=\"application/ld+json\">").strip("</script>")  # Remove script tags
         # remove everything before first {  symbol and after last } symbol
         script_text = str(script_text[script_text.find("{"):script_text.rfind("}")+1]).strip()
+        print("\n\nScript text: " + script_text)
         # remove spaces at the beginning and end of the string
         # load the json string
         json_from_script = json.loads(str(script_text))
