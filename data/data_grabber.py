@@ -141,15 +141,11 @@ def get_image_img_url(soup):
     script_element = soup.find("script", type="application/ld+json")
 
     if script_element:
-        # Get the text content of the script element, make sure Linux can read the line endings
-        script_text = script_element
-        print("Script text:")
-        print(script_text)
-        json_data = json.loads(script_text)
-        print("Json data:")
-        print(json_data)
+        # <script type="application/ld+json">{"@context":"http://schema.org","@type":"Article","url":"https://lil-alchemist.fandom.com/wiki/File:Wintertide_(Onyx)_(Card).png","name":"Wintertide (Onyx) (Card).png","headline":"Wintertide (Onyx) (Card).png","mainEntity":{"@type":"Thing","url":"https://lil-alchemist.fandom.com/wiki/File:Wintertide_(Onyx)_(Card).png","name":"Wintertide (Onyx) (Card).png","image":"https://static.wikia.nocookie.net/lil-alchemist/images/e/e6/Site-logo.png/revision/latest?cb=20210713151124"},"about":{"@type":"Thing","url":"https://lil-alchemist.fandom.com/wiki/File:Wintertide_(Onyx)_(Card).png","name":"Wintertide (Onyx) (Card).png","image":"https://static.wikia.nocookie.net/lil-alchemist/images/e/e6/Site-logo.png/revision/latest?cb=20210713151124"},"author":{"@type":"Organization","url":"https://lil-alchemist.fandom.com/wiki/File:Wintertide_(Onyx)_(Card).png?action=credits","name":"Contributors to Lil' Alchemist Wiki"},"publisher":{"@type":"Organization","name":"Fandom, Inc.","logo":{"@type":"ImageObject","url":"https://static.wikia.nocookie.net/750feb85-de88-4a4f-b294-8b48142ac182/thumbnail-down/width/1280/height/720"}},"image":"https://static.wikia.nocookie.net/lil-alchemist/images/e/e6/Site-logo.png/revision/latest?cb=20210713151124","thumbnailUrl":"https://static.wikia.nocookie.net/lil-alchemist/images/e/e6/Site-logo.png/revision/latest?cb=20210713151124"}</script>
+        script_text = script_element.strip("script type=\"application/ld+json\">").strip("</script>")  # Remove script tags
+        data = json.loads(script_text)
        
-        img_url = json_data["mainEntity"]["image"]
+        img_url = data.get("url")
     else:
         img_url = None
     return img_url
