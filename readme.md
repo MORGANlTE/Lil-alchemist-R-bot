@@ -51,8 +51,8 @@ ADMIN_DB = admin.db
 
 ## 📝 Version 📝
 
-Current version: 8.11.0
-Version description: Pack Commands
+Current version: 8.13.0
+Version description: Ephermals
 
 ## 📜 License 📜
 

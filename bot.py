@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.12.2"
-versiondescription = "More status cmds"
+version = "8.13.0"
+versiondescription = "Ephermals"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
