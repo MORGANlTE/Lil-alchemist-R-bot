@@ -543,7 +543,7 @@ groupStatus = app_commands.Group(name="status", description="Set status of the b
             value="Servers"
         ),
         app_commands.Choice(
-            name="📈Members",
+            name="🤝Members",
             value="Members"
         ),
         app_commands.Choice(
