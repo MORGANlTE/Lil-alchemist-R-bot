@@ -374,7 +374,7 @@ def help_embed(version, description):
         ("Informational", "** **", False),
         (":game_die: /wiki", "Searches the specified card on the wiki", True),
         ("🔍 /combo", "Searches the specified combo on the wiki", True),
-        (":flower_playing_cards: /packview", "Shows the contents of a pack", True),
+        (":flower_playing_cards: /pack", "Commands for the Packs", True),
         (":question: /help", "Displays the help page", True),
         ("<:gobking:1258839599938142269> /goblin", "Shows the next goblin spawn", True),
         (":crossed_swords: /arena", "Shows the current and upcoming arena powers/reset time", True),
@@ -798,6 +798,42 @@ def packview_embed(packname):
 
     return embed
 
+def packlist_embed():
+    embed = discord.Embed(
+        title="Packs",
+        description="",
+        color=discord.Color.dark_magenta(),
+    )
+    packs = get_packs()
+
+    # replace all _ with spaces
+    packs = [pack.replace("_", " ").replace("%27", "\'") for pack in packs]
+
+    # remove all packs that are duplicates
+    packs = list(set(packs))
+    packs = sorted(packs)
+    
+    # remove pack called "Specials"
+    packs.remove("Specials")
+
+    chunked_packs = list(chunk_list(packs, 5))
+
+    for i, chunk in enumerate(chunked_packs):
+        embed.add_field(
+            name=f"** **",
+            value="\n".join(chunk),
+            inline=True,
+        )
+
+    embed.set_thumbnail(url="https://i.ibb.co/dcmVQDc/MBot.png")
+
+    embed.set_footer(
+        text="Made with love by _morganite",
+        icon_url="https://iili.io/JlxAR7R.png",
+    )
+
+    return embed
+
 def goblin_embed(goblintime, goblin):
     try:
         if goblintime is None:
@@ -886,7 +922,9 @@ async def sync_command_handler(userid, M_user_ids, adminguilds, tree):
         return "You are not allowed to use this command"
     await sync_commands(adminguilds=adminguilds, tree=tree)
     print("[V] Synced Guilds")
-    return "✅ Synced Guilds Globally 🌍\n✅ Synced admin guilds 🐦‍⬛"
+    setup_packs()
+    print("[V] Synced Packs")
+    return "✅ Synced Guilds Globally 🌍\n✅ Synced admin guilds 🐦‍⬛\n✅ Synced Packs ⛱️"
 
 async def setlogging_command_handler(interaction, admindbfile):
     guild_id = interaction.guild.id

@@ -46,12 +46,13 @@ ADMIN_DB = admin.db
 - `/help`: Shows an overview of all the available commands together with their description. Includes version and update notes.
 - `/profile`: Shows your profile with the current level you're on.
 - `/claim`: Claim your daily amount of gems.
+- `/pack`: Show the packs/contents of a pack
 - ... (Take a look at `/help` for all the commands!)
 
 ## 📝 Version 📝
 
-Current version: 8.10.0
-Version description: Support for unfinished cards & timetables
+Current version: 8.11.0
+Version description: Pack Commands
 
 ## 📜 License 📜
 

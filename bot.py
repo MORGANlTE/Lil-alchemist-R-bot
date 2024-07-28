@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.10.0"
-versiondescription = "Support for unfinished cards & timetables"
+version = "8.11.0"
+versiondescription = "Pack Commands"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -415,13 +415,13 @@ async def generate_command(interaction, options:str, names:str, atks: str, dfcs:
     for filename in filename_locations:
         os.remove(f"{filename}")
 
+groupPack = app_commands.Group(name="pack", description="Commands for the Packs")
 
-@tree.command(
-    name="packview",
+@groupPack.command(
+    name="view",
     description="What in the pack? Only one way to find out.",
-    guilds=guilds,
 )
-async def generate_command(interaction, packname:str):
+async def view_packs_command(interaction, packname:str):
     print("[PackView] " + packname)
     try:
         embed = packview_embed(packname)
@@ -432,6 +432,20 @@ async def generate_command(interaction, packname:str):
         print("[PackView] " + packname)
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while looking up the pack `{packname}`: {e}", interaction)
+
+@groupPack.command(
+    name="list",
+    description="List of all the packs",
+)
+async def list_packs_command(interaction):
+    print("[PackList]")
+    try:
+        embed = packlist_embed()
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+    except Exception as e:
+        await handle_error(client, admindbfile, e, f"An error occured while listing the packs: {e}", interaction)
+
+tree.add_command(groupPack)
 
 @tree.command(
     name="goblin",
@@ -505,7 +519,7 @@ async def setlogging_command(interaction):
         await interaction.followup.send(val)
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while trying to set logging: {e}", interaction)
-print(adminguildids)
+
 
 groupStatus = app_commands.Group(name="status", description="Set status of the bot", guild_ids=adminguildids_ints)
 

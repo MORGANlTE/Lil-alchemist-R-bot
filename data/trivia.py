@@ -65,7 +65,6 @@ def setup_packs():
     resp = requests.get(url)
     soup = BeautifulSoup(resp.content, "html.parser")
 
-
     table = soup.find("table", style="width:100%;text-align:center;")
 
     trs = table.find_all("tr")
@@ -73,14 +72,18 @@ def setup_packs():
     # clear packs
     packs.clear()
     for i, tr in enumerate(trs):
-        if i % 2 != 0:
-            akes = tr.find_all("a")
-            for ake in akes:
-                if ake["href"].split("/")[2].replace("_Pack", "").replace("_Of_", "_of_") == "Darkness":
-                    t = "The_Dark"
-                else:
-                    t = ake["href"].split("/")[2].replace("_Pack", "").replace("_Of_", "_of_")
-                packs.append(t)
+        akes = tr.find_all("a")
+        for ake in akes:
+            if ake["href"].split("/")[2].replace("_Pack", "").replace("_Of_", "_of_") == "Darkness":
+                t = "The_Dark"
+            else:
+                t = ake["href"].split("/")[2].replace("_Pack", "").replace("_Of_", "_of_")
+            packs.append(t)
+    
+    # remove all packs caleld Specials from the list
+    for pack in packs:
+        if pack.strip() == "Specials":
+            packs.remove(pack)
 
 def generate_random_question_combos():
     return get_question_combos()
