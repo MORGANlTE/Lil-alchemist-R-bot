@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.11.0"
+version = "8.11.1"
 versiondescription = "Pack Commands"
 gem_win_trivia = 5
 winstreak_max = 10
@@ -423,15 +423,19 @@ groupPack = app_commands.Group(name="pack", description="Commands for the Packs"
 )
 async def view_packs_command(interaction, packname:str):
     print("[PackView] " + packname)
+    await interaction.response.defer()
     try:
         embed = packview_embed(packname)
         if type(embed) == str:
-            await interaction.response.send_message(content=embed)
+            await interaction.followup.send(content=embed)
             return
-        await interaction.response.send_message(embed=embed)
+        elif type(embed) == discord.Embed:
+            await interaction.followup.send(embed=embed)
+        else:
+            await interaction.followup.send(f"Pack `{packname}` has no fitting format")
         print("[PackView] " + packname)
     except Exception as e:
-        await handle_error(client, admindbfile, e, f"An error occured while looking up the pack `{packname}`: {e}", interaction)
+        await handle_error(client, admindbfile, e, f"An error occured while looking up the pack `{packname}` (Pack format is outdated)", interaction)
 
 @groupPack.command(
     name="list",
@@ -439,9 +443,10 @@ async def view_packs_command(interaction, packname:str):
 )
 async def list_packs_command(interaction):
     print("[PackList]")
+    await interaction.response.defer()
     try:
         embed = packlist_embed()
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.followup.send(embed=embed, ephemeral=True)
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while listing the packs: {e}", interaction)
 

@@ -515,6 +515,8 @@ def get_image(soup):
 
 # Discord emotes shortcuts
 def fusion_to_emote(fusion):
+  if fusion is None:
+    return None
   fusion = fusion.replace("_", " ").strip().capitalize()
 
   if fusion == "Pierce":
