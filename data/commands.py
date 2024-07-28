@@ -387,7 +387,6 @@ def help_embed(version, description):
         ("** **", "** **", False),
         ("Fun", "** **", False),
         (":moneybag: /claim", "Claim your daily login", True),
-        (":package: /packopening", "Opens a pack", True),
         (":gem: /trivia", "Some fun trivia to try out", True),
         (":shopping_cart: /store", "Open the store", True),
         ("🚁 /inventory", "Shows your inventory", True),
