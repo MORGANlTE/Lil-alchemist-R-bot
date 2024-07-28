@@ -914,7 +914,8 @@ async def on_startup_handler(adminguilds, tree, client, dbfile, admindbfile):
     # print in what guilds the bot is
     print(f"[V] Connected to servers:")
     for guild in client.guilds:
-        print(f"  - {guild.name} ({guild.id})")
+        print(f"  - {guild.name} ({guild.member_count} members)")
+
 
 async def sync_command_handler(userid, M_user_ids, adminguilds, tree):
     if userid not in M_user_ids:
@@ -944,8 +945,14 @@ async def status_command_handler(status, client, statustext):
         await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=statustext))
     elif status == "Streaming":
         await client.change_presence(activity=discord.Streaming(name=statustext, url="https://www.twitch.tv/monumental_llc"))
+    elif status == "Servers":
+        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.guilds)} servers"))
+    elif status == "Members":
+        membercount = 0
+        for guild in client.guilds:
+            membercount += guild.member_count
+        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=f"{membercount} members"))
     else:
-        # clear the status
         await client.change_presence(activity=None)
 
     return f"✅ Status set to `{status} {statustext}`"

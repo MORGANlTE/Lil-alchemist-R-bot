@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.11.2"
-versiondescription = "Pack Commands"
+version = "8.12.0"
+versiondescription = "More status cmds"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -537,6 +537,14 @@ groupStatus = app_commands.Group(name="status", description="Set status of the b
         app_commands.Choice(
             name="🎧Listening",
             value="Listening"
+        ),
+        app_commands.Choice(
+            name="Servers",
+            value="Servers"
+        ),
+        app_commands.Choice(
+            name="📈Members",
+            value="Members"
         ),
         app_commands.Choice(
             name="👀Watching",
