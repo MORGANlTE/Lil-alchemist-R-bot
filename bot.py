@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.12.0"
+version = "8.12.1"
 versiondescription = "More status cmds"
 gem_win_trivia = 5
 winstreak_max = 10
@@ -130,12 +130,11 @@ async def show_arena(interaction, amount: int = 2):
 
 @groupArena.command(
     name="reset",
-    description="At what time does arena resets?",
+    description="At what time does the arena reset?",
 )
 async def show_reset(interaction):
     """
     Shows when the arena reset is going to happen
-
     """
     await interaction.response.defer()
     print("[ArenaReset]")
@@ -189,10 +188,11 @@ async def leaderboard_command(interaction, option: app_commands.Choice[str]):
 async def on_message(message):
     on_message_handler(message=message, dbfile=dbfile, exp=exp)
 
-@tree.command(
-    name="profile",
+profileGroup = app_commands.Group(name="profile", description="Profile related commands")
+
+@profileGroup.command(
+    name="view",
     description="Your Discord Profile",
-    guilds=guilds,
 )
 async def profile_command(interaction):
     # Define the question and answers
@@ -212,10 +212,9 @@ async def profile_command(interaction):
 
     
 
-@tree.command(
-    name="setprofile",
+@profileGroup.command(
+    name="set",
     description="Edit your Discord Profile",
-    guilds=guilds,
 )
 @app_commands.describe(option="Choose what type of profile element you want to set")
 @app_commands.choices(option=[
@@ -236,6 +235,21 @@ async def setprofile_command(interaction, option: app_commands.Choice[str], page
             view=view, ephemeral=True)
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while setting your profile: {e}", interaction)
+
+@profileGroup.command(
+    name="inventory",
+    description="Open your inventory",
+)
+async def inventory_command(interaction):
+    await interaction.response.defer()
+    print("[Inventory] " + interaction.user.name)
+    try:
+        embed = await inventory_embed(interaction=interaction, dbfile=dbfile)
+        await interaction.followup.send(embed=embed)
+    except Exception as e:
+        await handle_error(client, admindbfile, e, f"An error occured while opening your inventory: {e}", interaction)
+
+tree.add_command(profileGroup)
 
 @tree.command(
     name="claim",
@@ -273,7 +287,7 @@ async def claim_command(interaction):
 
 @tree.command(
     name="addstuff",
-    description="Just a command for M",
+    description="Add/remove exp/gems from a user",
     guilds=adminguilds,
 )
 @app_commands.describe(option="Choose what type of stuff")
@@ -303,20 +317,6 @@ async def store_command(interaction):
         await interaction.followup.send(embed=embed, view=view)
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while getting the store: {e}", interaction)
-
-@tree.command(
-    name="inventory",
-    description="Open your inventory",
-    guilds=guilds,
-)
-async def inventory_command(interaction):
-    await interaction.response.defer()
-    print("[Inventory] " + interaction.user.name)
-    try:
-        embed = await inventory_embed(interaction=interaction, dbfile=dbfile)
-        await interaction.followup.send(embed=embed)
-    except Exception as e:
-        await handle_error(client, admindbfile, e, f"An error occured while opening your inventory: {e}", interaction)
 
 @tree.command(
     name="generate",
