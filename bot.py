@@ -318,21 +318,6 @@ async def inventory_command(interaction):
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while opening your inventory: {e}", interaction)
 
-    
-# worker example:
-
-# last_run = datetime.now().date()  # Set the last run date to the first day of the month
-
-# @tasks.loop(seconds=30)  # Loop every 60 seconds
-# async def send_message_at():
-#     global last_run
-#     now = datetime.now()
-#     target_time = time(12, 0, 0)  # Target time is 12:00:00
-#     print("trying")
-#     if now.time() >= target_time and (last_run is None or last_run < now.date()):
-#         print("done")
-#         last_run = now.date()  # Update the last run date
-
 @tree.command(
     name="generate",
     description="Generate a card - huge thanks to Aprogergely",

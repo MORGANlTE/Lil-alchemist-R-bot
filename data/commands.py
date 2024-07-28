@@ -9,6 +9,7 @@ from data.shortcuts import *
 from data.exp_essentials import *
 from data.trivia import *
 from discord import SelectOption
+from discord.ext import tasks
 
 async def show_command_embed(cardname, is_onyx):
   print("[Searching] " + cardname)
@@ -916,6 +917,9 @@ async def on_startup_handler(adminguilds, tree, client, dbfile, admindbfile):
     for guild in client.guilds:
         print(f"  - {guild.name} ({guild.member_count} members)")
 
+    membercount = get_member_count(client)
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=f"{membercount} members"))
+
 
 async def sync_command_handler(userid, M_user_ids, adminguilds, tree):
     if userid not in M_user_ids:
@@ -934,7 +938,6 @@ async def setlogging_command_handler(interaction, admindbfile):
         return f"⛔ Logging channel removed in server `{interaction.guild.name}`"
     return f"✅ Added logging channel <#{channel_id}> in server `{interaction.guild.name}`"
 
-
 async def status_command_handler(status, client, statustext):
     # can be status listening playing or watching
     if status == "Listening":
@@ -948,9 +951,7 @@ async def status_command_handler(status, client, statustext):
     elif status == "Servers":
         await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.guilds)} servers"))
     elif status == "Members":
-        membercount = 0
-        for guild in client.guilds:
-            membercount += guild.member_count
+        membercount = get_member_count(client)
         await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=f"{membercount} members"))
     else:
         await client.change_presence(activity=None)

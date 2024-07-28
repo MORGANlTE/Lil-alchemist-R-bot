@@ -876,3 +876,9 @@ def get_logging_guilds_and_channels_from_db(admindbfile):
     data = cursor.fetchall()
     conn.close()
     return data
+
+def get_member_count(client):
+    membercount = 0
+    for guild in client.guilds:
+        membercount += guild.member_count
+    return membercount
