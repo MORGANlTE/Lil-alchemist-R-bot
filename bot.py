@@ -539,7 +539,7 @@ groupStatus = app_commands.Group(name="status", description="Set status of the b
             value="Listening"
         ),
         app_commands.Choice(
-            name="Servers",
+            name="🌍Servers",
             value="Servers"
         ),
         app_commands.Choice(
