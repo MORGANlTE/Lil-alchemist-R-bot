@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.11.1"
+version = "8.11.2"
 versiondescription = "Pack Commands"
 gem_win_trivia = 5
 winstreak_max = 10
@@ -183,32 +183,6 @@ async def leaderboard_command(interaction, option: app_commands.Choice[str]):
         await interaction.followup.send(embed=embed)
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while getting the leaderboard: {e}", interaction)
-
-@tree.command(
-    name="packopening",
-    description="Open a pack",
-    guilds=guilds,
-)
-async def packopening_command(interaction, packname: str):
-    await interaction.response.defer()
-    print("[PackOpening] " + packname)
-    try:
-        imgcards, embed = await packopening_embed(interaction=interaction, packname=packname)
-        if embed == False:
-            await interaction.followup.send(
-                f"{imgcards}",
-            )
-            return
-        else:
-            await interaction.followup.send(
-                f"{interaction.user.mention} opened `{packname}` Pack",
-                file=imgcards,
-                embed=embed if embed == 4 else None,
-            )
-        
-        os.remove(f"./images/{imgcards.filename}")
-    except Exception as e:
-        await handle_error(client, admindbfile, e, f"An error occured while opening pack `{packname}`: {e}", interaction)
 
 
 @client.event
@@ -449,6 +423,32 @@ async def list_packs_command(interaction):
         await interaction.followup.send(embed=embed, ephemeral=True)
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while listing the packs: {e}", interaction)
+
+@groupPack.command(
+    name="open",
+    description="Open a pack",
+)
+async def packopening_command(interaction, packname: str):
+    await interaction.response.defer()
+    print("[PackOpening] " + packname)
+    try:
+        imgcards, embed = await packopening_embed(interaction=interaction, packname=packname)
+        if embed == False:
+            await interaction.followup.send(
+                f"{imgcards}",
+            )
+            return
+        else:
+            await interaction.followup.send(
+                f"{interaction.user.mention} opened `{packname}` Pack",
+                file=imgcards,
+                embed=embed if embed == 4 else None,
+            )
+        
+        os.remove(f"./images/{imgcards.filename}")
+    except Exception as e:
+        await handle_error(client, admindbfile, e, f"An error occured while opening pack `{packname}`: {e}", interaction)
+
 
 tree.add_command(groupPack)
 
