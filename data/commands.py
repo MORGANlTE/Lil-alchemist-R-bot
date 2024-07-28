@@ -389,7 +389,6 @@ def help_embed(version, description):
         (":moneybag: /claim", "Claim your daily login", True),
         (":gem: /trivia", "Some fun trivia to try out", True),
         (":shopping_cart: /store", "Open the store", True),
-        ("🚁 /inventory", "Shows your inventory", True),
         (":coral: /generate", "Make a custom card LAR style - :heart: <@429653599296028683>!", True),
     ]
 

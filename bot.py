@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.12.1"
+version = "8.12.2"
 versiondescription = "More status cmds"
 gem_win_trivia = 5
 winstreak_max = 10
@@ -97,10 +97,12 @@ async def combo_command(interaction, card1: str, card2: str):
     guilds=guilds,
 )
 async def help_command(interaction):
+    await interaction.response.defer(ephemeral=True)
+
     print("[Help] " + interaction.user.name)
     try:
         embed = help_embed(version=version, description=versiondescription)
-        await interaction.response.send_message(embed=embed)
+        await interaction.followup.send(embed=embed)
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while using help cmd: {e}", interaction)
 
@@ -223,7 +225,8 @@ async def profile_command(interaction):
         app_commands.Choice(name="🖌️ Border", value="border")
     ])
 async def setprofile_command(interaction, option: app_commands.Choice[str], page: int = 1):
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral=True)
+
     print("[SetProfile] " + option.value)
     try:
         view = await setprofile_embed(interaction=interaction, dbfile=dbfile, option=option, page=page)
@@ -241,11 +244,12 @@ async def setprofile_command(interaction, option: app_commands.Choice[str], page
     description="Open your inventory",
 )
 async def inventory_command(interaction):
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral=True)
+
     print("[Inventory] " + interaction.user.name)
     try:
         embed = await inventory_embed(interaction=interaction, dbfile=dbfile)
-        await interaction.followup.send(embed=embed)
+        await interaction.followup.send(embed=embed, ephemeral=True)
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while opening your inventory: {e}", interaction)
 
@@ -310,7 +314,8 @@ async def addstuff_command(interaction, option: app_commands.Choice[str], amount
     guilds=guilds,
 )
 async def store_command(interaction):
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral=True)
+
     print("[Store] " + interaction.user.name)
     try:
         embed, view = await store_embed(interaction=interaction, dbfile=dbfile)
@@ -402,7 +407,7 @@ async def view_packs_command(interaction, packname:str):
 )
 async def list_packs_command(interaction):
     print("[PackList]")
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral=True)
     try:
         embed = packlist_embed()
         await interaction.followup.send(embed=embed, ephemeral=True)
