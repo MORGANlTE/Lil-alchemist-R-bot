@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.13.0"
-versiondescription = "Ephermals"
+version = "8.13.2"
+versiondescription = "Improved search algorithm"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -150,6 +150,32 @@ async def show_reset(interaction):
 # add the group to the tree
 tree.add_command(groupArena)
 
+groupEvent = app_commands.Group(name="event", description="Event related commands")
+
+@groupEvent.command(
+    name="show",
+    description="Look up the current event(s)",
+)
+async def show_event(interaction, amount: int = 2):
+    """
+    Shows the current and upcoming event rotation
+    Args:
+        amount (int, optional): The amount of upcoming events to show. Defaults to 2 (current and next)
+    """
+    await interaction.response.defer()
+    print("[EventInfo] " + str(amount))
+    try:
+        embed = show_event_embed(amount=amount, dbfile=dbfile, userid=interaction.user.id)
+        if type(embed) == discord.Embed:
+            await interaction.followup.send(embed=embed)
+        elif type(embed) == int:
+            await interaction.followup.send(f"Invalid amount of next events, choose a number between 1 and {embed}", ephemeral=True)
+    except Exception as e:
+        await handle_error(client, admindbfile, e, f"An error occured while searching for the event: {e}", interaction)
+
+
+
+tree.add_command(groupEvent)
 
 @tree.command(
     name="trivia",

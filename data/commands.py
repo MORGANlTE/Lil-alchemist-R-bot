@@ -1,7 +1,4 @@
 import discord
-import requests
-from bs4 import BeautifulSoup
-from data.Apro.Aprogergely import imageeditor
 from data.commands import *
 from data.data_grabber import *
 from data.packopening import *
@@ -9,7 +6,6 @@ from data.shortcuts import *
 from data.exp_essentials import *
 from data.trivia import *
 from discord import SelectOption
-from discord.ext import tasks
 
 async def show_command_embed(cardname, is_onyx):
   print("[Searching] " + cardname)
@@ -223,6 +219,62 @@ def show_arena_reset_embed():
 
     return embed
 
+def show_event_embed(amount, dbfile, userid):
+
+    starttime = datetime(2024, 8, 6, 3, 0, 0, 0)
+    starttime = starttime - timedelta(days=70)
+    # endtime = datetime(2024, 8, 16, 3, 0, 0, 0)
+    # each event has cooldown period between next event for 4 days
+    events = get_events()
+    max_events_allowed = len(events)
+    if amount < 1 or amount > max_events_allowed:
+        return max_events_allowed
+        
+
+
+    
+    starter_event = events[5]
+
+    currenttime = datetime.now()
+
+    # get the difference between the current time and the start time
+    difference = currenttime - starttime
+
+    # get the days and hours
+    days = difference.days
+
+    # hours
+    hours = difference.seconds // 3600
+
+    # get the next event
+    amount_of_days_between_events = 4
+    # check how many events have passed
+    event_index = days // (len(events) + amount_of_days_between_events)
+    next_event = events[event_index]
+    endtime = starttime + timedelta(days=(days // (len(events) + amount_of_days_between_events) + 1) * (len(events) + amount_of_days_between_events)) - timedelta(days=4)
+    endtime_timestamp = int(endtime.timestamp())
+    embed = discord.Embed(
+        title="Events",
+        description=f"`Current event`\nEnds <t:{endtime_timestamp}:R> at <t:{endtime_timestamp}>",
+        color=discord.Color.teal(),
+    )
+    for i in range(0, amount):
+        next_event = events[(days // (len(events) + amount_of_days_between_events) + i) % len(events)]
+        next_next_event_timestamp = int((starttime + timedelta(days=(days // (len(events) + amount_of_days_between_events) + i + 1) * (len(events) + amount_of_days_between_events))).timestamp())
+        embed.add_field(
+            name=f"{next_event['eventname']} Event",
+            value=f"{next_event['bossemoji']} {next_event['bossname']} - <:gcc:1258877882571427880> {next_event['eventgcc']} {next_event['eventemoji']}\n\n" + ("" if i == amount - 1 else f"Starts <t:{next_next_event_timestamp}:R> - <t:{next_next_event_timestamp}>"),
+            inline=False,
+        )
+
+    embed.add_field(
+        name="** **",
+        value=f"<:newMBot0:1251265938142007486> ~ Event Cycle :heart: <@405067444764540928>",
+    )
+    
+
+    return embed
+
 def show_combo_embed(card1, card2):
     
     urls = construct_urls(card1)
@@ -378,6 +430,7 @@ def help_embed(version, description):
         (":flower_playing_cards: /pack", "Commands for the Packs", True),
         (":question: /help", "Displays the help page", True),
         ("<:gobking:1258839599938142269> /goblin", "Shows the next goblin spawn", True),
+        ("<:Anna:1270751642576490507> /event", "More information about the current events", True),
         (":crossed_swords: /arena", "Shows the current and upcoming arena powers/reset time", True),
         ("** **", "** **", False),
         ("Server related", "** **", False),
@@ -769,16 +822,31 @@ async def inventory_embed(interaction, dbfile):
 def packview_embed(packname):
     if len(packname) < 2:
         return f"There are no pack names this short man, what r u doing 😅"
+    
     packcontent = get_pack_contents(packname)
 
     if packcontent == "Not found":
-        closestpack = find_closest_pack(packname, get_packs())
-        return f"Pack `{packname}` not found\nDid you mean `{closestpack}`?"
+        packcontent = get_pack_contents(packname.capitalize())
+
+    
     
     embed = discord.Embed(
         title=f"{packname} Pack",
         color=discord.Color.dark_magenta(),
     )
+
+    if packcontent == "Not found":
+        closestpack = find_closest_pack(packname, get_packs())
+        
+        packcontent = get_pack_contents(closestpack)
+
+        embed.add_field(
+            name=f"Pack `{packname}` not found",
+            value=f"Showing results for `{closestpack}`?",
+            inline=False,
+        )
+        packname = closestpack
+    
     # link to the wiki
     embed.add_field(
         name="Wiki Page",

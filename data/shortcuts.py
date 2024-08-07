@@ -12,6 +12,7 @@ from data.custom_cards.custom_card_names import custom_names
 import re
 import traceback
 from data.data_grabber import *
+import metaphone
 
 # Discord.py
 async def sync_guilds(guilds, tree):
@@ -565,11 +566,18 @@ def find_closest_pack(user_input, word_list):
   # "borrowed" this code from Google Gemini
   if user_input.strip() == "Darkness":
      return "The Dark"
+  user_metaphone = metaphone.doublemetaphone(user_input)[0]  # Use primary metaphone code
   distances = []
+
   for item in word_list:
-    # Calculate the Levenshtein distance to measure edit distance between strings
-    distance = sum(a != b for a, b in zip(user_input, item))
+    item_metaphone = metaphone.doublemetaphone(item)[0]
+    distance = sum(a != b for a, b in zip(user_metaphone, item_metaphone))
     distances.append(distance)
+
+  # Consider word length as a factor
+  for i, item in enumerate(word_list):
+    distances[i] += abs(len(user_input) - len(item)) * 0.5
+
   return word_list[distances.index(min(distances))]
 
 # pfp shortcuts
@@ -719,6 +727,92 @@ def get_arena_powers():
     ]
    
   return arena_powers
+
+def get_events():
+# Huntress:Bear~1:Bear :gcc~1: - Anna :Anna~1:
+# Mad Scientist :Science~1: Science :gcc~1: - Albert :Albert~1:
+# Time Traveler :Time~1: Time :gcc~1: - Mr. Pimm :Pimm~1:
+# Crazed AI :Energy~1: Energy :gcc~1: - Lucy :Lucy~1:
+# Cyclone :Wind~1: Wind :gcc~1: - Leopold :Leopold~1:
+# Super Villain :Villain~1: Villain :gcc~1: - Vera :Vera~1:
+# Copper Chef :Food~1: Food :gcc~1: - Francois :Francois~1:
+# Science Fair :Life~1: Life :gcc~1: - Miles :Miles~1:
+# Invasion :Space~2: Space :gcc~1: - Xanthar :Xanthar~2:
+# Monster Bash :Monster~1: Monster :gcc~1: - Ella :Ella~1:
+
+    events = [
+        {
+            "eventname": "Huntress",
+            "eventemoji": "<:Bear:1270751618354249790>",
+            "eventgcc": "Bear",
+            "bossname": "Anna",
+            "bossemoji": "<:Anna:1270751642576490507>"
+        },
+        {
+            "eventname": "Mad Scientist",
+            "eventemoji": "<:Science:1270751724839112778>",
+            "eventgcc": "Science",
+            "bossname": "Albert",
+            "bossemoji": "<:Albert:1270751744573444266>"
+        },
+        {
+            "eventname": "Time Traveler",
+            "eventemoji": "<:Time:1270751765041778841>",
+            "eventgcc": "Time",
+            "bossname": "Mr. Pimm",
+            "bossemoji": "<:Pimm:1270751780753641606>"
+        },
+        {
+            "eventname": "Crazed AI",
+            "eventemoji": "<:Energy:1270751806120657011>",
+            "eventgcc": "Energy",
+            "bossname": "Lucy",
+            "bossemoji": "<:Lucy:1270751824688975952>"
+        },
+        {
+            "eventname": "Cyclone",
+            "eventemoji": "<:Wind:1270751849028259872>",
+            "eventgcc": "Wind",
+            "bossname": "Leopold",
+            "bossemoji": "<:Leopold:1270752103496945665>"
+        },
+        {
+            "eventname": "Super Villain",
+            "eventemoji": "<:Villain:1270752131183546449>",
+            "eventgcc": "Villain",
+            "bossname": "Vera",
+            "bossemoji": "<:Vera:1270752156961738822>"
+        },
+        {
+            "eventname": "Copper Chef",
+            "eventemoji": "<:Food:1270752174531678251>",
+            "eventgcc": "Food",
+            "bossname": "Francois",
+            "bossemoji": "<:Francois:1270752193829408800>"
+        },
+        {
+            "eventname": "Science Fair",
+            "eventemoji": "<:Life:1270752212624343091>",
+            "eventgcc": "Life",
+            "bossname": "Miles",
+            "bossemoji": "<:Miles:1270752228025696286>"
+        },
+        {
+            "eventname": "Invasion",
+            "eventemoji": "<:Space:1270752281058611220>",
+            "eventgcc": "Space",
+            "bossname": "Xanthar",
+            "bossemoji": "<:Xanthar:1270752296451440784>"
+        },
+        {
+            "eventname": "Monster Bash",
+            "eventemoji": "<:Monster:1270752308724240424>",
+            "eventgcc": "Monster",
+            "bossname": "Ella",
+            "bossemoji": "<:Ella:1270752334439387200>"
+        }
+    ]
+    return events
 
 def get_goblins():
     goblins = {
