@@ -223,6 +223,9 @@ def show_event_embed(amount, dbfile, userid):
 
     starttime = datetime(2024, 8, 6, 3, 0, 0, 0)
     starttime = starttime - timedelta(days=70)
+    # add 7 hours
+    starttime = starttime + timedelta(hours=7)
+    
     # endtime = datetime(2024, 8, 16, 3, 0, 0, 0)
     # each event has cooldown period between next event for 4 days
     events = get_events()
