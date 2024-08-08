@@ -224,7 +224,7 @@ def show_event_embed(amount, dbfile, userid):
     starttime = datetime(2024, 8, 6, 3, 0, 0, 0)
     starttime = starttime - timedelta(days=70)
     # add 7 hours
-    starttime = starttime + timedelta(hours=7)
+    starttime = starttime + timedelta(hours=11)
     
     # endtime = datetime(2024, 8, 16, 3, 0, 0, 0)
     # each event has cooldown period between next event for 4 days
@@ -845,7 +845,7 @@ def packview_embed(packname):
 
         embed.add_field(
             name=f"Pack `{packname}` not found",
-            value=f"Showing results for `{closestpack}`?",
+            value=f"Showing results for `{closestpack}`",
             inline=False,
         )
         packname = closestpack
