@@ -642,9 +642,9 @@ async def profile_embed(interaction, dbfile):
     discord_avatar = interaction.user.avatar.url if interaction.user.avatar is not None else "https://i.ibb.co/nbdqnSL/2.png"
     custom_pfp = get_custom_pfp(interaction.user.id, dbfile) + ".png"
     leaderboard_rank = gemsAndPerc[3]
-    pic = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, leaderboard_rank, custom_pfp)
+    pic, random_name = await make_profile_picture(discord_name, discord_avatar, exp, gems, winstreak, leaderboard_rank, custom_pfp)
 
-    return {"pic":pic, "discord_name":discord_name}
+    return {"pic":pic, "discord_name":random_name}
 
 async def setprofile_embed(interaction, dbfile, page, option):
     start_idx = (page - 1) * 5
@@ -825,7 +825,7 @@ async def inventory_embed(interaction, dbfile):
 def packview_embed(packname):
     if len(packname) < 2:
         return f"There are no pack names this short man, what r u doing 😅"
-    
+    packname = packname.capitalize()
     packcontent = get_pack_contents(packname)
 
     if packcontent == "Not found":
@@ -833,23 +833,28 @@ def packview_embed(packname):
 
     
     
-    embed = discord.Embed(
-        title=f"{packname} Pack",
-        color=discord.Color.dark_magenta(),
-    )
+    
 
     if packcontent == "Not found":
         closestpack = find_closest_pack(packname, get_packs())
         
         packcontent = get_pack_contents(closestpack)
-
+        embed = discord.Embed(
+            title=f"{packname} Pack",
+            color=discord.Color.dark_magenta(),
+        )
         embed.add_field(
             name=f"Pack `{packname}` not found",
             value=f"Showing results for `{closestpack}`",
             inline=False,
         )
         packname = closestpack
-    
+    else:
+        embed = discord.Embed(
+            title=f"{packname} Pack",
+            color=discord.Color.dark_magenta(),
+        )
+
     # link to the wiki
     embed.add_field(
         name="Wiki Page",

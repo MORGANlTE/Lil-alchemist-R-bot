@@ -68,7 +68,8 @@ def setup_packs():
     table = soup.find("table", style="width:100%;text-align:center;")
 
     trs = table.find_all("tr")
-    trs = trs[3:-4]
+    trs = trs[2:-3]
+    # line above removes the first 3 and last 4 trs, which are not packs
     # clear packs
     packs.clear()
     for i, tr in enumerate(trs):
@@ -79,7 +80,6 @@ def setup_packs():
             else:
                 t = ake["href"].split("/")[2].replace("_Pack", "").replace("_Of_", "_of_")
             packs.append(t)
-    
     # remove all packs caleld Specials from the list
     for pack in packs:
         if pack.strip() == "Specials":

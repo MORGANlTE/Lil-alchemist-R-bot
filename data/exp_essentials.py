@@ -8,6 +8,7 @@ import io
 from datetime import datetime, timedelta
 import json
 from data.shortcuts import *
+import random
 
 def calculate_level(exp):
     return math.ceil((-3 + math.sqrt(exp)) / 2)
@@ -208,12 +209,14 @@ async def make_profile_picture(discord_name, discord_avatar, exp, gems, winstrea
   # if folder does not exist, create it
   if not os.path.exists("important_images"):
     os.makedirs("important_images")
-  background.save(f"important_images/{discord_name}.png")
+    # random number between 1 and 1000000
+  random_name = str(random.randint(1, 1000000))
+  background.save(f"important_images/{random_name}.png")
   fileM = discord.File(
-            f"./important_images/{discord_name}.png",
-            filename=f"{discord_name}.png",
+            f"./important_images/{random_name}.png",
+            filename=f"{random_name}.png",
         )
-  return fileM
+  return fileM, random_name
 
 def claim_daily(userid, dbfile):
   conn = sqlite3.connect(dbfile)

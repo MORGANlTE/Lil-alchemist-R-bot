@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variables:
-version = "8.13.2"
-versiondescription = "Improved search algorithm"
+version = "8.15.0"
+versiondescription = "Fixed exploit that crashed the bot & added pack view list extended"
 gem_win_trivia = 5
 winstreak_max = 10
 gem_loss_trivia = -5
@@ -229,14 +229,14 @@ async def profile_command(interaction):
     try:
         res = await profile_embed(interaction=interaction, dbfile=dbfile)
         pic = res["pic"]
-        discord_name = res["discord_name"]
+        random_name = res["discord_name"]
         await interaction.followup.send(
             file=pic,
         )
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while getting your profile: {e}", interaction)
     # remove the image
-    os.remove(f"./important_images/{discord_name}.png")
+    os.remove(f"./important_images/{random_name}.png")
 
     
 
