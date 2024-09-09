@@ -68,7 +68,7 @@ def setup_packs():
     table = soup.find("table", style="width:100%;text-align:center;")
 
     trs = table.find_all("tr")
-    trs = trs[2:-3]
+    trs = trs[2:-4]
     # line above removes the first 3 and last 4 trs, which are not packs
     # clear packs
     packs.clear()
