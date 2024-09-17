@@ -924,8 +924,8 @@ def goblin_embed(goblintime, goblin):
     
     goblins = get_goblins()
 
-    spawntimeC = (gtime + timedelta(days=goblins[goblin]["spawn_daysC"])).strftime("%m-%d-%Y")
-    spawntime = (gtime + timedelta(days=goblins[goblin]["spawn_days"])).strftime("%m-%d-%Y")
+    spawntimeC = (gtime + timedelta(days=goblins[goblin]["spawn_daysC"]-1)).strftime("%m-%d-%Y")
+    spawntime = (gtime + timedelta(days=goblins[goblin]["spawn_days"]-1)).strftime("%m-%d-%Y")
     # convert spawntime to unix timestamp
     spawn_timestamp = int(datetime.strptime(spawntime, "%m-%d-%Y").timestamp())
     spawnC_timestamp = int(datetime.strptime(spawntimeC, "%m-%d-%Y").timestamp())
