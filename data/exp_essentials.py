@@ -272,11 +272,12 @@ def get_highest_exp(dbfile):
 def get_user_pfps_db(userid, db_connection):
   cursor = db_connection.cursor()
   cursor.execute("SELECT pfps FROM users WHERE userid = ?", (userid,))
-  pfps = cursor.fetchone()[0]
+  pfps = cursor.fetchone()
   if pfps is None:
     pfps = []
   # make the list a set json
   else:
+    pfps = pfps[0]
     pfps = json.loads(pfps)
 
   return pfps

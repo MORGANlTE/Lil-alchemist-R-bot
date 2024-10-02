@@ -71,6 +71,7 @@ def check_exp_exists_in_users(conn):
     exp_exists = False
     lastupdated_exists = False
     lastlogin_exists = False
+    server_for_exp_exists = False
 
     for column in table_info:
         if column[1] == "exp":
@@ -79,7 +80,9 @@ def check_exp_exists_in_users(conn):
             lastupdated_exists = True
         if column[1] == "lastlogin":
             lastlogin_exists = True
-        if exp_exists and lastupdated_exists and lastlogin_exists:
+        if column[1] == "server_for_exp":
+            server_for_exp_exists = True
+        if exp_exists and lastupdated_exists and lastlogin_exists and server_for_exp_exists:
             break        
         
     if not exp_exists:
@@ -90,6 +93,9 @@ def check_exp_exists_in_users(conn):
         conn.commit()
     if not lastlogin_exists: # lastupdated is the last time the user got exp
         cursor.execute("ALTER TABLE users ADD COLUMN lastlogin TEXT")
+        conn.commit()
+    if not server_for_exp_exists:
+        cursor.execute("ALTER TABLE users ADD COLUMN server_for_exp TEXT DEFAULT '317710252369772544'")
         conn.commit()
 
 def check_profilepictures_exist_in_users(conn):
