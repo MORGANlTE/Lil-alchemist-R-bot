@@ -481,10 +481,11 @@ tree.add_command(groupPack)
     ])
 async def goblin_command(interaction, goblin:app_commands.Choice[str], goblintime: str = None):
     """
-    You can check out here when the goblin spawns and what rewards you can get from it.
+    Enter the date you last got this goblin (default today)
+    You can check out here when this goblin spawns and what rewards you can get from it.
 
     Args:
-        goblintime (str, optional): MM-DD-YYYY The date you want to check the goblin for. Standard is today.
+        goblintime (str, optional): MM-DD-YYYY Enter the date you last got this goblin.
     """
     await interaction.response.defer()
     print("[Goblin] " + goblin.value)
