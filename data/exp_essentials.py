@@ -273,7 +273,7 @@ def get_user_pfps_db(userid, db_connection):
   cursor = db_connection.cursor()
   cursor.execute("SELECT pfps FROM users WHERE userid = ?", (userid,))
   pfps = cursor.fetchone()
-  if pfps is None:
+  if pfps is None or pfps[0] is None:
     pfps = []
   # make the list a set json
   else:
