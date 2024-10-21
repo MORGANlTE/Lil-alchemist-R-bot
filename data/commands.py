@@ -253,6 +253,8 @@ def show_event_embed(amount, dbfile, userid):
     amount_of_days_between_events = 4
     # check how many events have passed
     event_index = days // (len(events) + amount_of_days_between_events)
+    if event_index >= len(events):
+        event_index = event_index % len(events)
     next_event = events[event_index]
     endtime = starttime + timedelta(days=(days // (len(events) + amount_of_days_between_events) + 1) * (len(events) + amount_of_days_between_events)) - timedelta(days=4)
     endtime_timestamp = int(endtime.timestamp())
