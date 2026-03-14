@@ -824,54 +824,75 @@ async def inventory_embed(interaction, dbfile):
 
     return embed
 
+def format_pack_name(name):
+    """Helper function to properly Title Case pack names."""
+    return " ".join([word.capitalize() for word in name.replace("_", " ").split()])
+
 def packview_embed(packname):
     if len(packname) < 2:
-        return f"There are no pack names this short man, what r u doing 😅"
-    packname = packname.capitalize()
-    packcontent = get_pack_contents(packname)
+        return "There are no pack names this short man, what r u doing 😅"
 
-    if packcontent == "Not found":
-        packcontent = get_pack_contents(packname.capitalize())
+    # 1. Format the name correctly right from the start (e.g. "Atomic Aftermath")
+    clean_name = format_pack_name(packname)
+    
+    packcontent = get_pack_contents(clean_name)
+    
+    embed_description = ""
 
-    
-    
-    
-
-    if packcontent == "Not found":
-        closestpack = find_closest_pack(packname, get_packs())
+    # 2. Fallback: If not found, try finding the closest match
+    if isinstance(packcontent, str) and packcontent.strip() == "Not found":
+        closestpack = find_closest_pack(clean_name, get_packs())
         
-        packcontent = get_pack_contents(closestpack)
-        embed = discord.Embed(
-            title=f"{packname} Pack",
-            color=discord.Color.dark_magenta(),
-        )
-        embed.add_field(
-            name=f"Pack `{packname}` not found",
-            value=f"Showing results for `{closestpack}`",
-            inline=False,
-        )
-        packname = closestpack
-    else:
-        embed = discord.Embed(
-            title=f"{packname} Pack",
-            color=discord.Color.dark_magenta(),
-        )
+        if closestpack:
+            clean_name = closestpack
+            packcontent = get_pack_contents(clean_name)
+            embed_description = f"*Showing results for closest match: `{closestpack}`*"
 
-    # link to the wiki
+    # 3. Final Check: If it's STILL a string, both attempts failed
+    if isinstance(packcontent, str):
+        print(f"[Embed Error] Final result is a string: {packcontent}")
+        return f"❌ Could not find a pack matching `{packname}`."
+
+    # 4. We are now guaranteed to have our dictionary! Build the Embed.
+    embed = discord.Embed(
+        title=f"{clean_name} Pack",
+        description=embed_description if embed_description else None,
+        color=discord.Color.dark_magenta(),
+    )
+
+    # Add Wiki Link
+    wiki_url = f"https://lil-alchemist.fandom.com/wiki/Special_Packs/{clean_name.replace(' ', '_')}"
     embed.add_field(
         name="Wiki Page",
-        value=f"[Click here to visit the wiki page](https://lil-alchemist.fandom.com/wiki/Special_Packs/{packname.replace(' ', '_')})",
+        value=f"[Click here to visit the wiki page]({wiki_url})",
         inline=False,
     )
 
-    for row in packcontent["cards"]:
-        embed.add_field(name=row[0].replace("_", " ").replace("%27s", "'").replace("%26", "&"), value=row[2] + " " + row[1], inline=True)
+    # 5. Loop through cards safely
+    seen_cards = set() # Keep track of cards we've already added
     
-    # check if valid url
+    for row in packcontent.get("cards", []):
+        # Format the card name
+        card_name = row[0].replace("_", " ").replace("%27s", "'").replace("%26", "&")
+        
+        # If we already added this card, skip it to prevent duplicates
+        if card_name in seen_cards:
+            continue
+            
+        # Mark as seen
+        seen_cards.add(card_name)
+        
+        card_stats = f"{row[2]} {row[1]}"
+        embed.add_field(name=card_name, value=card_stats, inline=True)
+    
+    # 6. Check Image URL 
+    # (Note: Using a simpler check here because Wikia image URLs often have query parameters 
+    # like '?cb=12345' at the end, which your previous regex would reject)
+    img_url = packcontent.get("img", "")
+    if img_url.startswith("http"):
+        embed.set_thumbnail(url=img_url)
 
-    if re.match(r"(http|https)://.*\.(?:png|jpg|jpeg|gif|png)", packcontent["img"]):
-        embed.set_thumbnail(url=packcontent["img"])
-
+    # print out everything from the embed for debugging
     return embed
 
 def packlist_embed():
@@ -890,7 +911,8 @@ def packlist_embed():
     packs = sorted(packs)
     
     # remove pack called "Specials"
-    packs.remove("Specials")
+    if "Specials" in packs:
+        packs.remove("Specials")
 
     chunked_packs = list(chunk_list(packs, 5))
 

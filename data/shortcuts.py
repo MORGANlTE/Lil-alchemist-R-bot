@@ -13,6 +13,7 @@ import re
 import traceback
 from data.data_grabber import *
 import metaphone
+import cloudscraper
 
 # Discord.py
 async def sync_guilds(guilds, tree):
@@ -472,39 +473,68 @@ def get_question_ability():
 def get_pack_contents(pack):
     url_name = pack.replace(" ", "_")
     url = f"https://lil-alchemist.fandom.com/wiki/Special_Packs/{url_name}"
-    resp = requests.get(url)
+    
+    # Configure cloudscraper to mimic a real browser more accurately
+    scraper = cloudscraper.create_scraper(browser={
+        'browser': 'chrome',
+        'platform': 'windows',
+        'mobile': False
+    })
+    
+    print(f"[Getting Pack Contents] {pack}")
+    print(url)
+    
+    resp = scraper.get(url)
     soup = BeautifulSoup(resp.content, "html.parser")
-    return_cards = []
-
-    try:
-        div1 = soup.find_all("div", id="gallery-0")[0]
-    except:
+    
+    # 1. Cloudflare Check
+    if "Just a moment..." in soup.text:
         return "Not found"
-    
-    aside = soup.find("aside").find("a").get("href").replace("/wiki/", "").strip()
-
-    def loop_and_add_cards(cards):
-       for card in cards:
-        # find the img inside the card
-        img = card.find("img")
         
-        # name, stats, fusion
-        return_cards.append([
-           card.get("href").replace("/wiki/", "").strip(),
-           img.get("alt"),
-           fusion_to_emote(get_filename_from_url(img.get('data-caption')))
-        ])
-
-    gallery = soup.find("div", id="gallery-0")
-    cards = gallery.find_all("a", class_="image link-internal")
-    loop_and_add_cards(cards)
-
-    gallery = soup.find("div", id="gallery-1")
-    cards = gallery.find_all("a", class_="image link-internal")
-    loop_and_add_cards(cards)
+    return_cards = []
     
+    # 2. Safely grab the pack image from the aside
+    aside_tag = soup.find("aside")
+    aside_img_url = ""
+    if aside_tag:
+        a_tag = aside_tag.find("a")
+        if a_tag and a_tag.get("href"):
+            aside_img_url = a_tag.get("href") # Will be the raw static.wikia... link
+    
+    # 3. Dynamically find all galleries on the page
+    # This prevents crashes if a page has 1, 2, or 3+ galleries
+    galleries = soup.find_all("div", class_=lambda c: c and "wikia-gallery" in c)
+    
+    if not galleries:
+        print("No card galleries found on this page.")
+        return "Not found"
 
-    return {"cards":return_cards, "img": aside}
+    # 4. Extract cards safely
+    for gallery in galleries:
+        cards = gallery.find_all("a", class_="image link-internal")
+        
+        for card in cards:
+            # We look for the image with 'thumbimage' to bypass basic structural changes
+            img = card.find("img", class_="thumbimage")
+            if not img:
+                continue
+                
+            card_name = card.get("href", "").replace("/wiki/", "").strip()
+            stats = img.get("alt", "")
+            
+            # Fandom hides the caption with HTML entities inside data-caption
+            caption_raw = img.get('data-caption', '')
+            
+            try:
+                # Assuming your functions are in the global scope
+                emote = fusion_to_emote(get_filename_from_url(caption_raw))
+            except Exception as e:
+                print(f"Error parsing emote for {card_name}: {e}")
+                emote = ""
+                
+            return_cards.append([card_name, stats, emote])
+
+    return {"cards": return_cards, "img": aside_img_url}
 
 
 # Beautifulsoup shortcuts

@@ -1,5 +1,7 @@
 from random import randint
 import requests
+import urllib
+import cloudscraper
 from bs4 import BeautifulSoup
 from shortcuts import *
 from data.essentials.data.question import Question
@@ -61,29 +63,70 @@ def get_trivia_questions():
         return generate_random_question_abilities()
 
 def setup_packs():
-    url = f"https://lil-alchemist.fandom.com/wiki/Special_Packs"
-    resp = requests.get(url)
+    url = "https://lil-alchemist.fandom.com/wiki/Special_Packs"
+    
+    # Use Cloudscraper's built-in browser mimicking instead of hardcoding old user-agents
+    scraper = cloudscraper.create_scraper(browser={
+        'browser': 'chrome',
+        'platform': 'windows',
+        'mobile': False
+    })
+    
+    resp = scraper.get(url)
     soup = BeautifulSoup(resp.content, "html.parser")
 
     table = soup.find("table", style="width:100%;text-align:center;")
+    if not table:
+        print("Could not find the packs table!")
+        # throw an error or return early to prevent further issues
+        raise Exception("Packs table not found on the page.")
 
+    # Find all rows in the table
     trs = table.find_all("tr")
-    trs = trs[2:-4]
-    # line above removes the first 3 and last 4 trs, which are not packs
-    # clear packs
+    
+    # Optional: If you need to skip header/footer rows, uncomment the line below
+
+    # Clear the global packs list
     packs.clear()
-    for i, tr in enumerate(trs):
+
+    # Loop through each row
+    for tr in trs:
         akes = tr.find_all("a")
         for ake in akes:
-            if ake["href"].split("/")[2].replace("_Pack", "").replace("_Of_", "_of_") == "Darkness":
-                t = "The_Dark"
-            else:
-                t = ake["href"].split("/")[2].replace("_Pack", "").replace("_Of_", "_of_")
-            packs.append(t)
-    # remove all packs caleld Specials from the list
-    for pack in packs:
-        if pack.strip() == "Specials":
-            packs.remove(pack)
+            href = ake.get("href", "")
+            
+            # Skip invalid, missing, Category, or Special upload links
+            if not href.startswith("/wiki/") or "Category:" in href or "Special:" in href:
+                continue
+                
+            pack_name = ""
+            
+            # Scenario A: Standard links like /wiki/Special_Packs/Accursed
+            if href.startswith("/wiki/Special_Packs/"):
+                pack_name = href.split("/")[-1] # Grabs the very last part of the URL
+                
+            # Scenario B: Odd links like /wiki/Galactic_Wars_Pack
+            elif href.endswith("_Pack"):
+                pack_name = href.split("/")[-1].replace("_Pack", "")
+                
+            # If it didn't match our expected formats, skip it
+            if not pack_name:
+                continue
+
+            # Clean up the string formatting
+            pack_name = urllib.parse.unquote(pack_name) # Fixes %27s (Valentine's)
+            pack_name = pack_name.replace("_Of_", "_of_")
+            
+            if pack_name == "Darkness":
+                pack_name = "The_Dark"
+                
+            # Prevent duplicates (since the table has both image and text links)
+            if pack_name not in packs:
+                packs.append(pack_name)
+
+    # Safely remove all packs called 'Specials' using list comprehension
+    # This prevents the bug where items are skipped during removal
+    packs[:] = [p for p in packs if p.strip() != "Specials"]
 
 def generate_random_question_combos():
     return get_question_combos()
