@@ -7,6 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 import random
 import os
 import concurrent.futures
+import cloudscraper
 
 async def simulate_pack_opening(name):
     if name == "Jark":
@@ -77,7 +78,12 @@ async def simulate_pack_opening(name):
     else:
         url_name = name.replace(" ", "_")
         url = f"https://lil-alchemist.fandom.com/wiki/Special_Packs/{url_name}"
-        resp = requests.get(url)
+        scraper = cloudscraper.create_scraper(browser={
+            'browser': 'chrome',
+            'platform': 'windows',
+            'mobile': False
+        })
+        resp = scraper.get(url)
         soup = BeautifulSoup(resp.content, "html.parser")
         cardnames = []
 
@@ -114,7 +120,12 @@ async def simulate_pack_opening(name):
     def download_and_process_image(cardname):
         url = f"https://lil-alchemist.fandom.com/wiki/{cardname.replace(' ', '_').replace('_The_', '_the_')}"
 
-        resp = requests.get(url)
+        scraper = cloudscraper.create_scraper(browser={
+            'browser': 'chrome',
+            'platform': 'windows',
+            'mobile': False
+        })
+        resp = scraper.get(url)
         soup = BeautifulSoup(resp.content, "html.parser")
         test = parseinfo(soup, cardname)
 

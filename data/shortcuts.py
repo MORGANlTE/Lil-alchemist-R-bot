@@ -329,13 +329,18 @@ def check_if_custom_name(cardname):
 
 # Trivia Shortcuts
 def search_rarity(rarity):
-  url = f"https://lil-alchemist.fandom.com/wiki/Card_Combinations/{rarity}"
-  resp = requests.get(url)
-  soup = BeautifulSoup(resp.content, "html.parser")
-  table = soup.find("table", class_="article-table sortable")
+    url = f"https://lil-alchemist.fandom.com/wiki/Card_Combinations/{rarity}"
+    scraper = cloudscraper.create_scraper(browser={
+            'browser': 'chrome',
+            'platform': 'windows',
+            'mobile': False
+        })
+    resp = scraper.get(url)
+    soup = BeautifulSoup(resp.content, "html.parser")
+    table = soup.find("table", class_="article-table sortable")
 
-  trs = table.find_all("tr")[1:]
-  return trs
+    trs = table.find_all("tr")[1:]
+    return trs
 
 def get_combos_from_page(soup):
   table = soup.find("table", id="mw-customcollapsible-combosTable")
@@ -368,7 +373,12 @@ def get_question_combos():
   real_result = get_result(tr)
   # get the page of the real result
   url = f"https://lil-alchemist.fandom.com/wiki/{combo1.replace(' ', '_').strip()}"
-  resp = requests.get(url)
+  scraper = cloudscraper.create_scraper(browser={
+        'browser': 'chrome',
+        'platform': 'windows',
+        'mobile': False
+    })
+  resp = scraper.get(url)
   soup = BeautifulSoup(resp.content, "html.parser")
 
   combo1_image = get_image(soup)
@@ -420,7 +430,12 @@ def get_question_ability():
   third_td = third_td.replace(" ", "_").replace("_and_", "_And_").replace("\n", "_")
   # get the url of the card and replace enters with nothing
   url = f"https://lil-alchemist.fandom.com/wiki/{third_td}"
-  resp = requests.get(url)
+  scraper = cloudscraper.create_scraper(browser={
+        'browser': 'chrome',
+        'platform': 'windows',
+        'mobile': False
+    })
+  resp = scraper.get(url)
   soup = BeautifulSoup(resp.content, "html.parser")
 
   card1_image = get_image(soup)
@@ -918,7 +933,13 @@ def construct_image_urls(cardname: str, is_onyx: bool = False) -> str:
 def get_correct_url(urls, cardname):
     for url in urls:
         try:
-            resp = requests.get(url)
+            scraper = cloudscraper.create_scraper(browser={
+                'browser': 'chrome',
+                'platform': 'windows',
+                'mobile': False
+            })
+            
+            resp = scraper.get(url)
             soup = BeautifulSoup(resp.content, "html.parser")
             info = parseinfo(soup, cardname)
             return {"info": info, "url": url}
@@ -929,7 +950,12 @@ def get_correct_url(urls, cardname):
 def get_just_image(urls, cardname):
     for url in urls:
         try:
-            resp = requests.get(url, allow_redirects=False)
+            scraper = cloudscraper.create_scraper(browser={
+                'browser': 'chrome',
+                'platform': 'windows',
+                'mobile': False
+            })
+            resp = scraper.get(url)
             # get response url
             respurl = resp.url
             soup = BeautifulSoup(resp.content, "html.parser")

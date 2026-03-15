@@ -152,7 +152,14 @@ def generate_random_question_packs():
     # get 2 random cards from pack1
     # all cards from this pack:
     url = f"https://lil-alchemist.fandom.com/wiki/Special_Packs/{pack1}"
-    resp = requests.get(url)
+    
+    scraper = cloudscraper.create_scraper(browser={
+        'browser': 'chrome',
+        'platform': 'windows',
+        'mobile': False
+    })
+    resp = scraper.get(url)
+
     soup = BeautifulSoup(resp.content, "html.parser")
     cardnames = []
     try:
@@ -179,7 +186,14 @@ def generate_random_question_packs():
 
     # get the image from the first card
     url = f"https://lil-alchemist.fandom.com/wiki/{card1}"
-    resp = requests.get(url)
+    
+    scraper = cloudscraper.create_scraper(browser={
+        'browser': 'chrome',
+        'platform': 'windows',
+        'mobile': False
+    })
+    resp = scraper.get(url)
+
     soup = BeautifulSoup(resp.content, "html.parser")
     card1_image = get_image(soup)
     packs_local = []
