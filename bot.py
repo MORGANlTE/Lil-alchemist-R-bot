@@ -272,7 +272,7 @@ class LeaderboardPaginator(discord.ui.View):
             )
 
             leaderboard_lines.append(
-                f"{rank_badge} **{cleaned_name}** — **{score}**⭐ *({wins} wins)*"
+                f"{rank_badge} **{cleaned_name}** - **{score}**⭐ *({wins} wins)*"
             )
 
         embed = discord.Embed(
