@@ -283,7 +283,7 @@ class LeaderboardPaginator(discord.ui.View):
             color=discord.Color.gold(),
         )
         embed.set_footer(
-            text=f"Page {self.current_page + 1}/{self.max_pages} | Bucket: {self.bucket} | Top {len(self.scores)}"
+            text=f"Page {self.current_page + 1}/{self.max_pages} | Top {len(self.scores)}"
         )
         return embed
 
