@@ -8,6 +8,8 @@ from data.shortcuts import *
 from data.exp_essentials import *
 from data.trivia import *
 import discord
+import ssl
+import aiohttp
 import os
 from dotenv import load_dotenv
 
@@ -211,6 +213,215 @@ async def leaderboard_command(interaction, option: app_commands.Choice[str]):
     except Exception as e:
         await handle_error(client, admindbfile, e, f"An error occured while getting the leaderboard: {e}", interaction)
 
+# --- PAGINATION VIEW CLASS ---
+# --- PAGINATION VIEW CLASS ---
+class LeaderboardPaginator(discord.ui.View):
+
+    def __init__(
+        self,
+        scores: list,
+        bucket: int,
+        author_id: int,
+        per_page: int = 10,
+        max_items: int = 100,
+    ):
+        super().__init__(timeout=120)  # Buttons deactivate after 2 minutes
+        self.scores = scores[
+            :max_items
+        ]  # Cap total items to top 100 as requested
+        self.bucket = bucket
+        self.author_id = author_id
+        self.per_page = per_page
+        self.current_page = 0
+        self.max_pages = max(
+            1, (len(self.scores) + per_page - 1) // per_page
+        )
+
+        self.update_button_states()
+
+    def update_button_states(self):
+        """Enable/Disable navigation buttons based on current page."""
+        self.prev_button.disabled = self.current_page == 0
+        self.next_button.disabled = self.current_page >= self.max_pages - 1
+
+    def build_embed(self) -> discord.Embed:  # <--- Added 'self' here!
+        """Constructs the Embed for the current page."""
+        start_idx = self.current_page * self.per_page
+        end_idx = start_idx + self.per_page
+        page_items = self.scores[start_idx:end_idx]
+
+        leaderboard_lines = []
+        for entry in page_items:
+            rank = entry.get("rank", "?")
+            raw_name = str(entry.get("name", "Unknown")).strip()
+            score = entry.get("score", "0")
+            wins = entry.get("wins", "0")
+
+            # Clean and sanitize name
+            cleaned_name = discord.utils.escape_markdown(raw_name)
+            cleaned_name = "".join(c for c in cleaned_name if c.isprintable())
+            if not cleaned_name:
+                cleaned_name = "Anonymous Alchemist"
+
+            if len(cleaned_name) > 16:
+                cleaned_name = f"{cleaned_name[:13]}..."
+
+            # Medal badges for Top 3, bold text ranks for others
+            rank_badge = {1: "🥇", 2: "🥈", 3: "🥉"}.get(
+                rank, f"`#{rank:<2}`"
+            )
+
+            leaderboard_lines.append(
+                f"{rank_badge} **{cleaned_name}** — **{score}**⭐ *({wins} wins)*"
+            )
+
+        embed = discord.Embed(
+            title="🏆 Little Alchemist Remastered - Global Leaderboard",
+            description="\n".join(leaderboard_lines)
+            if leaderboard_lines
+            else "No data.",
+            color=discord.Color.gold(),
+        )
+        embed.set_footer(
+            text=f"Page {self.current_page + 1}/{self.max_pages} | Bucket: {self.bucket} | Top {len(self.scores)}"
+        )
+        return embed
+
+    async def interaction_check(
+        self, interaction: discord.Interaction
+    ) -> bool:
+        """Ensure only the command invoker can press the buttons."""
+        if interaction.user.id != self.author_id:
+            await interaction.response.send_message(
+                "Use `/larleaderboard` to open your own interactive menu!",
+                ephemeral=True,
+            )
+            return False
+        return True
+
+    @discord.ui.button(
+        label="◀ Prev", style=discord.ButtonStyle.primary, custom_id="prev_page"
+    )
+    async def prev_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        self.current_page -= 1
+        self.update_button_states()
+        await interaction.response.edit_message(
+            embed=self.build_embed(), view=self
+        )
+
+    @discord.ui.button(
+        label="Next ▶", style=discord.ButtonStyle.primary, custom_id="next_page"
+    )
+    async def next_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        self.current_page += 1
+        self.update_button_states()
+        await interaction.response.edit_message(
+            embed=self.build_embed(), view=self
+        )
+
+    async def on_timeout(self):
+        """Disable all buttons when the view times out."""
+        for child in self.children:
+            child.disabled = True
+        try:
+            await self.message.edit(view=self)
+        except Exception:
+            pass
+
+
+# --- DISCORD SLASH COMMAND ---
+@tree.command(
+    name="larleaderboard",
+    description="(Let's see how long this works for) - Displays global leaderboard for the game",
+    guilds=guilds,
+)
+async def larleaderboard_command(interaction: discord.Interaction):
+    await interaction.response.defer()
+    print("[LARLeaderboard]")
+
+    try:
+        url = "https://game.littlealchemist.io/server/UserService.php"
+
+        payload = {
+            "cmd": "getWeeklyScoreLeaderboard",
+            "bucket": 36,
+            "install": "Tuesday, July 28, 2026",
+            "playerId": 1861544,
+            "ts": 1785267456,
+            "_os": "android",
+            "_v": "2.22.91",
+            "type": "global",
+            "_signResponse": "1",
+            "_sig": "445a902a15880311874340959b2cc59a6277e2cb55739af16a6249637014bd9d",
+        }
+
+        connector = aiohttp.TCPConnector(ssl=False)
+
+        async with aiohttp.ClientSession(connector=connector) as session:
+            async with session.post(url, data=payload, timeout=10) as response:
+                if response.status != 200:
+                    raise Exception(
+                        f"API server returned status code {response.status}"
+                    )
+
+                try:
+                    res_json = await response.json(content_type=None)
+                except Exception:
+                    raise Exception(
+                        "Failed to parse JSON response from server."
+                    )
+
+        if (
+            not isinstance(res_json, dict)
+            or "data" not in res_json
+            or "scores" not in res_json["data"]
+        ):
+            error_msg = (
+                res_json.get(
+                    "error", "Invalid or missing 'scores' array in response."
+                )
+                if isinstance(res_json, dict)
+                else "Unknown response format."
+            )
+            raise Exception(f"Server returned faulty data: {error_msg}")
+
+        scores = res_json["data"]["scores"]
+
+        if not scores:
+            embed = discord.Embed(
+                title="🏆 Little Alchemist Remastered - Weekly Leaderboard",
+                description="The leaderboard is currently empty.",
+                color=discord.Color.gold(),
+            )
+            await interaction.followup.send(embed=embed)
+            return
+
+        # Initialize pagination view (10 players per page, up to top 100 max)
+        view = LeaderboardPaginator(
+            scores=scores,
+            bucket=payload["bucket"],
+            author_id=interaction.user.id,
+            per_page=10,
+            max_items=100,
+        )
+
+        initial_embed = view.build_embed()
+        view.message = await interaction.followup.send(
+            embed=initial_embed, view=view
+        )
+
+    except Exception as e:
+        await handle_error(
+            client,
+            admindbfile,
+            e,
+            f"An error occurred while getting the LAR leaderboard: {e}",
+            interaction,
+        )
 
 @client.event
 async def on_message(message):
