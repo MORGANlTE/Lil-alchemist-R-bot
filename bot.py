@@ -198,7 +198,7 @@ async def trivia_command(interaction):
         await handle_error(client, admindbfile, e, f"An error occured while getting trivia: {e}", interaction)
 
 @tree.command(
-    name="leaderboard",
+    name="expleaderboard",
     description="Leaderboard for the server",
     guilds=guilds,
 )
@@ -337,7 +337,7 @@ class LeaderboardPaginator(discord.ui.View):
 
 # --- DISCORD SLASH COMMAND ---
 @tree.command(
-    name="larleaderboard",
+    name="leaderboard",
     description="Displays global leaderboard and season reset time",
     guilds=guilds,
 )
@@ -854,12 +854,14 @@ TARGET_CHANNEL_IDS = [
 
 # Keep track of the last processed season timestamp so it only posts once per reset
 last_processed_season = None
+# Define the file path for storing the season recap history
+SEASON_RECAP_FILE = "./data/last_season_top100.json"
+
 @tasks.loop(hours=2)
 async def precision_season_tracker():
     global last_processed_season
     url = "https://game.littlealchemist.io/server/UserService.php"
     
-    # Payload with exact hardcoded timestamps to maintain valid _sig signatures
     payload = {
         "cmd": "batchRequest",
         "bucket": 36,
@@ -910,39 +912,32 @@ async def precision_season_tracker():
         if not isinstance(results, list) or len(results) < 2:
             return
 
-        # Extract roundEnd timestamp from the first response item
         timer_data = results[0].get("data", {}) if isinstance(results[0], dict) else {}
         round_end = timer_data.get("roundEnd")
 
-        # Skip if no roundEnd found or if we've already processed this season reset
         if not round_end or round_end == last_processed_season:
             return
 
         now = time.time()
         seconds_until_end = round_end - now
 
-        # If the season end is approaching within the 2-hour window
         if 0 < seconds_until_end <= 7200:
             print(f"[SeasonTracker] Season reset scheduled for epoch {round_end}. Starting timer...")
 
-            # 1. Broad sleep until 2 seconds before target
             if seconds_until_end > 2:
                 await asyncio.sleep(seconds_until_end - 2)
 
-            # 2. High-precision busy-wait loop to trigger at the exact second
             while time.time() < round_end:
                 await asyncio.sleep(0.001)
 
-            # --- EXACT SECOND TRIGGER ---
             print(f"[SeasonTracker] Firing final recap request at {time.time()}")
             
             async with aiohttp.ClientSession(connector=connector) as session:
                 async with session.post(url, json=payload, timeout=10) as resp:
                     final_data = await resp.json(content_type=None)
 
-            last_processed_season = round_end  # Prevent double execution
+            last_processed_season = round_end
 
-            # Parse results
             final_results = final_data.get("data", {}).get("results", [])
             if len(final_results) < 2:
                 return
@@ -951,6 +946,19 @@ async def precision_season_tracker():
             final_scores = score_data.get("scores", []) if isinstance(score_data, dict) else []
 
             if final_scores:
+                # --- SAVE TOP 100 TO JSON FILE ---
+                save_data = {
+                    "roundEnd": round_end,
+                    "savedAt": int(time.time()),
+                    "scores": final_scores[:100]  # Store top 100
+                }
+                
+                os.makedirs(os.path.dirname(SEASON_RECAP_FILE), exist_ok=True)
+                with open(SEASON_RECAP_FILE, "w", encoding="utf-8") as f:
+                    json.dump(save_data, f, indent=4)
+                print(f"[SeasonTracker] Successfully saved top {len(final_scores[:100])} players to {SEASON_RECAP_FILE}")
+
+                # Build Embed for Discord Channel Announcement
                 embed = discord.Embed(
                     title="🏆 Final Arena Season Standings 🏆",
                     description=f"Season concluded at <t:{round_end}:F>\n\n",
@@ -971,25 +979,78 @@ async def precision_season_tracker():
                 embed.add_field(name="Top 10 Final Rankings", value=leaderboard_text, inline=False)
                 embed.set_footer(text="Little Alchemist Remastered • Automated Final Recap")
 
-                # Send recap to ALL configured channels across all servers
+                # Send recap to ALL configured channels
                 for channel_id in TARGET_CHANNEL_IDS:
                     try:
                         channel = client.get_channel(channel_id)
                         if channel:
                             await channel.send(embed=embed)
-                        else:
-                            print(f"[SeasonTracker Error] Channel ID {channel_id} not found.")
                     except Exception as ch_err:
                         print(f"[SeasonTracker Error] Failed sending to channel {channel_id}: {ch_err}")
 
     except Exception as e:
         print(f"[SeasonTracker Error] {e}")
 
-@precision_season_tracker.before_loop
-async def before_tracker():
-    await client.wait_until_ready()
+# --- RECALL LAST SEASON SLASH COMMAND ---
+@tree.command(
+    name="lastseason",
+    description="Displays the top 100 leaderboard from the previous arena season",
+    guilds=guilds,
+)
+async def lastseason_command(interaction: discord.Interaction):
+    await interaction.response.defer()
+    print("[LastSeason] Recalling saved leaderboard...")
 
-# Call this during your bot's startup logic / setup_hook / on_ready:
+    SEASON_RECAP_FILE = "./data/last_season_top100.json"
+
+    if not os.path.exists(SEASON_RECAP_FILE):
+        embed = discord.Embed(
+            title="📂 Previous Season Data",
+            description="No saved season data found yet! Data will be recorded automatically at the next season reset.",
+            color=discord.Color.red(),
+        )
+        await interaction.followup.send(embed=embed)
+        return
+
+    try:
+        with open(SEASON_RECAP_FILE, "r", encoding="utf-8") as f:
+            saved_data = json.load(f)
+
+        scores = saved_data.get("scores", [])
+        round_end = saved_data.get("roundEnd")
+
+        if not scores:
+            await interaction.followup.send("⚠️ Saved file contains no scores.")
+            return
+
+        # Use LeaderboardPaginator to let users browse pages 
+        view = LeaderboardPaginator(
+            scores=scores,
+            bucket=36,
+            author_id=interaction.user.id,
+            per_page=10,
+            max_items=100,
+        )
+
+        initial_embed = view.build_embed()
+        initial_embed.title = "🏆 Previous Arena Season - Final Standings"
+        
+        header = f"🗓️ **Concluded:** <t:{round_end}:F>" if round_end else "🗓️ **Concluded:** Unknown"
+        current_desc = initial_embed.description or ""
+        initial_embed.description = f"{header}\n\n{current_desc}"
+
+        view.message = await interaction.followup.send(
+            embed=initial_embed, view=view
+        )
+
+    except Exception as e:
+        await handle_error(
+            client,
+            admindbfile,
+            e,
+            f"An error occurred while loading previous season data: {e}",
+            interaction,
+        )
 
 @client.event
 async def on_ready():
