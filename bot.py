@@ -11,6 +11,9 @@ import discord
 import ssl
 import aiohttp
 import os
+import asyncio
+import time
+from discord.ext import tasks
 from dotenv import load_dotenv
 
 # Load the .env file
@@ -332,11 +335,10 @@ class LeaderboardPaginator(discord.ui.View):
         except Exception:
             pass
 
-
 # --- DISCORD SLASH COMMAND ---
 @tree.command(
     name="larleaderboard",
-    description="(Let's see how long this works for) - Displays global leaderboard for the game",
+    description="Displays global leaderboard and season reset time",
     guilds=guilds,
 )
 async def larleaderboard_command(interaction: discord.Interaction):
@@ -347,22 +349,44 @@ async def larleaderboard_command(interaction: discord.Interaction):
         url = "https://game.littlealchemist.io/server/UserService.php"
 
         payload = {
-            "cmd": "getWeeklyScoreLeaderboard",
+            "cmd": "batchRequest",
             "bucket": 36,
             "install": "Tuesday, July 28, 2026",
             "playerId": 1861544,
-            "ts": 1785267456,
+            "ts": 1785493888,
             "_os": "android",
             "_v": "2.22.91",
-            "type": "global",
+            "requests": [
+                {
+                    "cmd": "getWeeklyLeaderboardTimeLeft",
+                    "bucket": 36,
+                    "install": "Tuesday, July 28, 2026",
+                    "playerId": 1861544,
+                    "ts": 1785493888,
+                    "_os": "android",
+                    "_v": "2.22.91",
+                },
+                {
+                    "cmd": "getWeeklyScoreLeaderboard",
+                    "bucket": 36,
+                    "install": "Tuesday, July 28, 2026",
+                    "playerId": 1861544,
+                    "ts": 1785267456,
+                    "_os": "android",
+                    "_v": "2.22.91",
+                    "type": "global",
+                    "_signResponse": "1",
+                    "_sig": "445a902a15880311874340959b2cc59a6277e2cb55739af16a6249637014bd9d",
+                },
+            ],
             "_signResponse": "1",
-            "_sig": "445a902a15880311874340959b2cc59a6277e2cb55739af16a6249637014bd9d",
+            "_sig": "82082e194fba3e7dda165a2d3ee631f3e7fac1cd1d47cc1b1f76a5c797a72a65",
         }
 
         connector = aiohttp.TCPConnector(ssl=False)
 
         async with aiohttp.ClientSession(connector=connector) as session:
-            async with session.post(url, data=payload, timeout=10) as response:
+            async with session.post(url, json=payload, timeout=10) as response:
                 if response.status != 200:
                     raise Exception(
                         f"API server returned status code {response.status}"
@@ -375,32 +399,32 @@ async def larleaderboard_command(interaction: discord.Interaction):
                         "Failed to parse JSON response from server."
                     )
 
-        if (
-            not isinstance(res_json, dict)
-            or "data" not in res_json
-            or "scores" not in res_json["data"]
-        ):
-            error_msg = (
-                res_json.get(
-                    "error", "Invalid or missing 'scores' array in response."
-                )
-                if isinstance(res_json, dict)
-                else "Unknown response format."
-            )
-            raise Exception(f"Server returned faulty data: {error_msg}")
+        results = res_json.get("data", {}).get("results", [])
+        if not isinstance(results, list) or len(results) < 2:
+            raise Exception("Invalid or missing data in server response.")
 
-        scores = res_json["data"]["scores"]
+        # Parse Season End Time
+        timer_data = results[0].get("data", {})
+        round_end = timer_data.get("roundEnd")
+        
+        if round_end:
+            time_left_str = f"⏳ **Season Ends:** <t:{round_end}:R> (<t:{round_end}:F>)"
+        else:
+            time_left_str = "⏳ **Season Ends:** Unknown"
+
+        # Parse Leaderboard Scores
+        scores = results[1].get("data", {}).get("scores", [])
 
         if not scores:
             embed = discord.Embed(
                 title="🏆 Little Alchemist Remastered - Weekly Leaderboard",
-                description="The leaderboard is currently empty.",
+                description=f"{time_left_str}\n\nThe leaderboard is currently empty.",
                 color=discord.Color.gold(),
             )
             await interaction.followup.send(embed=embed)
             return
 
-        # Initialize pagination view (10 players per page, up to top 100 max)
+        # Pass standard arguments to your LeaderboardPaginator
         view = LeaderboardPaginator(
             scores=scores,
             bucket=payload["bucket"],
@@ -410,6 +434,11 @@ async def larleaderboard_command(interaction: discord.Interaction):
         )
 
         initial_embed = view.build_embed()
+        
+        # Attach season countdown to top of embed description
+        current_desc = initial_embed.description or ""
+        initial_embed.description = f"{time_left_str}\n\n{current_desc}"
+
         view.message = await interaction.followup.send(
             embed=initial_embed, view=view
         )
@@ -816,10 +845,156 @@ async def clear_command(interaction):
 # add the group to the tree
 tree.add_command(groupStatus)
 
+# Set your destination Discord channel ID here
+TARGET_CHANNEL_IDS = [
+    1266011960596627591,
+    858404786075074590,
+    1266012028279980062
+]
 
+# Keep track of the last processed season timestamp so it only posts once per reset
+last_processed_season = None
+@tasks.loop(hours=2)
+async def precision_season_tracker():
+    global last_processed_season
+    url = "https://game.littlealchemist.io/server/UserService.php"
+    
+    # Payload with exact hardcoded timestamps to maintain valid _sig signatures
+    payload = {
+        "cmd": "batchRequest",
+        "bucket": 36,
+        "install": "Tuesday, July 28, 2026",
+        "playerId": 1861544,
+        "ts": 1785493888,
+        "_os": "android",
+        "_v": "2.22.91",
+        "requests": [
+            {
+                "cmd": "getWeeklyLeaderboardTimeLeft",
+                "bucket": 36,
+                "install": "Tuesday, July 28, 2026",
+                "playerId": 1861544,
+                "ts": 1785493888,
+                "_os": "android",
+                "_v": "2.22.91",
+            },
+            {
+                "cmd": "getWeeklyScoreLeaderboard",
+                "bucket": 36,
+                "install": "Tuesday, July 28, 2026",
+                "playerId": 1861544,
+                "ts": 1785267456,
+                "_os": "android",
+                "_v": "2.22.91",
+                "type": "global",
+                "_signResponse": "1",
+                "_sig": "445a902a15880311874340959b2cc59a6277e2cb55739af16a6249637014bd9d",
+            },
+        ],
+        "_signResponse": "1",
+        "_sig": "82082e194fba3e7dda165a2d3ee631f3e7fac1cd1d47cc1b1f76a5c797a72a65",
+    }
+
+    try:
+        connector = aiohttp.TCPConnector(ssl=False)
+        async with aiohttp.ClientSession(connector=connector) as session:
+            async with session.post(url, json=payload, timeout=10) as response:
+                if response.status != 200:
+                    return
+                res_json = await response.json(content_type=None)
+
+        if not isinstance(res_json, dict):
+            return
+
+        results = res_json.get("data", {}).get("results", [])
+        if not isinstance(results, list) or len(results) < 2:
+            return
+
+        # Extract roundEnd timestamp from the first response item
+        timer_data = results[0].get("data", {}) if isinstance(results[0], dict) else {}
+        round_end = timer_data.get("roundEnd")
+
+        # Skip if no roundEnd found or if we've already processed this season reset
+        if not round_end or round_end == last_processed_season:
+            return
+
+        now = time.time()
+        seconds_until_end = round_end - now
+
+        # If the season end is approaching within the 2-hour window
+        if 0 < seconds_until_end <= 7200:
+            print(f"[SeasonTracker] Season reset scheduled for epoch {round_end}. Starting timer...")
+
+            # 1. Broad sleep until 2 seconds before target
+            if seconds_until_end > 2:
+                await asyncio.sleep(seconds_until_end - 2)
+
+            # 2. High-precision busy-wait loop to trigger at the exact second
+            while time.time() < round_end:
+                await asyncio.sleep(0.001)
+
+            # --- EXACT SECOND TRIGGER ---
+            print(f"[SeasonTracker] Firing final recap request at {time.time()}")
+            
+            async with aiohttp.ClientSession(connector=connector) as session:
+                async with session.post(url, json=payload, timeout=10) as resp:
+                    final_data = await resp.json(content_type=None)
+
+            last_processed_season = round_end  # Prevent double execution
+
+            # Parse results
+            final_results = final_data.get("data", {}).get("results", [])
+            if len(final_results) < 2:
+                return
+
+            score_data = final_results[1].get("data", {}) if isinstance(final_results[1], dict) else {}
+            final_scores = score_data.get("scores", []) if isinstance(score_data, dict) else []
+
+            if final_scores:
+                embed = discord.Embed(
+                    title="🏆 Final Arena Season Standings 🏆",
+                    description=f"Season concluded at <t:{round_end}:F>\n\n",
+                    color=discord.Color.gold(),
+                )
+
+                top_10 = final_scores[:10]
+                leaderboard_text = ""
+                for p in top_10:
+                    rank = p.get("rank")
+                    name = p.get("name")
+                    score = p.get("score")
+                    wins = p.get("wins")
+
+                    medal = "🥇" if rank == 1 else "🥈" if rank == 2 else "🥉" if rank == 3 else f"`#{rank}`"
+                    leaderboard_text += f"{medal} **{name}** — Score: `{score}` ({wins} Wins)\n"
+
+                embed.add_field(name="Top 10 Final Rankings", value=leaderboard_text, inline=False)
+                embed.set_footer(text="Little Alchemist Remastered • Automated Final Recap")
+
+                # Send recap to ALL configured channels across all servers
+                for channel_id in TARGET_CHANNEL_IDS:
+                    try:
+                        channel = client.get_channel(channel_id)
+                        if channel:
+                            await channel.send(embed=embed)
+                        else:
+                            print(f"[SeasonTracker Error] Channel ID {channel_id} not found.")
+                    except Exception as ch_err:
+                        print(f"[SeasonTracker Error] Failed sending to channel {channel_id}: {ch_err}")
+
+    except Exception as e:
+        print(f"[SeasonTracker Error] {e}")
+
+@precision_season_tracker.before_loop
+async def before_tracker():
+    await client.wait_until_ready()
+
+# Call this during your bot's startup logic / setup_hook / on_ready:
 
 @client.event
 async def on_ready():
     await on_startup_handler(adminguilds=adminguilds, tree=tree, client=client, dbfile=dbfile, admindbfile=admindbfile)
+    precision_season_tracker.start()
+
 
 client.run(os.getenv("TOKEN"))
